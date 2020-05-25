@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>BackgroundColor</key>
+	<dict>
+		<key>b</key>
+		<string>1</string>
+		<key>g</key>
+		<string>1</string>
+		<key>r</key>
+		<string>1</string>
+	</dict>
+	<key>Columns</key>
+	<array>
+		<dict>
+			<key>Identifier</key>
+			<string>542bbcbd446a2b6c04f6cdb3</string>
+			<key>MaximumWidth</key>
+			<real>3.000000e+01</real>
+			<key>MinimumWidth</key>
+			<real>1.300000e+01</real>
+			<key>OOPlainTextExportWidthKey</key>
+			<integer>1</integer>
+			<key>Title</key>
+			<string></string>
+			<key>Width</key>
+			<real>1.300000e+01</real>
+		</dict>
+		<dict>
+			<key>Identifier</key>
+			<string>3c8bbcbe446a2b6c04f6cdb3</string>
+			<key>MaximumWidth</key>
+			<real>1.000000e+06</real>
+			<key>MinimumWidth</key>
+			<real>1.300000e+01</real>
+			<key>OOPlainTextExportWidthKey</key>
+			<integer>72</integer>
+			<key>Title</key>
+			<string>Topic</string>
+			<key>Width</key>
+			<real>5.120000e+02</real>
+		</dict>
+	</array>
+	<key>NoteColumn</key>
+	<string>542bbcbd446a2b6c04f6cdb3</string>
+	<key>NoteHeight</key>
+	<real>1.000000e+02</real>
+	<key>Other Information</key>
+	<dict>
+		<key>NotesHeight</key>
+		<integer>100</integer>
+		<key>SpellCheckingEnabled</key>
+		<true/>
+	</dict>
+	<key>OutlineColumn</key>
+	<string>3c8bbcbe446a2b6c04f6cdb3</string>
+	<key>Root Item</key>
+	<dict>
+		<key>Children</key>
+		<array>
+			<dict>
+				<key>Children</key>
+				<array>
+					<dict>
+						<key>Cols</key>
+						<array>
+							<string>*empty*</string>
+							<string>{\rtf1\mac\ansicpg10000\cocoartf824\cocoasubrtf330
+{\fonttbl\f0\fswiss\fcharset77 Helvetica;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f0\fs24 \cf2 Fix single-step at beginning/end}</string>
+						</array>
+					</dict>
+					<dict>
+						<key>Cols</key>
+						<array>
+							<string>*empty*</string>
+							<string>{\rtf1\mac\ansicpg10000\cocoartf824\cocoasubrtf330
+{\fonttbl\f0\fswiss\fcharset77 Helvetica;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f0\fs24 \cf2 Fix highlighting of PrimMST to show nodes currently in graph in different color than nodes not in graph}</string>
+						</array>
+					</dict>
+					<dict>
+						<key>Cols</key>
+						<array>
+							<string>*empty*</string>
+							<string>{\rtf1\mac\ansicpg10000\cocoartf824\cocoasubrtf330
+{\fonttbl\f0\fswiss\fcharset77 Helvetica;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f0\fs24 \cf2 Add speed control}</string>
+						</array>
+					</dict>
+					<dict>
+						<key>Cols</key>
+						<array>
+							<string>*empty*</string>
+							<string>{\rtf1\mac\ansicpg10000\cocoartf824\cocoasubrtf330
+{\fonttbl\f0\fswiss\fcharset77 Helvetica;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f0\fs24 \cf2 Add continuous update mode (build into events?)}</string>
+						</array>
+					</dict>
+				</array>
+				<key>Cols</key>
+				<array>
+					<string>*empty*</string>
+					<string>{\rtf1\mac\ansicpg10000\cocoartf824\cocoasubrtf330
+{\fonttbl\f0\fswiss\fcharset77 Helvetica;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f0\fs24 \cf2 User-Interface Features}</string>
+				</array>
+				<key>Expanded</key>
+				<true/>
+			</dict>
+			<dict>
+				<key>Children</key>
+				<array>
+					<dict>
+						<key>Cols</key>
+						<array>
+							<string>*empty*</string>
+							<string>{\rtf1\mac\ansicpg10000\cocoartf824\cocoasubrtf330
+{\fonttbl\f0\fswiss\fcharset77 Helvetica;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f0\fs24 \cf2 Separable RMST -- Ho et. al}</string>
+						</array>
+					</dict>
+					<dict>
+						<key>Cols</key>
+						<array>
+							<string>*empty*</string>
+							<string>{\rtf1\mac\ansicpg10000\cocoartf824\cocoasubrtf330
+{\fonttbl\f0\fswiss\fcharset77 Helvetica;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f0\fs24 \cf2 Chao &amp; Hsu tree weighting}</string>
+						</array>
+					</dict>
+					<dict>
+						<key>Cols</key>
+						<array>
+							<string>*empty*</string>
+							<string>{\rtf1\mac\ansicpg10000\cocoartf824\cocoasubrtf330
+{\fonttbl\f0\fswiss\fcharset77 Helvetica;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f0\fs24 \cf2 Zhou's Spanning Graph Algorithm}</string>
+						</array>
+					</dict>
+				</array>
+				<key>Cols</key>
+				<array>
+					<string>*empty*</string>
+					<string>{\rtf1\mac\ansicpg10000\cocoartf824\cocoasubrtf330
+{\fonttbl\f0\fswiss\fcharset77 Helvetica;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f0\fs24 \cf2 More spanning tree stuff}</string>
+				</array>
+				<key>Expanded</key>
+				<true/>
+			</dict>
+			<dict>
+				<key>Cols</key>
+				<array>
+					<string>*empty*</string>
+					<string>*empty*</string>
+				</array>
+			</dict>
+			<dict>
+				<key>Children</key>
+				<array>
+					<dict>
+						<key>Cols</key>
+						<array>
+							<string>*empty*</string>
+							<string>{\rtf1\mac\ansicpg10000\cocoartf824\cocoasubrtf330
+{\fonttbl\f0\fswiss\fcharset77 Helvetica;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f0\fs24 \cf2 Display Hanan Grid}</string>
+						</array>
+					</dict>
+					<dict>
+						<key>Cols</key>
+						<array>
+							<string>*empty*</string>
+							<string>{\rtf1\mac\ansicpg10000\cocoartf824\cocoasubrtf330
+{\fonttbl\f0\fswiss\fcharset77 Helvetica;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f0\fs24 \cf2 Add Steiner Points / Snap to Hanan GRid w/ continuous rebuild of tree}</string>
+						</array>
+					</dict>
+				</array>
+				<key>Cols</key>
+				<array>
+					<string>*empty*</string>
+					<string>{\rtf1\mac\ansicpg10000\cocoartf824\cocoasubrtf330
+{\fonttbl\f0\fswiss\fcharset77 Helvetica;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f0\fs24 \cf2 Steiner Tree buildup}</string>
+				</array>
+				<key>Expanded</key>
+				<true/>
+			</dict>
+			<dict>
+				<key>Children</key>
+				<array>
+					<dict>
+						<key>Cols</key>
+						<array>
+							<string>*empty*</string>
+							<string>{\rtf1\mac\ansicpg10000\cocoartf824\cocoasubrtf330
+{\fonttbl\f0\fswiss\fcharset77 Helvetica;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f0\fs24 \cf2 Ho's L-RST}</string>
+						</array>
+					</dict>
+					<dict>
+						<key>Cols</key>
+						<array>
+							<string>*empty*</string>
+							<string>{\rtf1\mac\ansicpg10000\cocoartf824\cocoasubrtf330
+{\fonttbl\f0\fswiss\fcharset77 Helvetica;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f0\fs24 \cf2 Chao &amp; Hsu Local/Global Refinement}</string>
+						</array>
+					</dict>
+					<dict>
+						<key>Cols</key>
+						<array>
+							<string>*empty*</string>
+							<string>{\rtf1\mac\ansicpg10000\cocoartf824\cocoasubrtf330
+{\fonttbl\f0\fswiss\fcharset77 Helvetica;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f0\fs24 \cf2 Zhou Spanning-Graph based}</string>
+						</array>
+					</dict>
+				</array>
+				<key>Cols</key>
+				<array>
+					<string>*empty*</string>
+					<string>{\rtf1\mac\ansicpg10000\cocoartf824\cocoasubrtf330
+{\fonttbl\f0\fswiss\fcharset77 Helvetica;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f0\fs24 \cf2 Steiner Algorithms:}</string>
+				</array>
+				<key>Expanded</key>
+				<true/>
+			</dict>
+		</array>
+		<key>Cols</key>
+		<array>
+			<string>*empty*</string>
+			<string>*empty*</string>
+		</array>
+		<key>Expanded</key>
+		<true/>
+	</dict>
+	<key>Styles</key>
+	<array>
+		<dict>
+			<key>Heading</key>
+			<dict>
+				<key>type</key>
+				<string>None</string>
+			</dict>
+			<key>TextColor</key>
+			<dict>
+				<key>b</key>
+				<string>0</string>
+				<key>g</key>
+				<string>0</string>
+				<key>r</key>
+				<string>0</string>
+			</dict>
+			<key>TextFont</key>
+			<dict>
+				<key>name</key>
+				<string>Helvetica</string>
+				<key>size</key>
+				<real>1.200000e+01</real>
+			</dict>
+		</dict>
+		<dict>
+			<key>Heading</key>
+			<dict>
+				<key>type</key>
+				<string>None</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>Heading</key>
+			<dict>
+				<key>type</key>
+				<string>None</string>
+			</dict>
+		</dict>
+	</array>
+	<key>Version</key>
+	<integer>5</integer>
+</dict>
+</plist>

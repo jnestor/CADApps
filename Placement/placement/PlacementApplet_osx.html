@@ -1,0 +1,101 @@
+<HTML>
+<TITLE>VLSI Floorplanning / Placement Display - John A. Nestor</TITLE>
+
+<head>
+
+<BODY TEXT="#000000" BGCOLOR="#FFFFFF" LINK="#000088" VLINK="#880000">
+
+<CENTER>
+<TABLE CELLSPACING=0 CELLPADDING=0 WIDTH="500" HEIGHT="350">
+<TR>
+<TD VALIGN=TOP WIDTH="500">
+<FONT FACE="arial,helvetica" SIZE=+2><B>VLSI Floorplanning / Placement
+Display
+</B></FONT>
+
+<P>
+This applet illustrates the problem formulation for 
+<i>VLSI Floorplanning</i>, in which interconnected <i>modules</i> of
+different sizes and shapes are assigned to positions on a layout
+surface to form a <i>placement</i>.  
+Connections are specified as <i>nets</i> between 
+<i>terminals</i> on different modules.
+<BR><BR>
+The quality of a placment is usually estimated using a weighted sum of
+cost estimates.  <i>Area</i> is estimated as area of the bounding box
+containing all modules.  <i>Wirelength</i> can be estimated in a number
+of ways, but a common approach (used here) is to compute half the
+perimeter of the bounding box that contains the terminals of a net.
+<I>Module overlap</i> is often included in a cost function as a
+<i>penalty function</i> (these are often used in iterative algorithms
+like simulated annealing).
+Finally, <i>congestion</i> estimates the wireability of interconnect
+regions between placed modules.
+<HR>
+<CENTER>
+<APPLET CODE = PlacementApplet.class ARCHIVE = PlacementApplet.jar
+WIDTH = 400 HEIGHT = 400 ALIGN = middle VSPACE = 0 HSPACE = 0>
+<PARAM NAME = LAYOUT VALUE ="ntest10.in">
+</APPLET>
+</CENTER>
+<HR>
+The applet displays modules as yellow rectanges; terminals are marked
+by small black rectangles.  Connections between modules are displayed
+using red lines.  This display of nets is sometimes known as a 
+"rat's nest" diagram.  Cost estimates are shown above the placement
+display.  Note that congestion estimates are not included (yet).
+<BR><BR>
+The applet allows the user to manipulate a floorplan placement using
+the mouse - just click on a module and drag it.  Modules can also be 
+transformed in the following ways:
+<OL>
+<LI>Rotate - click mouse over module.
+<LI>Flip Horizontal - shift-click mouse over module
+<LI>Flip Vertical - alt-click mouse over module
+</OL>
+<B>NOTE:</b>This applet requires the 
+<A HREF="http://java.sun.com/products/plugin" TARGET="_new">Sun Java Plugin</A>.
+<BR><BR>
+
+For more information about Placement, 
+see a VLSI CAD textbook such as 
+M. Sarrafzadeh
+and C. K. Wong, <I>An Introduction to VLSI Design</I>, McGraw-Hill, 1996.
+
+<HR>
+
+
+</TD>
+</TR>
+</TABLE>
+
+<BR><BR>
+<FONT FACE="Arial,Helvetica" SIZE=-1>
+| <A HREF="../index.html">CadApplets Home</A> | <A
+HREF="../ChannelRouter.html"> Channel Router Applet</A> | 
+<A HREF="../MazeRouter.html"> Maze Router Applet</A> | 
+<A HREF= "../MultiMaze.html"> Multilayer Maze Routing</A> | 
+<b>Placement</b> |
+<A HREF="../fp/fpIntro.html"> Annealing</A> |
+
+</FONT>
+
+<BR><BR>
+
+<FONT SIZE="-2">
+Last updated on July 27, 2001 by <A HREF="mailto:nestorj@lafayette.edu">John A. Nestor</A>
+</FONT>
+</CENTER>
+
+</BODY>
+
+
+</HTML>
+
+
+
+
+
+
+
+

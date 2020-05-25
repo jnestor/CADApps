@@ -1,0 +1,167 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>Rectilinear Steiner Tree Demonstration Applet - John A. Nestor</title>
+</head>
+<body style="color: rgb(0, 0, 0); background-color: rgb(255, 255, 255);"
+ link="#000088" vlink="#880000">
+<center>
+<table cellpadding="0" cellspacing="0" height="350" width="500">
+  <tbody>
+    <tr>
+      <td valign="top" width="500"> <font face="arial,helvetica"
+ size="+2"><b>Steiner Tree Demonstration Applet
+      </b></font>
+      <br><br>
+This applet illustrates how a Steiner Rectilinear Tree (SRT)
+can be constructed by adding <span style="font-style: italic;">Steiner
+Points</span> to an existing set of terminals.&nbsp; The user can edit the
+number and location of a set of terminals and then add and/or delete
+Steiner points to evaluate their effect on the length of the resulting
+tree.  The applet then displays the Rectilinear Minimum Spanning that
+includes both the termianls and Steiner points to form a Steiner
+Rectilinear Tree.
+<br><br>
+A Minimal Steiner Rectilinear Tree (MSRT) is a minimum-length Steiner
+      Tree.&nbsp; This applet does <i>not</i> compute the minimal Steiner
+      Tree but instead lets the user
+      experiment with different choices of Steiner points to discover
+      their impact on overall length.
+      <br><br>
+
+      <hr>
+      </p>
+<center><applet archive="STree.jar" code="SteinerDemoApplet.class" height="400" width="500"></applet></center>
+<!--<CENTER><APPLET code="SteinerDemoApplet.class" width=400 height=400></APPLET></CENTER>-->
+      <hr>
+      <font face="arial,helvetica" size="+1"><b>To Use the Applet</b></font>
+      <br>
+      <br>
+Terminals are displayed as small squares; Steiner points are displayed
+as circles.  Edges show the edges of a Rectilinear Minimum Spanning
+Tree that connects terminals and Steiner Points.
+<br><br>
+The applet operates in two modes: <span
+ style="font-style: italic;">Terminal Edit</span> mode, and <span
+ style="font-style: italic;">Steiner Point Edit</span> mode.&nbsp;&nbsp;
+The use can switch between the two modes by clicking the "STMODE"
+button.&nbsp;
+
+<br>
+      </p>
+      <p>Terminal Edit mode is used to add, delete, or move terminal nodes
+as follows:</p>
+      <ul>
+        <li>Add a terminal by clicking at a location where no terminal
+exists. </li>
+        <li>Move a terminal by clicking and dragging to
+the desired location. </li>
+        <li>Delete a terminal by pressing the CONTROL key and clicking.</li>
+      </ul>
+While in Terminal Edit mode the applet computes and displays the
+rectilinear Minimum Spanning Tree (RSMT) of the terminal points after
+each change.<br>
+      <br>
+In Steiner Point Edit mode,
+Steiner points may be added and removed at locations on the "Hanan
+Grid", which is shown in gray (see explanation below) as follows:
+      <ul>
+        <li>Add a Steiner point by clicking at a location on the Hanan
+Grid.</li>
+        <li>Remove a Steiner point by pressing the CONTROL key and clicking.</li>
+      </ul>
+While in Steiner Pont Edit mode, the Steiner tree that results from the
+selected points is computed using the RMST algorithm and displayed
+along with the improvement in cost over the RMST without added Steiner
+ponts.
+
+      <p> <font face="arial,helvetica" size="+1"><b>About Steiner Trees</b></font><br>
+      </p>
+      <p>Given a set of terminal points in a plane, a Minimum Steiner
+Rectilinear Tree (SRT) is a set of edges which connects all the
+terminals along with a set of added "Steiner points" such that the
+rectilinear distance is minimized.&nbsp; F. Hwang [Hwang, 1976]
+proved that the length of a Steiner tree can be up to 3/2 times shorter
+than a Rectilinear Minimum Spanning Tree on the same set of terminals. <br>
+      </p>
+      <p>M. Hanan [Hanan, 1966] proved that a Minimum RST can be
+constructed using points on a grid defined by the x and y coordinates
+of the terminal points (now known as the Hanan Grid).<br>
+      </p>
+      <p>The Minimum Steiner Rectilinear tree problem is be NP-Hard [Garey, 1977], which inidicates that any exact
+algorithm will have a worst-case execution time that grows
+exponentially with the problem size.&nbsp; In spite of this, exact
+algorithms such as&nbsp; have been found that complete in reasonable
+time for large examples [Warme 2003].<br>
+      </p>
+      <p>Several heuristics have also been developed; we plan to add a
+brief survey along with animations of some key heuristics in the future.<br>
+      <br>
+      <font face="arial,helvetica" size="+1"><b>References</b></font>
+      <br>
+      <br>
+J. Ganley, P. Madden, G. Robins, and I. Mandoiu, "GSRC Bookshelf
+Rectilinear Steiner Minimum Tree Slot", February 2003. <a
+ href="http://vlsicad.ucsd.edu/GSRC/bookshelf/Slots/RSMT/" target="_new">http://vlsicad.ucsd.edu/GSRC/bookshelf/Slots/RSMT/</a>.
+      <br>
+      </p>
+      <p>J. Ganley. "The Steiner Tree Page", <a
+ href="http://ganley.org/steiner" target="_new">http://ganley.org/steiner</a>.
+      <br>
+M. Sarrafzadeh and C. K. Wong, <i>An Introduction to VLSI Design</i>,
+McGraw-Hill, 1996.<br>
+      </p>
+      <p>M. <span class="m"><span class="h">Garey and D.
+Johnson,&nbsp; "The rectilinear Steiner tree problem is NP-complete<i>"</i>,&nbsp;
+      <span style="font-style: italic;">SIAM Journal on Applied
+Mathematics</span>, Vol. 32 pp. 826-834, 1977.<br>
+      </span></span></p>
+      <p>M. Hanan, "On Steiner's Problem with Rectilinear Distance", <span
+ style="font-style: italic;">SIAM Journal of Applied Math</span>, Vol.
+14, No. 2, March 1966, pp. 255-265.<br>
+      </p>
+      <p>F. Hwang, "On Steiner Minimal Trees with Rectilinear
+Distance", <span style="font-style: italic;">SIAM Journal of Applied
+Mathematics,</span> Vol. 30, No. 1, January 1976, pp. 104-114.<br>
+      </p>
+      <p>F. Hwang, D. Richards, and P. Winter, <span
+ style="font-style: italic;">The Steiner Tree Problem</span>,
+North-Holland, 1992.<br>
+      </p>
+      <p>D. Warme, P. Winter, and M. Zachariasen, "GeoSteiner 3.1 Home
+Page", January 2003&nbsp; <a target="_new"
+ href="http://www.diku.dk/geosteiner">http://www.diku.dk/geosteiner</a>.<br>
+      </p>
+      <p><font face="arial,helvetica" size="+1"><b>Acknowledgement</b></font>
+      <br>
+      <br>
+This RMST code used in this applet is derived from Joseph Ganley's
+"Interconnection Tree Applet",
+which can be found at <a href="http://ganley.org/software/tree.html"
+ target="_new">http://ganley.org/software/tree.html</a>
+      <br>
+      <br>
+      </p>
+      <hr></td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<br>
+<br>
+<font face="Arial,Helvetica" size="-1">
+| <a href="../index.html">CadApplets Home</a> | <a
+ href="./RMSTApplet.html">RMST</a><b>
+</b>| <span style="font-weight: bold;">Steiner</span> <span
+ style="font-weight: bold;">Demo</span> | <a href="../MazeRouter.html">Maze
+Router</a> | <a href="../MultiMaze.html"> Multilayer Maze Router</a> |
+<a href="../PlacementApplet/PlacementIntro.html"> Placement</a> |
+<a href="../fp/fpIntro.html"> Annealing</a> |
+</font><br>
+<br>
+<font size="-2">
+Last updated on May 23, 2006 by <a
+ href="http://foghorn.cadlab.lafayette.edu/%7Enestorj">John A. Nestor</a>
+</font></center>
+</body>
+</html>
