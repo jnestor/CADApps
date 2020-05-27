@@ -1,9 +1,6 @@
-package MazeRouter;
-
 import java.awt.*;
-import java.awt.image.*;
 import java.awt.event.*;
-
+import javax.swing.*;
 
 // Grid - panel to display grid for maze routing
 //
@@ -29,7 +26,7 @@ import java.awt.event.*;
 // 4/16/20: need to convert to JPanel, use paintComponent instead of paintComponent
 // also need to figure out what I was doing with double-buffering ???
 //
-class Grid extends Panel {
+class Grid extends JPanel {
 
   private String msg = null;
 
@@ -76,10 +73,10 @@ class Grid extends Panel {
   }
 
   public void redrawGrid() {
-    if (myOffScreenImage == null) { // this doesn't work in constructor
+    /*if (myOffScreenImage == null) { // this doesn't work in constructor
       myOffScreenImage = createImage(getSize().width, getSize().height );
       myOffScreenGraphics = myOffScreenImage.getGraphics();
-     }
+     }*/
     repaint();
   }
 
@@ -361,7 +358,7 @@ class Grid extends Panel {
     }
   }
 
-  public void paint(Graphics g) {
+  public void paintComponent(Graphics g) {
     g.setColor(getBackground());
     g.fillRect(0,0,getSize().width,getSize().height);
     for (int k = 0; k < depth(); k++ ) {
@@ -377,10 +374,10 @@ class Grid extends Panel {
     }
   }
 
-  public void update(Graphics g) {
+ /* public void update(Graphics g) {
     paint(myOffScreenGraphics);
     g.drawImage(myOffScreenImage,0,0,this);
-  }
+  }*/
 
   public void setSource(int x, int y, int z) {
     setSource(gridArray[x][y][z]);

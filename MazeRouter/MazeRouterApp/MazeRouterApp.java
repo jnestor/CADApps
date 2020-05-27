@@ -1,4 +1,4 @@
-package MazeRouter;
+
 
 import java.io.*;
 import java.awt.*;
@@ -25,12 +25,9 @@ class MazeRouterApp {
 // todo: parameterize size based on command line arguments?
 
 private static void createAndShowGUI() {
-    System.out.println("Hello, you old maze world!");
-    System.out.println("and I mean it!");
     MazeRouterFrame mf = new MazeRouterFrame();
     mf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     mf.setMinimumSize(new Dimension(800,400));
-    System.out.println("init?");
     mf.initMazeRouterFrame(1, false);
     mf.pack();
     mf.setVisible(true);

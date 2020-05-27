@@ -1,6 +1,5 @@
 import java.awt.*;
 import java.awt.event.*;
-import java.applet.*;
 import javax.swing.*;
 
 /**
@@ -12,33 +11,27 @@ import javax.swing.*;
  * @version 1.0
  */
 
-public class MazeApplet extends Applet implements Runnable, ActionListener
+public class MazeRouterFrame extends JFrame implements Runnable, ActionListener
 {
   private Grid myGrid = null;
 
   private Thread myThread = null;
 
-  public void init() {
-
-      String lstr = getParameter("layers");
-      int nlayers;
-      if (lstr != null) nlayers = Integer.parseInt(lstr);
-      else nlayers = 1;
+  public void initMazeRouterFrame(int nlayers, boolean parallelMode) {
       int ncols = Grid.calculateCols(getSize().width);
       int nrows = Grid.calculateRows(getSize().height, nlayers);
+      System.out.println("width=" + getSize().width + " height=" + getSize().height);
       myGrid = new Grid(ncols,nrows,nlayers);
-      String modestr = getParameter("mode");
-      if (modestr != null && modestr.equals("parallel")) myGrid.setParallelExpand();
+      if (parallelMode) myGrid.setParallelExpand();
       else myGrid.setSerialExpand();
       setLayout(new BorderLayout());
-      add(myGrid, "Center");
-      Button clearBtn = new Button("CLEAR");
-      Panel btnPanel = new Panel();
+      getContentPane().add(myGrid, "Center");
+      JButton clearBtn = new JButton("CLEAR");
+      JPanel btnPanel = new JPanel();
       btnPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
       btnPanel.add(clearBtn);
-      add(btnPanel, "South");
+      getContentPane().add(btnPanel, "South");
       clearBtn.addActionListener(this);
-      show();
       repaint();
       if (myThread == null) {
         myThread = new Thread(this);
@@ -73,5 +66,3 @@ public class MazeApplet extends Applet implements Runnable, ActionListener
      } catch (InterruptedException e) {}
    }
 }
-
-

@@ -1,5 +1,3 @@
-package MazeRouter;
-
 import java.awt.Color;
 
 
@@ -21,7 +19,7 @@ class ColorSequencer {
     int b = curColor.getBlue();
     if (b == 0) b = 1;
     // System.out.println("Old color: r=" + r + " g=" + g + " b=" + b);
-    int newr = (int)(Math.random() * 43 * b) % 256;
+    int newr = (int)(Math.random() * 42 * b) % 256;
     int newg = r;
     int newb = g;
     if (newr < 100 && newg < 100 && newb < 100) {
