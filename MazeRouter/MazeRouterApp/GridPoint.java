@@ -4,7 +4,6 @@ import java.awt.event.*;
 import javax.swing.*;
 
 class GridPoint {
-
   public GridPoint(int x, int y, int z) {
     posx = x;
     posy = y;

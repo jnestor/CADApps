@@ -1,6 +1,7 @@
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import java.util.*;
 
 // Grid - panel to display grid for maze routing
 //
@@ -27,7 +28,7 @@ import javax.swing.*;
 // also need to figure out what I was doing with double-buffering ???
 //
 class Grid extends JPanel {
-
+  
   private String msg = null;
 
   private boolean displayParallelMode = false;
@@ -130,36 +131,29 @@ class Grid extends JPanel {
       private GridPoint wot;
     }
 
-  private GridLink gridPointHead;
-  private GridLink gridPointTail;
+  private LinkedList<GridPoint> gridPointList = new LinkedList<GridPoint>();
+  private GridPoint gridPointTail;
 
   void printGridPointQueue() { // for debugging - package visible
-    for (GridLink gl = gridPointHead; gl != null; gl = gl.next) {
-      System.out.print(gl.wot + " ");
-    }
-    System.out.println();
+    System.out.println(gridPointList.toString());
   }
 
   public void enqueueGridPoint(GridPoint gp) throws InterruptedException {
-    // if (gp.isEnqueued()) return;  // already there!
-    if (gridPointHead == null) gridPointHead = gridPointTail = new GridLink(gp);
-    else {
-      GridLink gl = new GridLink(gp);
-      gridPointTail.next = gl;
-      gridPointTail = gl;
-    }
+    gridPointList.add(gp);
     gp.setEnqueued(true);
-   if (!displayParallelMode) {
+    gridPointTail=gp;
+    if (!displayParallelMode) {
       redrawGrid();
       gridDelay();
     }
   }
 
   public GridPoint dequeueGridPoint() {
-    if (gridPointHead == null) return null;
+    GridPoint gp = gridPointList.poll();
+    if (gp==null){
+        return null;
+    }
     else {
-      GridPoint gp = gridPointHead.wot;
-      gridPointHead = gridPointHead.next;
       gp.setEnqueued(false);
       // debug
 //      System.out.println("GridPoint.dequeuePoint - " + gp);
@@ -168,7 +162,7 @@ class Grid extends JPanel {
   }
 
   public void clearQueue() {
-    gridPointHead = null;
+    gridPointList.clear();
   }
 
   private static final int DELAY = 100; // 10ms = 0.1s
@@ -180,26 +174,43 @@ class Grid extends JPanel {
   public static void gridDelay() throws InterruptedException {
     gridDelay(1);
   }
-
+  private boolean paused = false;
+  
+  public boolean pauseResume(){
+      paused=!paused;
+      return paused;
+  }
   public int expansion() throws InterruptedException {
     GridPoint gp;
     int actualLength;
     int curVal = 0;
     setMessage("Expansion phase");
     gridDelay(3);
+    
     if (src != null && tgt != null ) {
       src.initExpand();
       if ((actualLength = src.expand()) > 0) {
         clearQueue();
         return actualLength; // found it right away!
       }
+
       while ((gp = dequeueGridPoint()) != null) {
+        if(paused){
+            setMessage("Current distance: " + gridPointTail.getVal() +" Pause");
+            synchronized(this){
+            wait();
+            }
+        }
+        
+        setMessage("Current distance: " + gridPointTail.getVal());
         if (displayParallelMode && (gp.getVal() > curVal)) {
           curVal = gp.getVal();
           redrawGrid();
           gridDelay(2);
         }
         if ((actualLength = gp.expand()) > 0) {
+          setMessage("Current distance: " + actualLength);
+          gridDelay(5);
           clearQueue();
           return actualLength;  // found it!
         }
@@ -214,6 +225,12 @@ class Grid extends JPanel {
     while (!current.isSource()) {
       GridPoint next;
       int curval = current.getVal();
+      if(paused){
+            setMessage("Traceback: distance = " + curval +" Pause");
+            synchronized(this){
+            wait();
+            }
+        }
       setMessage("Traceback: distance = " + curval);
       current.setRouted();
       redrawGrid();
@@ -311,8 +328,8 @@ class Grid extends JPanel {
   private synchronized void waitForInput() throws InterruptedException {
     while (!clearPending && clickedPoint == null) wait();
   }
-
-  public void run() throws InterruptedException {
+  
+  public void run() throws InterruptedException{
     clear();
     int state = WAITFORSRC;
     setMessage("Click on Source");
@@ -347,10 +364,12 @@ class Grid extends JPanel {
           gridDelay(5);
           redrawGrid();
           route();
+          MazeRouterFrame.changePauseBtn(false);          
           src = null;
           tgt = null;
           state = WAITFORSRC;
           setMessage("Click on Source");
+          MazeRouterFrame.changeClearBtn(true);
           redrawGrid();
         }
         clearPending = false;
@@ -367,12 +386,14 @@ class Grid extends JPanel {
       for (int j = 0; j < height(); j++)
         for (int i = 0; i < width(); i++)
           gridArray[i][j][k].paintGridPoint(g);
-    }
+          
+        }
+    
     if (msg != null) {
-      g.setColor(Color.black);
-      g.drawString(msg, CHARXOFFSET, gridMsgY());
+      MazeRouterFrame.notePad.setText(msg);
     }
   }
+  
 
  /* public void update(Graphics g) {
     paint(myOffScreenGraphics);
@@ -398,6 +419,8 @@ class Grid extends JPanel {
   public GridPoint getTarget() { return tgt; }
 
   public int route() throws InterruptedException {
+      MazeRouterFrame.changeClearBtn(false);
+    MazeRouterFrame.changePauseBtn(true);
     if (src == null || tgt == null) return -1;
     GridPoint.nextRouteColor();
     reset();
