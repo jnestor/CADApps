@@ -233,107 +233,6 @@ class Grid extends JPanel {
         return paused;
     }
 
-//    public int expansion() throws InterruptedException {
-//        GridPoint gp;
-//        int actualLength;
-//        int curVal = 0;
-//        setMessage("Expansion phase");
-//        gridDelay(3);
-//
-//        if (src != null && tgt != null) {
-//            src.initExpand();
-//            if ((actualLength = src.expand()) > 0) {
-//                clearQueue();
-//                return actualLength; // found it right away!
-//            }
-//
-//            while ((gp = dequeueGridPoint()) != null) {
-//                if (paused) {
-//                    //setMessage("Current distance: " + gridPointTail.getVal() +" Pause");
-//                    synchronized (this) {
-//                        wait();
-//                    }
-//                }
-//
-//                setMessage("Expansion phase: distance = " + gridPointTail.getVal());
-//                if (displayParallelMode && (gp.getVal() > curVal)) {
-//                    curVal = gp.getVal();
-//                    redrawGrid();
-//                    gridDelay(2);
-//                }
-//                if ((actualLength = gp.expand()) > 0) {
-//                    setMessage("Expansion phase: distance = " + actualLength);
-//                    gridDelay(5);
-//                    clearQueue();
-//                    return actualLength;  // found it!
-//                }
-//            }
-//        }
-//        return -1;
-//    }
-
-//    public void traceBack() throws InterruptedException {
-//        // start at target, then work back
-//        GridPoint current = tgt;
-//        while (!current.isSource()) {
-//            GridPoint next;
-//            int curval = current.getVal();
-//            if (paused) {
-//                //setMessage("Traceback: distance = " + curval +" Pause");
-//                synchronized (this) {
-//                    wait();
-//                }
-//            }
-//            setMessage("Traceback: distance = " + curval);
-//            current.setRouted();
-//            redrawGrid();
-//            gridDelay(3);
-//            next = current.westNeighbor();
-//            if (next != null && !next.isObstacle() && next.getVal() < curval) {
-//                current = next;
-//                continue;
-//            }
-//            next = current.eastNeighbor();
-//            if (next != null && !next.isObstacle() && next.getVal() < curval) {
-//                current = next;
-//                continue;
-//            }
-//            next = current.southNeighbor();
-//            if (next != null && !next.isObstacle() && next.getVal() < curval) {
-//                current = next;
-//                continue;
-//            }
-//            next = current.northNeighbor();
-//            if (next != null && !next.isObstacle() && next.getVal() < curval) {
-//                current = next;
-//                continue;
-//            }
-//            next = current.upNeighbor();
-//            if (next != null && !next.isObstacle() && next.getVal() < curval) {
-//                current = next;
-//                continue;
-//            }
-//            next = current.downNeighbor();
-//            if (next != null && !next.isObstacle() && next.getVal() < curval) {
-//                current = next;
-//                continue;
-//            }
-//            System.out.println("AWK! can't trace back! current= " + current);
-//            break;
-//        }
-//        paused = false;
-//        MazeRouterFrame.changePauseBtn(false);
-//
-//        if (current.isSource()) {
-//            setMessage("Traceback complete");
-//            flash(current);
-//            current.setRouted();
-//        } else {
-//            System.out.println("Warning: traceBack failed!");
-//        }
-//
-//    }
-
     // the following are used in drawing into the grid panel and are package visible
     static final int GRIDSIZE = 19;
     static final int CHARXOFFSET = 6;
@@ -499,47 +398,9 @@ class Grid extends JPanel {
         return tgt;
     }
 
-//    public int route() throws InterruptedException {
-//        MazeRouterFrame.changeClearBtn(false);
-//        MazeRouterFrame.changePauseBtn(true);
-//        if (src == null || tgt == null) {
-//            return -1;
-//        }
-//        GridPoint.nextRouteColor();
-//        reset();
-//        if (src == tgt) {  // trivial case
-//            src.setRouted();
-//            return 0;
-//        } else {
-//            int actualLength = expansion();
-//            clearQueue();
-//            redrawGrid();
-//            if (actualLength > 0) {
-//                setMessage("Target Found!");
-//                flash(tgt);
-//                traceBack();
-//            } else {
-//                setMessage("Target not found!");
-//            }
-//            reset();
-//            redrawGrid();
-//            return actualLength;
-//        }
-//    }
-
-//    public int route(GridPoint s, GridPoint t) throws InterruptedException {
-//        setSource(s);
-//        setTarget(t);
-//        return route();
-//    }
-//
-//    public int route(int sx, int sy, int sz, int dx, int dy, int dz) throws InterruptedException {
-//        return route(gridPointAt(sx, sy, sz), gridPointAt(dx, dy, dz));
-//    }
-
     GridPoint[][][] gridArray;
-    GridPoint src;
-    GridPoint tgt;
+    private GridPoint src;
+    private GridPoint tgt;
 
     public GridPoint getTGT() {
         return tgt;
