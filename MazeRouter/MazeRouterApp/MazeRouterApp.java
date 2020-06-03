@@ -22,12 +22,7 @@ private static void createAndShowGUI() {
     MazeRouterFrame mf = new MazeRouterFrame();
     mf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     mf.setMinimumSize(new Dimension(800,400));
-    Thread control = new Thread(){
-        public void run(){
     mf.initMazeRouterFrame(2, true);
-        }
-    };
-    control.start();
     mf.pack();
     mf.setVisible(true);
   }
