@@ -17,6 +17,7 @@ public class MazeRouterFrame extends JFrame implements Runnable {
     private static final JLabel notePad = new JLabel();
     private static final JButton clearBtn = new JButton("CLEAR");
     private static final JButton pauseBtn = new JButton("PAUSE");
+    private static final JButton stopBtn = new JButton("STOP");
 
     public synchronized void initMazeRouterFrame(int nlayers, boolean parallelMode) {
         int ncols = Grid.calculateCols(getSize().width);
@@ -32,16 +33,19 @@ public class MazeRouterFrame extends JFrame implements Runnable {
         getContentPane().add(myGrid, "Center");
         clearBtn.addActionListener(this::clearAction);
         JPanel btnPanel = new JPanel();
-        setVisible(true);
         pauseBtn.addActionListener(this::pauseAction);
+        stopBtn.addActionListener(this::stopAction);
         btnPanel.setLayout(new FlowLayout());
         notePad.setPreferredSize(new Dimension(290, 25));
         pauseBtn.setPreferredSize(new Dimension(90, 25));
         clearBtn.setPreferredSize(new Dimension(90, 25));
+        stopBtn.setPreferredSize(new Dimension(90, 25));
         btnPanel.add(notePad);
         btnPanel.add(clearBtn);
         btnPanel.add(pauseBtn);
+        btnPanel.add(stopBtn);
         pauseBtn.setEnabled(false);
+        stopBtn.setEnabled(false);
         clearBtn.setEnabled(true);
         getContentPane().add(btnPanel, "South");
         //clearBtn.addActionListener(this);
@@ -78,6 +82,10 @@ public class MazeRouterFrame extends JFrame implements Runnable {
     public static void changeClearBtn(boolean state) {
         clearBtn.setEnabled(state);
     }
+    
+    public static void changeStopBtn(boolean state){
+        stopBtn.setEnabled(state);
+    }
 
     public void run() {
         try {
@@ -87,15 +95,17 @@ public class MazeRouterFrame extends JFrame implements Runnable {
     }
     private static boolean paused = false;
 
-    private synchronized void pauseAction(ActionEvent evt) {
+    private void pauseAction(ActionEvent evt) {
         myGrid.pauseResume();
         setText(myGrid.getMSG());
         pauseBtn.setText(myGrid.isPaused() ? "Resume" : "Pause");
-        if (!myGrid.isPaused()) {
-            synchronized (myGrid) {
-                myGrid.notify();
-            }
+    }
+    
+    private void stopAction(ActionEvent evt){
+        if(myGrid.isPaused()){
+            myGrid.pauseResume();
         }
+        myGrid.stopRouter();
     }
     
     private void clearAction(ActionEvent evt){

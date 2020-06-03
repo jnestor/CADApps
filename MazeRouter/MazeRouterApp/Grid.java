@@ -1,3 +1,4 @@
+
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -28,447 +29,530 @@ import java.util.*;
 // also need to figure out what I was doing with double-buffering ???
 //
 class Grid extends JPanel {
-    
-    
-  
-  private String msg = null;
 
-  private boolean displayParallelMode = false;
+    private String msg = null;
 
-  public void setParallelExpand() { displayParallelMode = true; }
-  public void setSerialExpand() { displayParallelMode = false; }
+    private final Router router = new Router(this);
 
-  Image myOffScreenImage = null;
-  Graphics myOffScreenGraphics = null;
+    private boolean displayParallelMode = false;
 
-  public Grid(int w, int h, int d) {
-    gridArray = new GridPoint[w][h][d];
-    for (int i = 0; i < w; i++ )
-      for (int j = 0; j < h; j++)
-        for (int k = 0; k < d; k++)
-          gridArray[i][j][k] = new GridPoint(i,j,k);
-
-    GridPoint.myGrid = this;
-    setSize(pixelWidth(), pixelHeight());
-    addMouseListener(new MouseAdapter()
-    {@Override
-        public void mouseClicked(MouseEvent m) {
-        //System.out.println("mouseEvent: " + m);
-        handleMouseClick(m.getX(), m.getY());
-      }
-    } );
-
-  }
-
-  public void setMessage(String s) {
-    msg = s;
-    redrawGrid();
-  }
-
-  public void flash(GridPoint gp) throws InterruptedException {
-    for (int i=0;i<3;i++) {
-      gp.highlight(true);
-      redrawGrid();
-      gridDelay(4);
-      gp.highlight(false);
-      redrawGrid();
-      gridDelay(4);
+    public boolean getMode() {
+        return displayParallelMode;
     }
-  }
 
-  public void redrawGrid() {
-    /*if (myOffScreenImage == null) { // this doesn't work in constructor
+    public void setParallelExpand() {
+        displayParallelMode = true;
+    }
+
+    public void setSerialExpand() {
+        displayParallelMode = false;
+    }
+
+    Image myOffScreenImage = null;
+    Graphics myOffScreenGraphics = null;
+
+    public Grid(int w, int h, int d) {
+        gridArray = new GridPoint[w][h][d];
+        for (int i = 0; i < w; i++) {
+            for (int j = 0; j < h; j++) {
+                for (int k = 0; k < d; k++) {
+                    gridArray[i][j][k] = new GridPoint(i, j, k);
+                }
+            }
+        }
+
+        GridPoint.myGrid = this;
+        setSize(pixelWidth(), pixelHeight());
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent m) {
+                //System.out.println("mouseEvent: " + m);
+                handleMouseClick(m.getX(), m.getY());
+            }
+        });
+
+    }
+
+    public void setMessage(String s) {
+        msg = s;
+        redrawGrid();
+    }
+
+    public void flash(GridPoint gp) throws InterruptedException {
+        for (int i = 0; i < 3; i++) {
+            gp.highlight(true);
+            redrawGrid();
+            gridDelay(4);
+            gp.highlight(false);
+            redrawGrid();
+            gridDelay(4);
+        }
+    }
+
+    public void redrawGrid() {
+        /*if (myOffScreenImage == null) { // this doesn't work in constructor
       myOffScreenImage = createImage(getSize().width, getSize().height );
       myOffScreenGraphics = myOffScreenImage.getGraphics();
      }*/
-    repaint();
-  }
-
-  public int width() { return gridArray.length; }
-
-  public int height() { return gridArray[0].length; }
-
-  public int depth() { return gridArray[0][0].length; }
-
-  public int pixelWidth() { return width() * Grid.GRIDSIZE; }
-
-  public int pixelHeight() { return depth() * (height() + 1) * Grid.GRIDSIZE; }
-
-  public static int calculateCols(int pixelWidth) { return (pixelWidth - 2) / GRIDSIZE; }
-
-  public static int calculateRows(int pixelHeight, int nLayers) {
-    int rawCols = ((pixelHeight - 30) / GRIDSIZE) - 2; // adjust for msg, clr btn
-    return rawCols / nLayers - 1; // adjust  -1 for layer labels
-  }
-
-  public GridPoint gridPointAt(int x, int y, int z) {
-    if (x < 0 || x >= width() ) return null;
-    if (y < 0 || y >= height() ) return null;
-    if (z < 0 || z >= depth() ) return null;
-    return gridArray[x][y][z];
-  }
-
-  public void reset() {
-    for (int i = 0; i < width(); i++ )
-      for (int j = 0; j < height(); j++)
-        for (int k = 0; k < depth(); k++) {
-          GridPoint gp = gridPointAt(i,j,k);
-          if (!gp.isObstacle()) gp.reset();
-        }
-  }
-
-  public void clear() {
-    for (int i = 0; i < width(); i++ )
-      for (int j = 0; j < height(); j++)
-        for (int k = 0; k < depth(); k++) {
-          GridPoint gp = gridPointAt(i,j,k);
-          gp.reset();
-        }
-  }
-
-  private final Queue<GridPoint> gridPointList = new LinkedList<GridPoint>();
-  private GridPoint gridPointTail;
-
-  void printGridPointQueue() { // for debugging - package visible
-    System.out.println(gridPointList.toString());
-  }
-
-  public void enqueueGridPoint(GridPoint gp) throws InterruptedException {
-    gridPointList.add(gp);
-    gp.setEnqueued(true);
-    gridPointTail=gp;
-    if (!displayParallelMode) {
-      redrawGrid();
-      gridDelay();
+        repaint();
     }
-  }
 
-  public GridPoint dequeueGridPoint() {
-    GridPoint gp = gridPointList.poll();
-    if (gp==null){
+    public int width() {
+        return gridArray.length;
+    }
+
+    public int height() {
+        return gridArray[0].length;
+    }
+
+    public int depth() {
+        return gridArray[0][0].length;
+    }
+
+    public int pixelWidth() {
+        return width() * Grid.GRIDSIZE;
+    }
+
+    public int pixelHeight() {
+        return depth() * (height() + 1) * Grid.GRIDSIZE;
+    }
+
+    public static int calculateCols(int pixelWidth) {
+        return (pixelWidth - 2) / GRIDSIZE;
+    }
+
+    public static int calculateRows(int pixelHeight, int nLayers) {
+        int rawCols = ((pixelHeight - 30) / GRIDSIZE) - 2; // adjust for msg, clr btn
+        return rawCols / nLayers - 1; // adjust  -1 for layer labels
+    }
+
+    public GridPoint gridPointAt(int x, int y, int z) {
+        if (x < 0 || x >= width()) {
+            return null;
+        }
+        if (y < 0 || y >= height()) {
+            return null;
+        }
+        if (z < 0 || z >= depth()) {
+            return null;
+        }
+        return gridArray[x][y][z];
+    }
+
+    public void reset() {
+        paused = false;
+        for (int i = 0; i < width(); i++) {
+            for (int j = 0; j < height(); j++) {
+                for (int k = 0; k < depth(); k++) {
+                    GridPoint gp = gridPointAt(i, j, k);
+                    if (!gp.isObstacle()) {
+                        gp.reset();
+                    }
+                }
+            }
+        }
+    }
+
+    public void clear() {
+        for (int i = 0; i < width(); i++) {
+            for (int j = 0; j < height(); j++) {
+                for (int k = 0; k < depth(); k++) {
+                    GridPoint gp = gridPointAt(i, j, k);
+                    gp.reset();
+                }
+            }
+        }
+    }
+
+    private final Queue<GridPoint> gridPointList = new LinkedList<GridPoint>();
+    private GridPoint gridPointTail;
+
+    public GridPoint getTail() {
+        return gridPointTail;
+    }
+
+    void printGridPointQueue() { // for debugging - package visible
+        System.out.println(gridPointList.toString());
+    }
+
+    public void enqueueGridPoint(GridPoint gp) throws InterruptedException {
+        gridPointList.add(gp);
+        gp.setEnqueued(true);
+        gridPointTail = gp;
+        if (!displayParallelMode) {
+            redrawGrid();
+            gridDelay();
+        }
+    }
+
+    public GridPoint dequeueGridPoint() {
+        GridPoint gp = gridPointList.poll();
+        if (gp == null) {
+            return null;
+        } else {
+            gp.setEnqueued(false);
+            // debug
+//      System.out.println("GridPoint.dequeuePoint - " + gp);
+            return gp;
+        }
+    }
+
+    public void clearQueue() {
+        gridPointList.clear();
+    }
+
+    private static final int DELAY = 100; // 10ms = 0.1s
+
+    public static void gridDelay(int d) throws InterruptedException {
+        Thread.sleep(d * DELAY);
+    }
+
+    public static void gridDelay() throws InterruptedException {
+        gridDelay(1);
+    }
+    private boolean paused = false;
+    
+    public void stopRouter(){
+        router.stop();
+    }
+    
+    public boolean pauseResume() {
+        paused = !paused;
+        if (paused) {
+            msg += " Pause";
+        } else {
+            msg = msg.substring(0, msg.length() - 6);
+            synchronized (router) {
+                router.notify();
+            }
+        }
+        return paused;
+    }
+
+    public boolean isPaused() {
+        return paused;
+    }
+
+//    public int expansion() throws InterruptedException {
+//        GridPoint gp;
+//        int actualLength;
+//        int curVal = 0;
+//        setMessage("Expansion phase");
+//        gridDelay(3);
+//
+//        if (src != null && tgt != null) {
+//            src.initExpand();
+//            if ((actualLength = src.expand()) > 0) {
+//                clearQueue();
+//                return actualLength; // found it right away!
+//            }
+//
+//            while ((gp = dequeueGridPoint()) != null) {
+//                if (paused) {
+//                    //setMessage("Current distance: " + gridPointTail.getVal() +" Pause");
+//                    synchronized (this) {
+//                        wait();
+//                    }
+//                }
+//
+//                setMessage("Expansion phase: distance = " + gridPointTail.getVal());
+//                if (displayParallelMode && (gp.getVal() > curVal)) {
+//                    curVal = gp.getVal();
+//                    redrawGrid();
+//                    gridDelay(2);
+//                }
+//                if ((actualLength = gp.expand()) > 0) {
+//                    setMessage("Expansion phase: distance = " + actualLength);
+//                    gridDelay(5);
+//                    clearQueue();
+//                    return actualLength;  // found it!
+//                }
+//            }
+//        }
+//        return -1;
+//    }
+
+//    public void traceBack() throws InterruptedException {
+//        // start at target, then work back
+//        GridPoint current = tgt;
+//        while (!current.isSource()) {
+//            GridPoint next;
+//            int curval = current.getVal();
+//            if (paused) {
+//                //setMessage("Traceback: distance = " + curval +" Pause");
+//                synchronized (this) {
+//                    wait();
+//                }
+//            }
+//            setMessage("Traceback: distance = " + curval);
+//            current.setRouted();
+//            redrawGrid();
+//            gridDelay(3);
+//            next = current.westNeighbor();
+//            if (next != null && !next.isObstacle() && next.getVal() < curval) {
+//                current = next;
+//                continue;
+//            }
+//            next = current.eastNeighbor();
+//            if (next != null && !next.isObstacle() && next.getVal() < curval) {
+//                current = next;
+//                continue;
+//            }
+//            next = current.southNeighbor();
+//            if (next != null && !next.isObstacle() && next.getVal() < curval) {
+//                current = next;
+//                continue;
+//            }
+//            next = current.northNeighbor();
+//            if (next != null && !next.isObstacle() && next.getVal() < curval) {
+//                current = next;
+//                continue;
+//            }
+//            next = current.upNeighbor();
+//            if (next != null && !next.isObstacle() && next.getVal() < curval) {
+//                current = next;
+//                continue;
+//            }
+//            next = current.downNeighbor();
+//            if (next != null && !next.isObstacle() && next.getVal() < curval) {
+//                current = next;
+//                continue;
+//            }
+//            System.out.println("AWK! can't trace back! current= " + current);
+//            break;
+//        }
+//        paused = false;
+//        MazeRouterFrame.changePauseBtn(false);
+//
+//        if (current.isSource()) {
+//            setMessage("Traceback complete");
+//            flash(current);
+//            current.setRouted();
+//        } else {
+//            System.out.println("Warning: traceBack failed!");
+//        }
+//
+//    }
+
+    // the following are used in drawing into the grid panel and are package visible
+    static final int GRIDSIZE = 19;
+    static final int CHARXOFFSET = 6;
+    static final int CHARYOFFSET = 14;
+
+    int gridPanelX(int i, int j, int k) {
+        return i * GRIDSIZE;
+    }
+
+    int gridPanelY(int i, int j, int k) {
+        return (k * (GRIDSIZE * (height() + 1))) + ((j + 1) * GRIDSIZE);
+    }
+
+    int gridLyrY(int layer) {
+        return (GRIDSIZE * layer * (height() + 1) + CHARYOFFSET);
+    }
+
+    int gridMsgY() {
+        return (GRIDSIZE * depth() * (height() + 1)) + CHARYOFFSET;
+    }
+
+    private GridPoint clickedPoint = null;
+    private boolean clearPending = false;
+
+    public synchronized void handleMouseClick(int x, int y) {
+        if (!paused) {
+            clickedPoint = mouseToGridPoint(x, y);
+            notifyAll();
+            //System.out.println("handleMouseClick: " + clickedPoint);
+        }
+    }
+
+    public synchronized void requestClear() {
+        clearPending = true;
+        notifyAll();
+    }
+
+    GridPoint mouseToGridPoint(int x, int y) {
+        int i, j, k;
+        i = x / GRIDSIZE;
+        for (k = 0; k < depth(); k++) {
+            if (y >= gridPanelY(0, 0, k) && y <= gridPanelY(0, 0, k + 1) - GRIDSIZE) {
+                j = (y % ((height() + 1) * GRIDSIZE) / GRIDSIZE) - 1;
+                //System.out.println("mouseToGridPoint: found GridPoint at ("
+                //    + i + "," + j + "," + k + ") " + gridPointAt(i,j,k));
+                if (i >= 0 && i < width() && j >= 0 && j < height() && k >= 0 && k < depth()) {
+                    return gridPointAt(i, j, k);
+                } else {
+                    return null;
+                }
+            }
+        }
         return null;
     }
-    else {
-      gp.setEnqueued(false);
-      // debug
-//      System.out.println("GridPoint.dequeuePoint - " + gp);
-      return gp;
-    }
-  }
 
-  public void clearQueue() {
-    gridPointList.clear();
-  }
+    private static final int WAITFORSRC = 0;
+    private static final int WAITFORTGT = 1;
 
-  private static final int DELAY = 100; // 10ms = 0.1s
-
-  public static void gridDelay(int d) throws InterruptedException {
-      Thread.sleep(d * DELAY);
-  }
-
-  public static void gridDelay() throws InterruptedException {
-    gridDelay(1);
-  }
-  private boolean paused = false;
-  
-  public boolean pauseResume(){
-      paused=!paused;
-      if(paused)
-          msg+=" Pause";
-      else
-         msg=msg.substring(0,msg.length() - 6);
-      return paused;
-  }
-  
-  public boolean isPaused(){
-      return paused;
-  }
-  
-  
-  public int expansion() throws InterruptedException {
-    GridPoint gp;
-    int actualLength;
-    int curVal = 0;
-    setMessage("Expansion phase");
-    gridDelay(3);
-    
-    if (src != null && tgt != null ) {
-      src.initExpand();
-      if ((actualLength = src.expand()) > 0) {
-        clearQueue();
-        return actualLength; // found it right away!
-      }
-
-      while ((gp = dequeueGridPoint()) != null) {
-        if(paused){
-            //setMessage("Current distance: " + gridPointTail.getVal() +" Pause");
-            synchronized(this){
+    private synchronized void waitForInput() throws InterruptedException {
+        while (!clearPending && clickedPoint == null) {
             wait();
+        }
+    }
+
+    public void run() throws InterruptedException {
+        clear();
+        int state = WAITFORSRC;
+        setMessage("Click on Source");
+        while (true) {
+            waitForInput();
+            if (state == WAITFORSRC) {
+                if (clearPending) {
+                    clear();
+                    setMessage("Grid cleared!");
+                    gridDelay(5);
+                    setMessage("Click on Source");
+                    clearPending = false;
+                } else if (clickedPoint != null) {
+                    if (!clickedPoint.isRouted()) {
+                        setSource(clickedPoint);
+                        System.out.println("Setting source: " + clickedPoint);
+                        state = WAITFORTGT;
+                        setMessage("Click on Target");
+                    } else {
+                        setMessage("Already routed!");
+                        gridDelay(5);
+                        setMessage("Click on Source");
+                    }
+                    clickedPoint = null;
+                }
+            } else if (state == WAITFORTGT) {
+                if (clickedPoint != null) {
+                    setTarget(clickedPoint);
+                    System.out.println("Setting target: " + clickedPoint);
+                    clickedPoint = null;
+                    setMessage("Ready to Route!");
+                    gridDelay(5);
+                    redrawGrid();
+                    router.route();
+                    MazeRouterFrame.changePauseBtn(false);
+                    MazeRouterFrame.changeStopBtn(false);
+                    src = null;
+                    tgt = null;
+                    state = WAITFORSRC;
+                    setMessage("Click on Source");
+                    MazeRouterFrame.changeClearBtn(true);
+                    redrawGrid();
+                }
+                clearPending = false;
             }
         }
-        
-        setMessage("Expansion phase: distance = " + gridPointTail.getVal());
-        if (displayParallelMode && (gp.getVal() > curVal)) {
-          curVal = gp.getVal();
-          redrawGrid();
-          gridDelay(2);
-        }
-        if ((actualLength = gp.expand()) > 0) {
-          setMessage("Expansion phase: distance = " + actualLength);
-          gridDelay(5);
-          clearQueue();
-          return actualLength;  // found it!
-        }
-      }
     }
-    return -1;
-  }
 
-  public void traceBack() throws InterruptedException {
-    // start at target, then work back
-    GridPoint current = tgt;
-    while (!current.isSource()) {
-      GridPoint next;
-      int curval = current.getVal();
-      if(paused){
-            //setMessage("Traceback: distance = " + curval +" Pause");
-            synchronized(this){
-            wait();
+    @Override
+    public void paintComponent(Graphics g) {
+        g.setColor(getBackground());
+        g.fillRect(0, 0, getSize().width, getSize().height);
+        for (int k = 0; k < depth(); k++) {
+            g.setColor(Color.black);
+            g.drawString("Layer " + (k + 1), CHARXOFFSET, gridLyrY(k));
+            for (int j = 0; j < height(); j++) {
+                for (int i = 0; i < width(); i++) {
+                    gridArray[i][j][k].paintGridPoint(g);
+                }
             }
+
         }
-      setMessage("Traceback: distance = " + curval);
-      current.setRouted();
-      redrawGrid();
-      gridDelay(3);
-      next = current.westNeighbor();
-      if (next != null && !next.isObstacle() && next.getVal() < curval) {
-        current = next;
-        continue;
-      }
-      next = current.eastNeighbor();
-      if (next != null && !next.isObstacle() && next.getVal() < curval) {
-        current = next;
-        continue;
-      }
-      next = current.southNeighbor();
-      if (next != null && !next.isObstacle() && next.getVal() < curval) {
-        current = next;
-        continue;
-      }
-      next = current.northNeighbor();
-      if (next != null && !next.isObstacle() && next.getVal() < curval) {
-        current = next;
-        continue;
-      }
-      next = current.upNeighbor();
-      if (next != null && !next.isObstacle() && next.getVal() < curval) {
-        current = next;
-        continue;
-      }
-      next = current.downNeighbor();
-      if (next != null && !next.isObstacle() && next.getVal() < curval) {
-        current = next;
-        continue;
-      }
-      System.out.println("AWK! can't trace back! current= " + current);
-      break;
-    }
-    paused=false;
-    MazeRouterFrame.changePauseBtn(false);
-    
-    if (current.isSource()) {
-      setMessage("Traceback complete");
-      flash(current);
-      current.setRouted();
-    } else System.out.println("Warning: traceBack failed!");
-    
-  }
 
-   // the following are used in drawing into the grid panel and are package visible
-
-  static final int GRIDSIZE = 19;
-  static final int CHARXOFFSET = 6;
-  static final int CHARYOFFSET = 14;
-
-  int gridPanelX(int i, int j, int k) { return i * GRIDSIZE;}
-
-  int gridPanelY(int i, int j, int k) {
-    return(k * (GRIDSIZE * (height() + 1) )) + ((j+1) * GRIDSIZE);
-  }
-
-  int gridLyrY(int layer) { return (GRIDSIZE * layer * (height()+1) + CHARYOFFSET); }
-
-  int gridMsgY() { return (GRIDSIZE * depth() * (height() + 1)) + CHARYOFFSET; }
-
-  private GridPoint clickedPoint = null;
-  private boolean clearPending = false;
-
-  public synchronized void handleMouseClick(int x, int y) {
-    if(!paused){
-    clickedPoint = mouseToGridPoint(x, y);
-    notifyAll();
-    //System.out.println("handleMouseClick: " + clickedPoint);
-    }
-  }
-
-  public synchronized void requestClear() {
-    clearPending = true;
-    notifyAll();
-  }
-
-  GridPoint mouseToGridPoint(int x, int y) {
-    int i, j, k;
-    i = x / GRIDSIZE;
-    for (k = 0; k < depth(); k++) {
-      if (y >= gridPanelY(0,0,k) && y <= gridPanelY(0,0,k+1)-GRIDSIZE) {
-        j = (y % ((height() + 1) * GRIDSIZE) / GRIDSIZE) - 1;
-        //System.out.println("mouseToGridPoint: found GridPoint at ("
-         //    + i + "," + j + "," + k + ") " + gridPointAt(i,j,k));
-        if (i >= 0 && i < width() && j >= 0 && j < height() && k >= 0 && k < depth())
-          return gridPointAt(i,j,k);
-        else return null;
-      }
-    }
-    return null;
-  }
-
-
-  private static final int WAITFORSRC = 0;
-  private static final int WAITFORTGT = 1;
-
-  private synchronized void waitForInput() throws InterruptedException {
-    while (!clearPending && clickedPoint == null) wait();
-  }
-  
-  public void run() throws InterruptedException{
-    clear();
-    int state = WAITFORSRC;
-    setMessage("Click on Source");
-    while (true) {
-      waitForInput();
-      if (state == WAITFORSRC) {
-        if (clearPending) {
-          clear();
-          setMessage("Grid cleared!");
-          gridDelay(5);
-          setMessage("Click on Source");
-          clearPending = false;
-        } else if (clickedPoint != null) {
-          if (!clickedPoint.isRouted()) {
-            setSource(clickedPoint);
-            System.out.println("Setting source: " + clickedPoint);
-            state = WAITFORTGT;
-            setMessage("Click on Target");
-          } else {
-            setMessage("Already routed!");
-            gridDelay(5);
-            setMessage("Click on Source");
-          }
-          clickedPoint = null;
+        if (msg != null) {
+            MazeRouterFrame.setText(msg);
         }
-      } else if (state == WAITFORTGT) {
-        if (clickedPoint != null) {
-          setTarget(clickedPoint);
-          System.out.println("Setting target: " + clickedPoint);
-          clickedPoint = null;
-          setMessage("Ready to Route!");
-          gridDelay(5);
-          redrawGrid();
-          route();
-          MazeRouterFrame.changePauseBtn(false);          
-          src = null;
-          tgt = null;
-          state = WAITFORSRC;
-          setMessage("Click on Source");
-          MazeRouterFrame.changeClearBtn(true);
-          redrawGrid();
-        }
-        clearPending = false;
-      }
     }
-  }
 
-  @Override
-  public void paintComponent(Graphics g) {
-    g.setColor(getBackground());
-    g.fillRect(0,0,getSize().width,getSize().height);
-    for (int k = 0; k < depth(); k++ ) {
-      g.setColor(Color.black);
-      g.drawString("Layer " + (k+1), CHARXOFFSET, gridLyrY(k));
-      for (int j = 0; j < height(); j++)
-        for (int i = 0; i < width(); i++)
-          gridArray[i][j][k].paintGridPoint(g);
-          
-        }
-    
-    if (msg != null) {
-      MazeRouterFrame.setText(msg);
+    public String getMSG() {
+        return msg;
     }
-  }
 
-public String getMSG(){
-    return msg;
-}  
-
- /* public void update(Graphics g) {
+    /* public void update(Graphics g) {
     paint(myOffScreenGraphics);
     g.drawImage(myOffScreenImage,0,0,this);
   }*/
-
-  public void setSource(int x, int y, int z) {
-    setSource(gridArray[x][y][z]);
-  }
-
-  public void setSource(GridPoint s) {
-    src = s;
-  }
-
-  public void setTarget(int x, int y, int z) {
-    tgt = gridArray[x][y][z];
-  }
-
-  public void setTarget(GridPoint t) { tgt = t; }
-
-  public GridPoint getSource() { return src; }
-
-  public GridPoint getTarget() { return tgt; }
-
-  public int route() throws InterruptedException {
-    MazeRouterFrame.changeClearBtn(false);
-    MazeRouterFrame.changePauseBtn(true);
-    if (src == null || tgt == null) return -1;
-    GridPoint.nextRouteColor();
-    reset();
-    if (src == tgt) {  // trivial case
-      src.setRouted();
-      return 0;
-    } else {
-      int actualLength = expansion();
-      clearQueue();
-      redrawGrid();
-      if (actualLength > 0) {
-        setMessage("Target Found!");
-        flash(tgt);
-        traceBack();
-      } else setMessage("Target not found!");
-      reset();
-      redrawGrid();
-      return actualLength;
+    public void setSource(int x, int y, int z) {
+        setSource(gridArray[x][y][z]);
     }
-  }
 
-  public int route(GridPoint s, GridPoint t) throws InterruptedException {
-    setSource(s);
-    setTarget(t);
-    return route();
-  }
+    public void setSource(GridPoint s) {
+        src = s;
+    }
 
-  public int route(int sx, int sy, int sz, int dx, int dy, int dz) throws InterruptedException {
-    return route(gridPointAt(sx,sy,sz),gridPointAt(dx,dy,dz));
-  }
+    public void setTarget(int x, int y, int z) {
+        tgt = gridArray[x][y][z];
+    }
 
-  GridPoint [][][] gridArray;
-  GridPoint src;
-  GridPoint tgt;
+    public void setTarget(GridPoint t) {
+        tgt = t;
+    }
+
+    public GridPoint getSource() {
+        return src;
+    }
+
+    public GridPoint getTarget() {
+        return tgt;
+    }
+
+//    public int route() throws InterruptedException {
+//        MazeRouterFrame.changeClearBtn(false);
+//        MazeRouterFrame.changePauseBtn(true);
+//        if (src == null || tgt == null) {
+//            return -1;
+//        }
+//        GridPoint.nextRouteColor();
+//        reset();
+//        if (src == tgt) {  // trivial case
+//            src.setRouted();
+//            return 0;
+//        } else {
+//            int actualLength = expansion();
+//            clearQueue();
+//            redrawGrid();
+//            if (actualLength > 0) {
+//                setMessage("Target Found!");
+//                flash(tgt);
+//                traceBack();
+//            } else {
+//                setMessage("Target not found!");
+//            }
+//            reset();
+//            redrawGrid();
+//            return actualLength;
+//        }
+//    }
+
+//    public int route(GridPoint s, GridPoint t) throws InterruptedException {
+//        setSource(s);
+//        setTarget(t);
+//        return route();
+//    }
+//
+//    public int route(int sx, int sy, int sz, int dx, int dy, int dz) throws InterruptedException {
+//        return route(gridPointAt(sx, sy, sz), gridPointAt(dx, dy, dz));
+//    }
+
+    GridPoint[][][] gridArray;
+    GridPoint src;
+    GridPoint tgt;
+
+    public GridPoint getTGT() {
+        return tgt;
+    }
+
+    public GridPoint getSRC() {
+        return src;
+    }
+
+    public Router getRouter() {
+        return router;
+    }
+    
+    
 
 }
