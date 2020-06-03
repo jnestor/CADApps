@@ -28,6 +28,8 @@ import java.util.*;
 // also need to figure out what I was doing with double-buffering ???
 //
 class Grid extends JPanel {
+    
+    
   
   private String msg = null;
 
@@ -49,7 +51,8 @@ class Grid extends JPanel {
     GridPoint.myGrid = this;
     setSize(pixelWidth(), pixelHeight());
     addMouseListener(new MouseAdapter()
-    { public void mouseClicked(MouseEvent m) {
+    {@Override
+        public void mouseClicked(MouseEvent m) {
         //System.out.println("mouseEvent: " + m);
         handleMouseClick(m.getX(), m.getY());
       }
@@ -122,16 +125,8 @@ class Grid extends JPanel {
           gp.reset();
         }
   }
-    private class GridLink {
-      public GridLink(GridPoint gp) {
-        wot = gp;
-        next = null;
-      }
-      private GridLink next;
-      private GridPoint wot;
-    }
 
-  private LinkedList<GridPoint> gridPointList = new LinkedList<GridPoint>();
+  private final Queue<GridPoint> gridPointList = new LinkedList<GridPoint>();
   private GridPoint gridPointTail;
 
   void printGridPointQueue() { // for debugging - package visible
@@ -178,8 +173,18 @@ class Grid extends JPanel {
   
   public boolean pauseResume(){
       paused=!paused;
+      if(paused)
+          msg+=" Pause";
+      else
+         msg=msg.substring(0,msg.length() - 6);
       return paused;
   }
+  
+  public boolean isPaused(){
+      return paused;
+  }
+  
+  
   public int expansion() throws InterruptedException {
     GridPoint gp;
     int actualLength;
@@ -196,20 +201,20 @@ class Grid extends JPanel {
 
       while ((gp = dequeueGridPoint()) != null) {
         if(paused){
-            setMessage("Current distance: " + gridPointTail.getVal() +" Pause");
+            //setMessage("Current distance: " + gridPointTail.getVal() +" Pause");
             synchronized(this){
             wait();
             }
         }
         
-        setMessage("Current distance: " + gridPointTail.getVal());
+        setMessage("Expansion phase: distance = " + gridPointTail.getVal());
         if (displayParallelMode && (gp.getVal() > curVal)) {
           curVal = gp.getVal();
           redrawGrid();
           gridDelay(2);
         }
         if ((actualLength = gp.expand()) > 0) {
-          setMessage("Current distance: " + actualLength);
+          setMessage("Expansion phase: distance = " + actualLength);
           gridDelay(5);
           clearQueue();
           return actualLength;  // found it!
@@ -226,7 +231,7 @@ class Grid extends JPanel {
       GridPoint next;
       int curval = current.getVal();
       if(paused){
-            setMessage("Traceback: distance = " + curval +" Pause");
+            //setMessage("Traceback: distance = " + curval +" Pause");
             synchronized(this){
             wait();
             }
@@ -268,11 +273,15 @@ class Grid extends JPanel {
       System.out.println("AWK! can't trace back! current= " + current);
       break;
     }
+    paused=false;
+    MazeRouterFrame.changePauseBtn(false);
+    
     if (current.isSource()) {
       setMessage("Traceback complete");
       flash(current);
       current.setRouted();
     } else System.out.println("Warning: traceBack failed!");
+    
   }
 
    // the following are used in drawing into the grid panel and are package visible
@@ -295,9 +304,11 @@ class Grid extends JPanel {
   private boolean clearPending = false;
 
   public synchronized void handleMouseClick(int x, int y) {
+    if(!paused){
     clickedPoint = mouseToGridPoint(x, y);
     notifyAll();
     //System.out.println("handleMouseClick: " + clickedPoint);
+    }
   }
 
   public synchronized void requestClear() {
@@ -377,6 +388,7 @@ class Grid extends JPanel {
     }
   }
 
+  @Override
   public void paintComponent(Graphics g) {
     g.setColor(getBackground());
     g.fillRect(0,0,getSize().width,getSize().height);
@@ -390,10 +402,13 @@ class Grid extends JPanel {
         }
     
     if (msg != null) {
-      MazeRouterFrame.notePad.setText(msg);
+      MazeRouterFrame.setText(msg);
     }
   }
-  
+
+public String getMSG(){
+    return msg;
+}  
 
  /* public void update(Graphics g) {
     paint(myOffScreenGraphics);
@@ -419,7 +434,7 @@ class Grid extends JPanel {
   public GridPoint getTarget() { return tgt; }
 
   public int route() throws InterruptedException {
-      MazeRouterFrame.changeClearBtn(false);
+    MazeRouterFrame.changeClearBtn(false);
     MazeRouterFrame.changePauseBtn(true);
     if (src == null || tgt == null) return -1;
     GridPoint.nextRouteColor();

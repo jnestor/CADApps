@@ -24,7 +24,7 @@ private static void createAndShowGUI() {
     mf.setMinimumSize(new Dimension(800,400));
     Thread control = new Thread(){
         public void run(){
-    mf.initMazeRouterFrame(1, false);
+    mf.initMazeRouterFrame(2, true);
         }
     };
     control.start();

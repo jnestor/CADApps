@@ -11,12 +11,12 @@ import javax.swing.*;
  * @version 1.0
  */
 public class MazeRouterFrame extends JFrame implements Runnable {
-    
+
     private Grid myGrid = null;
     private Thread myThread = null;
-    public static JLabel notePad = new JLabel();
-    private static JButton clearBtn = new JButton("CLEAR");
-    private static JButton pauseBtn = new JButton("PAUSE");
+    private static final JLabel notePad = new JLabel();
+    private static final JButton clearBtn = new JButton("CLEAR");
+    private static final JButton pauseBtn = new JButton("PAUSE");
 
     public synchronized void initMazeRouterFrame(int nlayers, boolean parallelMode) {
         int ncols = Grid.calculateCols(getSize().width);
@@ -30,30 +30,14 @@ public class MazeRouterFrame extends JFrame implements Runnable {
         }
         setLayout(new BorderLayout());
         getContentPane().add(myGrid, "Center");
-        clearBtn.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                myGrid.requestClear();
-            }
-        }
-        );
-        
+        clearBtn.addActionListener(this::clearAction);
         JPanel btnPanel = new JPanel();
-        pauseBtn.addActionListener(new ActionListener() {
-            public synchronized void actionPerformed(ActionEvent evt) {
-                boolean state=myGrid.pauseResume();
-                pauseBtn.setText(state ? "Resume" : "Pause");
-                if (!state) {
-                    synchronized (myGrid) {
-                        myGrid.notify();
-                    }
-                }
-            }
-        }
-        );
+        setVisible(true);
+        pauseBtn.addActionListener(this::pauseAction);
         btnPanel.setLayout(new FlowLayout());
-        notePad.setPreferredSize(new Dimension(160,25));
-        pauseBtn.setPreferredSize(new Dimension(90,25));
-        clearBtn.setPreferredSize(new Dimension(90,25));
+        notePad.setPreferredSize(new Dimension(290, 25));
+        pauseBtn.setPreferredSize(new Dimension(90, 25));
+        clearBtn.setPreferredSize(new Dimension(90, 25));
         btnPanel.add(notePad);
         btnPanel.add(clearBtn);
         btnPanel.add(pauseBtn);
@@ -64,6 +48,7 @@ public class MazeRouterFrame extends JFrame implements Runnable {
         repaint();
         start();
     }
+
     public void start() {
         if (myThread == null) {
             myThread = new Thread(this);
@@ -76,16 +61,21 @@ public class MazeRouterFrame extends JFrame implements Runnable {
         myThread = null;
     }
 
+    public static void setText(String msg) {
+        notePad.setText(msg);
+    }
+
     private static final int WAITFORSRC = 0;
     private static final int WAITFORTGT = 1;
 
     private GridPoint clicked = null;
-    
-    public static void changePauseBtn(boolean state){
+
+    public static void changePauseBtn(boolean state) {
+        pauseBtn.setText("Pause");
         pauseBtn.setEnabled(state);
     }
-    
-    public static void changeClearBtn(boolean state){
+
+    public static void changeClearBtn(boolean state) {
         clearBtn.setEnabled(state);
     }
 
@@ -96,4 +86,20 @@ public class MazeRouterFrame extends JFrame implements Runnable {
         }
     }
     private static boolean paused = false;
+
+    private synchronized void pauseAction(ActionEvent evt) {
+        myGrid.pauseResume();
+        setText(myGrid.getMSG());
+        pauseBtn.setText(myGrid.isPaused() ? "Resume" : "Pause");
+        if (!myGrid.isPaused()) {
+            synchronized (myGrid) {
+                myGrid.notify();
+            }
+        }
+    }
+    
+    private void clearAction(ActionEvent evt){
+        myGrid.requestClear();
+    }
+    
 }
