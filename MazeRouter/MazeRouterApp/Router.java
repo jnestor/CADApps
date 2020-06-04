@@ -5,7 +5,7 @@ import javax.swing.*;
 import java.util.*;
 
 /*
- * To change this license header, choose License Headers in Project Properties.
+* To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
@@ -22,6 +22,8 @@ public class Router {
         myGrid = grid;
     }
     private static final int UNROUTED = 9999;
+    private static final int EXPANDING = 2;
+    private static final int TRACKBACK = 3;
 
     /* expand a routing search */
     public int expandGrid(GridPoint gridPoint) throws InterruptedException {
@@ -78,12 +80,12 @@ public class Router {
     }
 
     public int expansion() throws InterruptedException {
+        myGrid.setState(EXPANDING);
         GridPoint gp;
         int actualLength;
         int curVal = 0;
         myGrid.setMessage("Expansion phase");
         myGrid.gridDelay(3);
-
         if (myGrid.getSRC() != null && myGrid.getTGT() != null) {
             myGrid.getSRC().initExpand();
             if ((actualLength = expandGrid(myGrid.getSRC())) > 0) {
@@ -117,7 +119,7 @@ public class Router {
     }
 
     public void traceBack() throws InterruptedException {
-        MazeRouterFrame.changeStopBtn(false);
+        myGrid.setState(TRACKBACK);
         // start at target, then work back
         GridPoint current = myGrid.getTGT();
         while (!current.isSource() && !stop) {
@@ -166,8 +168,6 @@ public class Router {
             System.out.println("AWK! can't trace back! current= " + current);
             break;
         }
-        MazeRouterFrame.changePauseBtn(false);
-        MazeRouterFrame.changeStopBtn(false);
         if (current.isSource()) {
             myGrid.setMessage("Traceback complete");
             myGrid.flash(current);
@@ -178,9 +178,6 @@ public class Router {
     }
 
     public int route() throws InterruptedException {
-        MazeRouterFrame.changeClearBtn(false);
-        MazeRouterFrame.changePauseBtn(true);
-        MazeRouterFrame.changeStopBtn(true);
         if (myGrid.getSRC() == null || myGrid.getTGT() == null) {
             return -1;
         }

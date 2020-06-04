@@ -29,6 +29,8 @@ import java.util.*;
 // also need to figure out what I was doing with double-buffering ???
 //
 class Grid extends JPanel {
+    
+    
 
     private String msg = null;
 
@@ -290,6 +292,17 @@ class Grid extends JPanel {
 
     private static final int WAITFORSRC = 0;
     private static final int WAITFORTGT = 1;
+    
+    
+    private int state = 0;
+    
+    public void setState(int i){
+        state = i;
+    }
+    
+    public int getState(){
+        return state;
+    }
 
     private synchronized void waitForInput() throws InterruptedException {
         while (!clearPending && clickedPoint == null) {
@@ -299,11 +312,13 @@ class Grid extends JPanel {
 
     public void run() throws InterruptedException {
         clear();
-        int state = WAITFORSRC;
+        state = WAITFORSRC;
+        System.out.println(state);
         setMessage("Click on Source");
         while (true) {
             waitForInput();
             if (state == WAITFORSRC) {
+                System.out.println("Looking for source");
                 if (clearPending) {
                     clear();
                     setMessage("Grid cleared!");
@@ -331,14 +346,12 @@ class Grid extends JPanel {
                     setMessage("Ready to Route!");
                     gridDelay(5);
                     redrawGrid();
-                    router.route();
-                    MazeRouterFrame.changePauseBtn(false);
-                    MazeRouterFrame.changeStopBtn(false);
+                    router.route();              
                     src = null;
                     tgt = null;
                     state = WAITFORSRC;
                     setMessage("Click on Source");
-                    MazeRouterFrame.changeClearBtn(true);
+                    
                     redrawGrid();
                 }
                 clearPending = false;
@@ -359,10 +372,6 @@ class Grid extends JPanel {
                 }
             }
 
-        }
-
-        if (msg != null) {
-            MazeRouterFrame.setText(msg);
         }
     }
 
@@ -413,7 +422,4 @@ class Grid extends JPanel {
     public Router getRouter() {
         return router;
     }
-    
-    
-
 }
