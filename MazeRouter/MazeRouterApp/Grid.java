@@ -29,12 +29,8 @@ import java.util.*;
 // also need to figure out what I was doing with double-buffering ???
 //
 class Grid extends JPanel {
-    
-    
 
     private String msg = null;
-
-    private final Router router = new Router(this);
 
     private boolean displayParallelMode = false;
 
@@ -212,12 +208,15 @@ class Grid extends JPanel {
     public static void gridDelay() throws InterruptedException {
         gridDelay(1);
     }
-    private boolean paused = false;
     
-    public void stopRouter(){
+    private final Router router = new MazeRouter(this);
+    
+    private boolean paused = false;
+
+    public void stopRouter() {
         router.stop();
     }
-    
+
     public boolean pauseResume() {
         paused = !paused;
         if (paused) {
@@ -292,15 +291,14 @@ class Grid extends JPanel {
 
     private static final int WAITFORSRC = 0;
     private static final int WAITFORTGT = 1;
-    
-    
+
     private int state = 0;
-    
-    public void setState(int i){
+
+    public void setState(int i) {
         state = i;
     }
-    
-    public int getState(){
+
+    public int getState() {
         return state;
     }
 
@@ -346,12 +344,12 @@ class Grid extends JPanel {
                     setMessage("Ready to Route!");
                     gridDelay(5);
                     redrawGrid();
-                    router.route();              
+                    router.route();
                     src = null;
                     tgt = null;
                     state = WAITFORSRC;
                     setMessage("Click on Source");
-                    
+
                     redrawGrid();
                 }
                 clearPending = false;
@@ -411,13 +409,6 @@ class Grid extends JPanel {
     private GridPoint src;
     private GridPoint tgt;
 
-    public GridPoint getTGT() {
-        return tgt;
-    }
-
-    public GridPoint getSRC() {
-        return src;
-    }
 
     public Router getRouter() {
         return router;

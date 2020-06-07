@@ -13,118 +13,30 @@ import java.util.*;
  *
  * @author 15002
  */
-public class Router {
+abstract class Router {
 
-    private Grid myGrid;
-    private boolean stop = false;
+    protected Grid myGrid;
+    protected boolean stop = false;
 
     public Router(Grid grid) {
         myGrid = grid;
     }
-    private static final int UNROUTED = 9999;
-    private static final int EXPANDING = 2;
-    private static final int TRACKBACK = 3;
+    protected static final int UNROUTED = 9999;
+    protected static final int EXPANDING = 2;
+    protected static final int TRACKBACK = 3;
 
     /* expand a routing search */
-    public int expandGrid(GridPoint gridPoint) throws InterruptedException {
-        GridPoint xp;
-        if ((xp = gridPoint.westNeighbor()) != null && xp.getVal() == UNROUTED) {
-            xp.setVal(gridPoint.getVal() + 1);
-            if (xp.isTarget()) {
-                return xp.getVal();
-            } else {
-                myGrid.enqueueGridPoint(xp);
-            }
-        }
-        if ((xp = gridPoint.eastNeighbor()) != null && xp.getVal() == UNROUTED) {
-            xp.setVal(gridPoint.getVal() + 1);
-            if (xp.isTarget()) {
-                return xp.getVal();
-            } else {
-                myGrid.enqueueGridPoint(xp);
-            }
-        }
-        if ((xp = gridPoint.southNeighbor()) != null && xp.getVal() == UNROUTED) {
-            xp.setVal(gridPoint.getVal() + 1);
-            if (xp.isTarget()) {
-                return xp.getVal();
-            } else {
-                myGrid.enqueueGridPoint(xp);
-            }
-        }
-        if ((xp = gridPoint.northNeighbor()) != null && xp.getVal() == UNROUTED) {
-            xp.setVal(gridPoint.getVal() + 1);
-            if (xp.isTarget()) {
-                return xp.getVal();
-            } else {
-                myGrid.enqueueGridPoint(xp);
-            }
-        }
-        if ((xp = gridPoint.upNeighbor()) != null && xp.getVal() == UNROUTED) {
-            xp.setVal(gridPoint.getVal() + 1);
-            if (xp.isTarget()) {
-                return xp.getVal();
-            } else {
-                myGrid.enqueueGridPoint(xp);
-            }
-        }
-        if ((xp = gridPoint.downNeighbor()) != null && xp.getVal() == UNROUTED) {
-            xp.setVal(gridPoint.getVal() + 1);
-            if (xp.isTarget()) {
-                return xp.getVal();
-            } else {
-                myGrid.enqueueGridPoint(xp);
-            }
-        }
-        return -1;
-    }
+    abstract int expandGrid(GridPoint gridPoint) throws InterruptedException;
 
-    public int expansion() throws InterruptedException {
-        myGrid.setState(EXPANDING);
-        GridPoint gp;
-        int actualLength;
-        int curVal = 0;
-        myGrid.setMessage("Expansion phase");
-        myGrid.gridDelay(3);
-        if (myGrid.getSRC() != null && myGrid.getTGT() != null) {
-            myGrid.getSRC().initExpand();
-            if ((actualLength = expandGrid(myGrid.getSRC())) > 0) {
-                myGrid.clearQueue();
-                return actualLength; // found it right away!
-            }
-
-            while ((gp = myGrid.dequeueGridPoint()) != null && !stop) {
-                if (myGrid.isPaused()) {
-                    myGrid.setMessage("Current distance: " + myGrid.getTail().getVal() + " Pause");
-                    synchronized (this) {
-                        wait();
-                    }
-                }
-
-                myGrid.setMessage("Current distance: " + myGrid.getTail().getVal());
-                if (myGrid.getMode() && (gp.getVal() > curVal)) {
-                    curVal = gp.getVal();
-                    myGrid.redrawGrid();
-                    myGrid.gridDelay(2);
-                }
-                if ((actualLength = expandGrid(gp)) > 0) {
-                    myGrid.setMessage("Current distance: " + actualLength);
-                    myGrid.gridDelay(5);
-                    myGrid.clearQueue();
-                    return actualLength;  // found it!
-                }
-            }
-        }
-        return -1;
-    }
+    abstract int expansion() throws InterruptedException;
 
     public void traceBack() throws InterruptedException {
         myGrid.setState(TRACKBACK);
         // start at target, then work back
-        GridPoint current = myGrid.getTGT();
+        GridPoint current = myGrid.getTarget();
         while (!current.isSource() && !stop) {
             GridPoint next;
-            int curval = current.getVal();
+            int curval = current.getGVal();
             if (myGrid.isPaused()) {
                 myGrid.setMessage("Traceback: distance = " + curval + " Pause");
                 synchronized (this) {
@@ -136,32 +48,32 @@ public class Router {
             myGrid.redrawGrid();
             myGrid.gridDelay(3);
             next = current.westNeighbor();
-            if (next != null && !next.isObstacle() && next.getVal() < curval) {
+            if (next != null && !next.isObstacle() && next.getGVal() < curval) {
                 current = next;
                 continue;
             }
             next = current.eastNeighbor();
-            if (next != null && !next.isObstacle() && next.getVal() < curval) {
+            if (next != null && !next.isObstacle() && next.getGVal() < curval) {
                 current = next;
                 continue;
             }
             next = current.southNeighbor();
-            if (next != null && !next.isObstacle() && next.getVal() < curval) {
+            if (next != null && !next.isObstacle() && next.getGVal() < curval) {
                 current = next;
                 continue;
             }
             next = current.northNeighbor();
-            if (next != null && !next.isObstacle() && next.getVal() < curval) {
+            if (next != null && !next.isObstacle() && next.getGVal() < curval) {
                 current = next;
                 continue;
             }
             next = current.upNeighbor();
-            if (next != null && !next.isObstacle() && next.getVal() < curval) {
+            if (next != null && !next.isObstacle() && next.getGVal() < curval) {
                 current = next;
                 continue;
             }
             next = current.downNeighbor();
-            if (next != null && !next.isObstacle() && next.getVal() < curval) {
+            if (next != null && !next.isObstacle() && next.getGVal() < curval) {
                 current = next;
                 continue;
             }
@@ -178,13 +90,13 @@ public class Router {
     }
 
     public int route() throws InterruptedException {
-        if (myGrid.getSRC() == null || myGrid.getTGT() == null) {
+        if (myGrid.getSource() == null || myGrid.getTarget() == null) {
             return -1;
         }
         GridPoint.nextRouteColor();
         myGrid.reset();
-        if (myGrid.getSRC() == myGrid.getTGT()) {  // trivial case
-            myGrid.getSRC().setRouted();
+        if (myGrid.getSource() == myGrid.getTarget()) {  // trivial case
+            myGrid.getSource().setRouted();
             return 0;
         } else {
             int actualLength = expansion();
@@ -192,7 +104,7 @@ public class Router {
             myGrid.redrawGrid();
             if (actualLength > 0) {
                 myGrid.setMessage("Target Found!");
-                myGrid.flash(myGrid.getTGT());
+                myGrid.flash(myGrid.getTarget());
                 traceBack();
             } else {
                 myGrid.setMessage("Target not found!");
