@@ -51,42 +51,6 @@ class GridPoint implements Comparable {
 	return myGrid.gridPointAt(posx, posy, posz+1);
     }
     
-    /* expand a routing search */
-    public int expand() throws InterruptedException {
-	GridPoint xp;
-	if ( (xp = westNeighbor()) != null && xp.gVal == UNROUTED ) {
-	    xp.setVals(gVal+1);
-	    if (xp.isTarget()) return xp.gVal;
-	    else myGrid.enqueueGridPoint(xp);
-	}
-	if ( (xp = eastNeighbor()) != null && xp.gVal == UNROUTED ) {
-	    xp.setVals(gVal+1);
-	    if (xp.isTarget()) return xp.gVal;
-	    else myGrid.enqueueGridPoint(xp);
-	}
-	if ( (xp = southNeighbor()) != null && xp.gVal == UNROUTED ) {
-	    xp.setVals(gVal+1);
-	    if (xp.isTarget()) return xp.gVal;
-	    else myGrid.enqueueGridPoint(xp);
-	}
-	if ( (xp = northNeighbor()) != null && xp.gVal == UNROUTED ) {
-	    xp.setVals(gVal+1);
-	    if (xp.isTarget()) return xp.gVal;
-	    else myGrid.enqueueGridPoint(xp);
-	}
-	if ( (xp = upNeighbor()) != null && xp.gVal == UNROUTED ) {
-	    xp.setVals(gVal+1);
-	    if (xp.isTarget()) return xp.gVal;
-	    else myGrid.enqueueGridPoint(xp);
-	}
-	if ( (xp = downNeighbor()) != null && xp.gVal == UNROUTED ) {
-	    xp.setVals(gVal+1);
-	    if (xp.isTarget()) return xp.gVal;
-	    else myGrid.enqueueGridPoint(xp);
-	}
-	return -1;
-    }
-    
     
     public boolean isTarget() {
 	return ( this == myGrid.getTarget() );
