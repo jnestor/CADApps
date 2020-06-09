@@ -1,4 +1,3 @@
-
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -34,8 +33,8 @@ class Grid extends JPanel {
         return displayParallelMode;
     }
 
-    public void setParallelExpand() {
-        displayParallelMode = true;
+    public void setParallelExpand(boolean b) {
+        displayParallelMode = b;
     }
 
     public void setSerialExpand() {
@@ -215,9 +214,9 @@ class Grid extends JPanel {
     }
 
     // the following are used in drawing into the grid panel and are package visible
-    static final int GRIDSIZE = 19;
-    static final int CHARXOFFSET = 6;
-    static final int CHARYOFFSET = 14;
+    static final int GRIDSIZE = 25;
+    static final int CHARXOFFSET = 9;
+    static final int CHARYOFFSET = 16;
 
     int gridPanelX(int i, int j, int k) {
         return i * GRIDSIZE;

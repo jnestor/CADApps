@@ -102,7 +102,7 @@ class GridPoint implements Comparable {
                 g.setColor(Color.yellow);
                 fillGridPoint(g);
                 g.setColor(Color.black);
-                labelGridPoint(g, Integer.toString(displayVal % 10));
+                labelGridPoint(g, Integer.toString(displayVal));
             } else {
                 g.setColor(Color.red);
                 fillGridPoint(g);
@@ -117,7 +117,7 @@ class GridPoint implements Comparable {
             }
             fillGridPoint(g);
             g.setColor(Color.black);
-            labelGridPoint(g, Integer.toString(displayVal % 10));
+            labelGridPoint(g, Integer.toString(displayVal));
         }
     }
 
