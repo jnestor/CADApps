@@ -112,7 +112,7 @@ public class AStarRouter extends Router {
 	return -1;
     }
 
-    private TreeSet gpq = new TreeSet();
+    private TreeSet<GridPoint> gpq = new TreeSet<GridPoint>();
 
     private int queueCount = 0;  // track number of insertions to queue - use to break ties on nodes
 
