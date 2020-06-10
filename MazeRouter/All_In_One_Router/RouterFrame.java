@@ -20,7 +20,7 @@ public class RouterFrame extends JFrame implements Runnable {
     private Thread myThread = null;
     private int routerMode = 0;
     private final JLabel msgBoard = new JLabel();
-    private final JLabel title = new JLabel("Maze Router",SwingConstants.CENTER);
+    private final JLabel title = new JLabel("Maze Router", SwingConstants.CENTER);
     //private final JLabel 
     private final JButton clearBtn = new JButton("CLEAR");
     private final JButton pauseBtn = new JButton("");
@@ -43,7 +43,7 @@ public class RouterFrame extends JFrame implements Runnable {
         routerList[2] = new AStarRouter(myGrid);
         myGrid.setRouter(routerList[routerMode]);
         setLayout(new BorderLayout());
-        getContentPane().add(title,"North");
+        getContentPane().add(title, "North");
         getContentPane().add(myGrid, "Center");
         clearBtn.addActionListener(this::clearAction);
         JPanel btnPanel = new JPanel();
@@ -65,6 +65,8 @@ public class RouterFrame extends JFrame implements Runnable {
         btnPanel.add(parallelExpandBox);
         getContentPane().add(btnPanel, "South");
         refreshTimer.start();
+        //mouseTracer.setRepeats(true);
+        mouseTracer.start();
         //clearBtn.addActionListener(this);
         repaint();
         start();
@@ -154,5 +156,14 @@ public class RouterFrame extends JFrame implements Runnable {
         } catch (InterruptedException e) {
         }
     }
-
+    
+        Timer mouseTracer = new Timer(2, new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Point p = MouseInfo.getPointerInfo().getLocation();
+            GridPoint gp = myGrid.mouseToGridPoint((int)p.getX(), (int)p.getY());
+            if(gp!=null)
+            myGrid.setToolTipText(gp.toString());
+        }
+    });
 }
