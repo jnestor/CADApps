@@ -81,7 +81,7 @@ class GridPoint implements Comparable {
     public void paintGridPoint(Graphics g) {
         g.setColor(Color.black);
         g.drawRect(myGrid.gridPanelX(posx, posy, posz), myGrid.gridPanelY(posx, posy, posz),
-                myGrid.GRIDSIZE, myGrid.GRIDSIZE);
+                myGrid.getGridSize(), myGrid.getGridSize());
         if (isRouted()) {
             g.setColor(routedColor);
             fillGridPoint(g);
@@ -123,12 +123,12 @@ class GridPoint implements Comparable {
 
     private void fillGridPoint(Graphics g) {
         g.fillRect(myGrid.gridPanelX(posx, posy, posz) + 2, myGrid.gridPanelY(posx, posy, posz) + 2,
-                myGrid.GRIDSIZE - 3, myGrid.GRIDSIZE - 3);
+                myGrid.getGridSize() - 3, myGrid.getGridSize() - 3);
     }
 
     private void labelGridPoint(Graphics g, String s) {
-        g.drawString(s, myGrid.gridPanelX(posx, posy, posz) + myGrid.CHARXOFFSET,
-                myGrid.gridPanelY(posx, posy, posz) + myGrid.CHARYOFFSET);
+        g.drawString(s, myGrid.gridPanelX(posx, posy, posz) + myGrid.getXOffset(),
+                myGrid.gridPanelY(posx, posy, posz) + myGrid.getYOffset());
     }
 
     public String toString() {

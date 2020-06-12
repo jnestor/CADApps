@@ -1,3 +1,4 @@
+
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -26,7 +27,7 @@ import java.util.*;
 class Grid extends JPanel {
 
     private String msg = null;
-    
+
     private boolean displayParallelMode = false;
 
     public boolean getMode() {
@@ -158,8 +159,6 @@ class Grid extends JPanel {
         }
     }
 
-
-
     private static final int DELAY = 100; // 10ms = 0.1s
 
     public void gridDelay(int d) throws InterruptedException {
@@ -183,13 +182,13 @@ class Grid extends JPanel {
     public void gridDelay() throws InterruptedException {
         gridDelay(1);
     }
-    
+
     private Router router;
-    
-    public void setRouter(Router r){
-        router=r;
+
+    public void setRouter(Router r) {
+        router = r;
     }
-    
+
     private boolean paused = false;
 
     public void stopRouter() {
@@ -214,9 +213,27 @@ class Grid extends JPanel {
     }
 
     // the following are used in drawing into the grid panel and are package visible
-    static final int GRIDSIZE = 25;
-    static final int CHARXOFFSET = 9;
-    static final int CHARYOFFSET = 16;
+    private static int GRIDSIZE = 24;
+    private static int CHARXOFFSET = GRIDSIZE / 3;
+    private static int CHARYOFFSET = GRIDSIZE / 2 + GRIDSIZE / 3;
+
+    public static void resetGridSize(int i) {
+        GRIDSIZE = i;
+        CHARXOFFSET = GRIDSIZE / 3;
+        CHARYOFFSET = GRIDSIZE / 2 + GRIDSIZE / 3;
+    }
+
+    public int getGridSize() {
+        return GRIDSIZE;
+    }
+
+    public int getXOffset() {
+        return CHARXOFFSET;
+    }
+    
+    public int getYOffset() {
+        return CHARYOFFSET;
+    }
 
     int gridPanelX(int i, int j, int k) {
         return i * GRIDSIZE;
@@ -238,10 +255,10 @@ class Grid extends JPanel {
     private boolean clearPending = false;
 
     public synchronized void handleMouseClick(int x, int y) {
-        if (!paused&&(state==WAITFORSRC||state==WAITFORTGT)) {
+        if (!paused && (state == WAITFORSRC || state == WAITFORTGT)) {
             clickedPoint = mouseToGridPoint(x, y);
             notifyAll();
-            //System.out.println("handleMouseClick: " + clickedPoint);
+            System.out.println("handleMouseClick: " + clickedPoint);
         }
     }
 
@@ -270,7 +287,7 @@ class Grid extends JPanel {
 
     private static final int WAITFORSRC = 0;
     private static final int WAITFORTGT = 1;
-    
+
     private int state = 0;
 
     public void setState(int i) {
@@ -328,7 +345,7 @@ class Grid extends JPanel {
                     tgt = null;
                     state = WAITFORSRC;
                     setMessage("Click on Source");
-                    System.out.println("state="+state);
+                    System.out.println("state=" + state);
                     redrawGrid();
                 }
                 clearPending = false;
@@ -350,7 +367,7 @@ class Grid extends JPanel {
             }
         }
     }
-    
+
     public String getMSG() {
         return msg;
     }
@@ -359,7 +376,6 @@ class Grid extends JPanel {
 //        paint(myOffScreenGraphics);
 //        g.drawImage(myOffScreenImage, 0, 0, this);
 //    }
-
     public void setSource(int x, int y, int z) {
         setSource(gridArray[x][y][z]);
     }
@@ -384,12 +400,10 @@ class Grid extends JPanel {
         return tgt;
     }
 
-    
-
     GridPoint[][][] gridArray;
     GridPoint src;
     GridPoint tgt;
-    
+
     public Router getRouter() {
         return router;
     }

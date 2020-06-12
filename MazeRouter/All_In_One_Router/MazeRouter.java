@@ -78,6 +78,7 @@ public class MazeRouter extends Router {
 
     @Override
     public int expansion() throws InterruptedException {
+        System.out.println("EXAPNDING");
         myGrid.setState(EXPANDING);
         GridPoint gp;
         int actualLength;
