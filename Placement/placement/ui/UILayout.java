@@ -103,7 +103,7 @@ public class UILayout extends JPanel implements ActionListener, PAnnealInterface
 //	    metroGauge.setValues(lastMove.getAcceptRandom(), lastMove.getAcceptProbability());
 	}
 	else {
-	    (setMessage(""));
+	    setMessage("");
 //	    metroGauge.setValues(-1.0,-1.0);
 	}
     }

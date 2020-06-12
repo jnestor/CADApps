@@ -26,7 +26,7 @@ class PMoveHistory {
 
     /** erase all history information */
     public void reset() {
-	historyList.clear();
+	points.clear();
 	maxCost = minCost = initCost = lastCost = 0;
     }
 
