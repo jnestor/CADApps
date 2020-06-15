@@ -12,7 +12,7 @@ import javax.sound.sampled.*;
  */
 public class RouterFrame extends JFrame implements Runnable {
 
-    boolean mute = true;
+    boolean mute = false;
     private int max = 0;
     private static final int WAITFORSRC = 0;
     private static final int WAITFORTGT = 1;
