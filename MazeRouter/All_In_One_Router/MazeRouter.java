@@ -120,6 +120,7 @@ public class MazeRouter extends Router {
 
     @Override
     public GridPoint getTail() {
+        maxGVal=gridPointTail.getGVal();
         return gridPointTail;
     }
 

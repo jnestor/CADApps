@@ -20,11 +20,13 @@ abstract class Router {
 
     public Router(Grid grid) {
         myGrid = grid;
+        maxGVal=0;
     }
     protected static final int UNROUTED = 9999;
     protected static final int EXPANDING = 2;
     protected static final int TRACKBACK = 3;
     protected static final int WAITFORSRC = 0;
+    protected int maxGVal=0;
 
     /* expand a routing search */
     abstract int expandGrid(GridPoint gridPoint) throws InterruptedException;
@@ -93,15 +95,18 @@ abstract class Router {
 
     public int route() throws InterruptedException {
         if (myGrid.getSource() == null || myGrid.getTarget() == null) {
+            maxGVal = 0;
             return -1;
         }
         GridPoint.nextRouteColor();
         myGrid.reset();
         if (myGrid.getSource() == myGrid.getTarget()) {  // trivial case
             myGrid.getSource().setRouted();
+            maxGVal = 0;
             return 0;
         } else {
             int actualLength = expansion();
+            maxGVal = 0;
             clearQueue();
             myGrid.redrawGrid();
             if (actualLength > 0) {
@@ -130,6 +135,10 @@ abstract class Router {
 
     public void stop() {
         stop = true;
+    }
+    
+    public int getMax(){
+        return maxGVal;
     }
     
     abstract GridPoint getTail();

@@ -167,7 +167,9 @@ public class HadlockRouter extends Router {
     @Override
     public GridPoint getTail() {
         LinkedList<GridPoint> a = new LinkedList<GridPoint>(gpq);
-        return Collections.max(a, new GValComparator());
+        GridPoint gp = Collections.max(a, new GValComparator());
+        maxGVal=gp.getGVal();
+        return gp;
     }
 
     private static class GValComparator implements Comparator<GridPoint> {

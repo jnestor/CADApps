@@ -1,7 +1,9 @@
 
+import all.in.onerouter.Sound;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import javax.sound.sampled.*;
 
 /**
  * Title: MazeApplet Description: Animation of Lee Algorithm for maze routing.
@@ -12,6 +14,8 @@ import javax.swing.*;
  */
 public class RouterFrame extends JFrame implements Runnable {
 
+    boolean mute = true;
+    private int max = 0;
     private static final int WAITFORSRC = 0;
     private static final int WAITFORTGT = 1;
     private static final int EXPANDING = 2;
@@ -76,6 +80,7 @@ public class RouterFrame extends JFrame implements Runnable {
         refreshTimer.start();
         repaint();
         start();
+        beeper.start();
     }
 
     public void start() {
@@ -131,6 +136,7 @@ public class RouterFrame extends JFrame implements Runnable {
     }
 
     private void resizeAction(ActionEvent evt) {
+        Toolkit.getDefaultToolkit().beep();
         int n = JOptionPane.showConfirmDialog(
                 this, "Resize the Router will clear all the grids, are you sure you want to resize",
                 "WARNING",
@@ -140,15 +146,18 @@ public class RouterFrame extends JFrame implements Runnable {
                 int size = Integer.parseInt(gridSizeField.getText());
                 int nOL = Integer.parseInt(layerField.getText());
                 if (nOL < 1) {
+                    Toolkit.getDefaultToolkit().beep();
                     JOptionPane.showMessageDialog(
                             this, "You must have at least one layer !");
                 } else if (size <= 19) {
+                    Toolkit.getDefaultToolkit().beep();
                     JOptionPane.showMessageDialog(
                             this, "The grid size is too small, it should be at least 20");
                 } else {
-                    resetGrids(size,nOL);
+                    resetGrids(size, nOL);
                 }
             } catch (NumberFormatException e) {
+                Toolkit.getDefaultToolkit().beep();
                 JOptionPane.showMessageDialog(
                         this, "wrong input !");
             }
@@ -161,6 +170,7 @@ public class RouterFrame extends JFrame implements Runnable {
             pauseBtn.setText(myGrid.isPaused() ? "RESUME" : "PAUSE");
             msgBoard.setText(myGrid.getMSG());
             if (myGrid.getState() == WAITFORSRC) {
+                max = 0;
                 pauseBtn.setEnabled(false);
                 stopBtn.setEnabled(false);
                 clearBtn.setEnabled(true);
@@ -213,6 +223,20 @@ public class RouterFrame extends JFrame implements Runnable {
         }
     });
 
+    Timer beeper = new Timer(10, new ActionListener() {
+        Sound s = new Sound();
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            int i = myGrid.getRouter().getMax();
+            if (i > max) {
+                max = i;
+                s.play();
+            }
+
+        }
+    });
+
     public boolean initAllGrids(int size, int nlayers) {
         Grid.resetGridSize(size);
         int ncols = Grid.calculateCols(getSize().width);
@@ -233,13 +257,13 @@ public class RouterFrame extends JFrame implements Runnable {
         Grid.resetGridSize(size);
         int ncols = Grid.calculateCols(getSize().width);
         int nrows = Grid.calculateRows(getSize().height, nlayers);
-        if(nrows<1||ncols<1){
+        if (nrows < 1 || ncols < 1) {
             JOptionPane.showMessageDialog(this, "There are too many layers and too large grids");
             Grid.resetGridSize(originalSize);
             return;
         }
         stop();
         getContentPane().remove(myGrid);
-        initAllGrids(size,nlayers);
+        initAllGrids(size, nlayers);
     }
 }
