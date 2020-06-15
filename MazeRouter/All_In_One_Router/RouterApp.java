@@ -20,7 +20,7 @@ class RouterApp {
 private static void createAndShowGUI() {
     RouterFrame mf = new RouterFrame();
     mf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    mf.setMinimumSize(new Dimension(1255,600));
+    mf.setMinimumSize(new Dimension(1320,600));
     mf.initRouterFrame(21,1);
     mf.pack();
     mf.setVisible(true);
