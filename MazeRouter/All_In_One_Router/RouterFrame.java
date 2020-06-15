@@ -1,5 +1,3 @@
-
-import all.in.onerouter.Sound;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -33,6 +31,7 @@ public class RouterFrame extends JFrame implements Runnable {
     private final JButton stopBtn = new JButton("STOP");
     private final JCheckBox parallelExpandBox = new JCheckBox("Parallel Mode");
     private final JCheckBox tooltipBox = new JCheckBox("Tooltips for Grids");
+    private final JCheckBox muteBox = new JCheckBox("Mute");
     private final String[] routerNames = {"Maze Router", "Hadlock Router", "A* Router"};
     private JComboBox<String> routerComboBox = new JComboBox<String>(routerNames);
     private Router[] routerList = new Router[3];
@@ -53,8 +52,9 @@ public class RouterFrame extends JFrame implements Runnable {
         pauseBtn.addActionListener(this::pauseAction);
         stopBtn.addActionListener(this::stopAction);
         routerComboBox.addActionListener(this::switchAction);
-        parallelExpandBox.addItemListener(this::checkBoxAction);
+        parallelExpandBox.addItemListener(this::expandBoxAction);
         tooltipBox.addItemListener(this::traceAction);
+        muteBox.addItemListener(this::muteBoxAction);
         resizeBtn.addActionListener(this::resizeAction);
         btnPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         msgBoard.setPreferredSize(new Dimension(270, 25));
@@ -71,6 +71,7 @@ public class RouterFrame extends JFrame implements Runnable {
         btnPanel.add(routerComboBox);
         btnPanel.add(parallelExpandBox);
         btnPanel.add(tooltipBox);
+        btnPanel.add(muteBox);
         btnPanel.add(NoL);
         btnPanel.add(layerField);
         btnPanel.add(GS);
@@ -120,8 +121,11 @@ public class RouterFrame extends JFrame implements Runnable {
         title.setText(routerNames[routerMode]);
     }
 
-    private void checkBoxAction(ItemEvent evt) {
+    private void expandBoxAction(ItemEvent evt) {
         myGrid.setParallelExpand(evt.getStateChange() == 1);
+    }
+    private void muteBoxAction(ItemEvent evt) {
+        mute=(evt.getStateChange() == 1);
     }
 
     private void traceAction(ItemEvent evt) {
@@ -225,15 +229,15 @@ public class RouterFrame extends JFrame implements Runnable {
 
     Timer beeper = new Timer(10, new ActionListener() {
         Sound s = new Sound();
-
         @Override
         public void actionPerformed(ActionEvent e) {
+            if(!mute){
             int i = myGrid.getRouter().getMax();
             if (i > max) {
                 max = i;
                 s.play();
             }
-
+            }
         }
     });
 
