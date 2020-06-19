@@ -40,6 +40,7 @@ abstract class Router {
         while (!current.isSource() && !stop) {
             GridPoint next;
             int curval = current.getGVal();
+            maxGVal = curval;
             if (myGrid.isPaused()) {
                 myGrid.setMessage("Traceback: distance = " + curval + " Pause");
                 synchronized (this) {

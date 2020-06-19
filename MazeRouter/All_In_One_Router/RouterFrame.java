@@ -1,3 +1,4 @@
+
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -38,6 +39,7 @@ public class RouterFrame extends JFrame implements Runnable {
     private JTextField layerField = new JTextField("1");
     private JTextField gridSizeField = new JTextField("21");
     private JButton resizeBtn = new JButton("Resize");
+    Sound s= new Sound();
 
     public synchronized void initRouterFrame(int size, int nlayers) {
         routerMode = 0;
@@ -124,8 +126,9 @@ public class RouterFrame extends JFrame implements Runnable {
     private void expandBoxAction(ItemEvent evt) {
         myGrid.setParallelExpand(evt.getStateChange() == 1);
     }
+
     private void muteBoxAction(ItemEvent evt) {
-        mute=(evt.getStateChange() == 1);
+        mute = (evt.getStateChange() == 1);
     }
 
     private void traceAction(ItemEvent evt) {
@@ -228,15 +231,25 @@ public class RouterFrame extends JFrame implements Runnable {
     });
 
     Timer beeper = new Timer(10, new ActionListener() {
-        Sound s = new Sound();
         @Override
         public void actionPerformed(ActionEvent e) {
-            if(!mute){
-            int i = myGrid.getRouter().getMax();
-            if (i > max) {
-                max = i;
-                s.play();
-            }
+            if (!mute) {
+                if (myGrid.getState() == EXPANDING) {
+                    int i = myGrid.getRouter().getMax();
+                    if (i > max) {
+                        max = i;
+                        s.play(max);
+                    }
+                } else if (myGrid.getState() == TRACKBACK) {
+                    int i = myGrid.getRouter().getMax();
+                    if (i < max) {
+                        max = i;
+                        myGrid.pauseResume();
+                        s.play(max);
+                        myGrid.pauseResume();
+                    }
+                }
+
             }
         }
     });
@@ -269,5 +282,6 @@ public class RouterFrame extends JFrame implements Runnable {
         stop();
         getContentPane().remove(myGrid);
         initAllGrids(size, nlayers);
+        SwingUtilities.updateComponentTreeUI(this);
     }
 }

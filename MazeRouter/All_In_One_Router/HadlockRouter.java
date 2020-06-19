@@ -110,6 +110,7 @@ public class HadlockRouter extends Router {
                     return actualLength;  // found it!
                 }
             }
+            System.out.println("stoped");
         }
         return -1;
     }

@@ -113,11 +113,11 @@ class Grid extends JPanel {
     }
 
     public static int calculateCols(int pixelWidth) {
-        return (pixelWidth - 2) / GRIDSIZE;
+        return (pixelWidth - 2) / GRIDSIZE-1;
     }
 
     public static int calculateRows(int pixelHeight, int nLayers) {
-        int rawCols = ((pixelHeight - 30) / GRIDSIZE) - 2; // adjust for msg, clr btn
+        int rawCols = ((pixelHeight - 60) / GRIDSIZE) - 2; // adjust for msg, clr btn
         return rawCols / nLayers - 1; // adjust  -1 for layer labels
     }
 
@@ -163,20 +163,6 @@ class Grid extends JPanel {
 
     public void gridDelay(int d) throws InterruptedException {
         Thread.sleep(d * DELAY);
-//        if (clickedPoint != null) {
-//            paused = true;
-//            System.out.println("Pausing!");
-//            clickedPoint = null;
-//            while (paused) {
-//                Thread.sleep(5);  // a hack, but can address later
-//                if (clickedPoint != null) {
-//                    paused = false;
-//                    clickedPoint = null;
-//                    System.out.println("Pause Finished!");
-//                    return;
-//                }
-//            }
-//        }
     }
 
     public void gridDelay() throws InterruptedException {

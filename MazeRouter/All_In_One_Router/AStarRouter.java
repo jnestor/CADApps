@@ -90,7 +90,7 @@ public class AStarRouter extends Router {
 		clearQueue();
 		return actualLength; // found it right away!
 	    }
-	    while ((gp = dequeueGridPoint()) != null) {
+	    while ((gp = dequeueGridPoint()) != null&&!stop) {
                 if (myGrid.isPaused()) {
                     myGrid.setMessage("Current distance: " + getTail().getGVal()+
                         " || Current detour: "+ ((GridPoint)gpq.last()).getFVal() + " Pause");
