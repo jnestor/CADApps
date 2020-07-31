@@ -1,0 +1,125 @@
+<HTML>
+<TITLE>Maze Router Demonstration Applet - John A. Nestor</TITLE>
+
+<head>
+
+<BODY TEXT="#000000" BGCOLOR="#FFFFFF" LINK="#000088" VLINK="#880000">
+
+<CENTER>
+<TABLE CELLSPACING=0 CELLPADDING=0 WIDTH="800" HEIGHT="350">
+<TR>
+<TD VALIGN=TOP WIDTH="800">
+<FONT FACE="arial,helvetica" SIZE=+2><B>Maze Router Applet<BR>
+The Lee Algorithm</B></FONT>
+
+<P>
+This applet demonstrates a well-known CAD algorithm for routing connections
+between modules.
+
+<BR><BR><FONT FACE="arial,helvetica" SIZE=+1><B>To Use the Applet</B></FONT>
+
+<BR><BR>
+The routing surface is represented as a grid in which each gridpoint can
+be the source of a connection, a destination of a connection, or a wire that
+connects adjacent gridpoints.  To route connections, follow the prompt and
+click on the source and destination points.  The applet will then show
+the search performed by the Lee Algorithm and the final connection that
+is made.  You can make additional connections by clicking to select
+additional source and destination points.
+<BR><BR>
+To erase all connections and start over, click on the 
+&quot;CLEAR&quot; button.
+<BR><BR>
+<HR>
+
+<CENTER><APPLET archive="./MazeApplet/MazeApplet.jar" code="MazeApplet.class" width=500 height=300>
+<PARAM NAME="layers" VALUE="1">
+</APPLET></CENTER>
+
+
+
+<HR>
+If you're interested, here is the <A HREF="./MazeApplet/src">source code</A>
+
+
+<BR><BR><FONT FACE="arial,helvetica" SIZE=+1><B>About Maze Routing</B></FONT>
+<BR><BR>
+<I>Routing </I>is the task of finding a set of connections that
+will wire together the terminals of different modules on a printed
+circuit board or VLSI chip. In the simplest case, these connections
+are made on a single routing layer of metal.  Each connection or <I>net</I>
+connects a source terminal to a destination terminal.
+<BR><BR>
+The Maze Routing algorithm represents the routing layer as a grid, where
+each gridpoint can contain connections to adjacent gridpoints.
+It searches for a shortest-path connection between the source
+and destination nodes of a connection by performing a breadth-first
+search and labelling each gridpoint with it's distance from the
+source.  This <I>expansion</I> phase will eventually reach the destination
+node if a connection is possible.  A second <I>traceback</I> phase then
+forms the connection by following any path with decreasing labels.
+This algorithm is guaranteed to find the shortest path between a source
+and destination for a given connection.  However, when multiple connections
+are made one connection may block other connections.
+<!--
+<BR><BR><FONT FACE="arial,helvetica" SIZE=+1><B>Multiple-Layer Routing</B></FONT>
+<BR><BR>
+
+Some routing problems cannot be completed using only one routing
+layer.  In this case, multiple layers are used; connections between
+layers are known as <I>vias</I>.  The maze routing algorithm can
+be adapted to support multiple layers by treating the layout as
+a set of stacked grids where vertical connections can be made
+between corresponding points on each grid.
+<BR><BR>
+The Maze Routing Applet supports multiple layers.  Here is an example of 
+routing with three layers:
+
+<BR><BR>
+<HR>
+<HR>
+-->
+
+
+<BR><BR>
+
+For more information about Maze Routing and other forms of routing, 
+see a VLSI CAD textbook such as 
+M. Sarrafzadeh
+and C. K. Wong, <I>An Introduction to VLSI Design</I>, McGraw-Hill, 1996.
+
+<HR>
+
+
+</TD>
+</TR>
+</TABLE>
+
+<BR><BR>
+<FONT FACE="Arial,Helvetica" SIZE=-1>
+| <A HREF="index.html">CadApplets Home</A> | <A HREF="ChannelRouter.html">Channel Router Applet</A> | <B>Maze Router Applet</B> | <A HREF= "MultiMaze.html">
+Multilayer Maze Routing</A> |
+<A HREF= "PlacementApplet/PlacementIntro.html">Placement </A> |
+<A HREF="fp/iterImproveIntro.html"> Iterative Imp.</A> |
+<A HREF="fp/fpIntro.html"> Annealing</A> |
+</FONT>
+
+<BR><BR>
+
+<FONT SIZE="-2">
+Last updated on June 1, 2003 by <A HREF="mailto:nestorj@lafayette.edu">John A. Nestor</A>
+</FONT>
+</CENTER>
+
+</BODY>
+
+
+</HTML>
+
+
+
+
+
+
+
+

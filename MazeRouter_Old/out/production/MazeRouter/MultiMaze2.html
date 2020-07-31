@@ -1,0 +1,81 @@
+<HTML>
+<TITLE>Multilayer Maze Routing Demonstration Applet</TITLE>
+
+<head>
+
+<BODY TEXT="#000000" BGCOLOR="#FFFFFF" LINK="#000088" VLINK="#880000">
+
+<CENTER>
+<TABLE CELLSPACING=0 CELLPADDING=0 WIDTH="500" HEIGHT="350">
+<TR>
+<TD VALIGN=TOP WIDTH="500">
+<FONT FACE="arial,helvetica" SIZE=+2><B>Maze Router Applet<BR>
+The Lee Algorithm</B></FONT>
+
+<P>
+This applet demonstrates multilayer Maze Routing.  Multiple layers are
+necessary in routing when connections must "cross over" each other.
+This applet also demonstrates
+<A HREF="./MazeRouter.html">single-layer maze routing</A>.
+
+<BR><BR><FONT FACE="arial,helvetica" SIZE=+1><B>To Use the Applet</B></FONT>
+
+<BR><BR>
+The routing surface is represented as a set of stacked grid in which each gridpoint can
+be the source of a connection, a destination of a connection, or a wire that
+connects adjacent gridpoints (horizonally or vertically).  To route connections, follow the prompt and
+click on the source and destination points.  The applet will then show
+the search performed by the Lee Algorithm and the final connection that
+is made.  You can make additional connections by clicking to select
+additional source and destination points.
+<BR><BR>
+To erase all connections and start over, click on the 
+&quot;CLEAR&quot; button.
+<BR><BR>
+<HR>
+<CENTER><APPLET archive="MazeApplet/MazeApplet.jar" code="MazeApplet.class" width=400 height=350>
+<PARAM NAME="layers" VALUE="2">
+</APPLET></CENTER>
+<HR>
+If you're interested, here is the <A HREF="./MazeApplet/src">source code</A>
+
+<BR><BR>
+
+For more information about Maze Routing and other forms of routing, 
+see a VLSI CAD textbook such as 
+M. Sarrafzadeh
+and C. K. Wong, <I>An Introduction to VLSI Design</I>, McGraw-Hill, 1996.
+
+<HR>
+
+
+</TD>
+</TR>
+</TABLE>
+
+<BR><BR>
+<FONT FACE="Arial,Helvetica" SIZE=-1>
+| <A HREF="index.html">CadApplets Home</A> | <A HREF="ChannelRouter.html">Channel Router Applet</A> | <A HREF="MazeRouter.html">Maze Router Applet</A> | 
+<b>Multilayer Maze Routing</b> |
+<A HREF= "PlacementApplet/Placement.html">Placement </A> |
+</FONT>
+
+<BR><BR>
+
+<FONT SIZE="-2">
+Last updated on June 14, 2001 by <A HREF="mailto:nestorj@lafayette.edu">John A. Nestor</A>
+</FONT>
+</CENTER>
+
+</BODY>
+
+
+</HTML>
+
+
+
+
+
+
+
+

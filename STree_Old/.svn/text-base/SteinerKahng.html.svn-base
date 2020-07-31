@@ -1,0 +1,52 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>Rectilinear Steiner Tree Demonstration Applet - John A. Nestor</title>
+</head>
+<body style="color: rgb(0, 0, 0); background-color: rgb(255, 255, 255);"
+ link="#000088" vlink="#880000">
+<center>
+<table cellpadding="0" cellspacing="0" height="350" width="500">
+  <tbody>
+    <tr>
+      <td valign="top" width="500"> <font face="arial,helvetica"
+ size="+2"><b>Steiner Tree Demonstration Applet - Special Cases
+      </b></font>
+      <br><br>
+This applet illustrates a special case Steiner Tree problem discussed
+      in the paper:
+<BR>
+      A. Kahng and G. Robins, "A New Class of Iterative Steiner Tree
+      Heuristics with Good Performance", <i>IEEE Transactions on
+      CAD</i>, Vol. 11, No 7, July 1992.
+<br><br>
+      <hr>
+      </p>
+<center><applet archive="STree.jar" code="SteinerDemoApplet.class"height="400" width="500">
+<param  name=GRAPH value="kahng.g">
+</applet></center>
+      <hr>
+      <br>
+	</td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<br>
+<br>
+<font face="Arial,Helvetica" size="-1">
+| <a href="../index.html">CadApplets Home</a> | <a
+ href="./RMSTApplet.html">RMST</a><b>
+</b>| <span style="font-weight: bold;">Steiner</span> <span
+ style="font-weight: bold;">Demo</span> | <a href="../MazeRouter.html">Maze
+Router</a> | <a href="../MultiMaze.html"> Multilayer Maze Router</a> |
+<a href="../PlacementApplet/PlacementIntro.html"> Placement</a> |
+<a href="../fp/fpIntro.html"> Annealing</a> |
+</font><br>
+<br>
+<font size="-2">
+Last updated on May 23, 2006 by <a
+ href="http://foghorn.cadlab.lafayette.edu/%7Enestorj">John A. Nestor</a>
+</font></center>
+</body>
+</html>

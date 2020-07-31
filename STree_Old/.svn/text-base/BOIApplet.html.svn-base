@@ -1,0 +1,105 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>BOI Steinerg Tree Demonstration Applet - John
+A. Nestor</title>
+</head>
+<body style="color: rgb(0, 0, 0); background-color: rgb(255, 255, 255);"
+ link="#000088" vlink="#880000">
+<center>
+<table cellpadding="0" cellspacing="0" height="350" width="500">
+  <tbody>
+    <tr>
+      <td valign="top" width="500"> <font face="arial,helvetica"
+ size="+2"><b>BOI Steiner Applet<br>
+      <font size="+1">Borah-Owens-Irwin Heuristic for Steiner Trees</font><br>
+      </b></font>
+      <p>This applet illustrates the Borah-Owens-Irwin algorithm for
+      constructing a Steiner Tree.  The algorithm starts with a Rectilinear
+      Minimum Spanning Tree (RSMT) and searches for node/edge pairs
+      such that connecting the node to the edge creates a new Steiner
+      Point and creates a cycle in the tree.  The longest edge in the
+      cycle is then deleted, creating a new tree that improves the
+      overall cost of the tree.  Node/edge pairs are examined and
+      ranked by potential gain and applied in that order.
+      <br>
+      <br>
+      <font face="arial,helvetica" size="+1"><b>To Use the Applet</b></font>
+      <br>
+      <br>
+This applet creates a small number of terminals at random locations.
+Use the "VCR" controls to start, pause, single-step or stop the
+animation. <br>
+      <hr>
+<center><applet archive="STree.jar" code="BOIApplet.class" height="400" width="500">
+</applet>
+</center>
+<!--
+Mininimum Spanning Trees</b></font><br><br>
+Given a set of terminal points in a plane, a rectilinear
+minimum spanning tree is a set of edges which connects all the
+terminals with minimum rectilinear distance.&nbsp; Rectilinear distance
+(also called "Manhattan Distance") is the sum of the horizontal and
+vertical distance between two points.&nbsp; It is used instead of
+Euclidean distance in VLSI CAD
+applications because VLSI processes support only horizontal and
+vertical wires.
+      <br>
+      <br>
+The RMST can be used as an estimate of the length of
+a net that connects together multiple terminals.
+      <br>
+      <br>
+The RMST Problem is a special case of the Minimum Spanning Tree
+problem studied in Computer Science Algorithms textbooks in that the
+distances between the points imply a complete graph.
+-->
+      <br>
+      <br>
+      <font face="arial,helvetica" size="+1"><b>References</b></font>
+      <br>
+      <br>
+M. Borah, R. Owens, and M. J. Irwin, "An Edge-Based Heuristic for
+      Steiner Routing", <i>IEEE  Trans. CAD</i>, Vol 13, No. 12, pp
+      1563-1568.  December, 1994.
+<br><br>
+J. Ganley, P. Madden, G. Robins, and I. Mandoiu, "GSRC Bookshelf
+Rectilinear Steiner Minimum Tree Slot", February 2003. <a
+ href="http://vlsicad.ucsd.edu/GSRC/bookshelf/Slots/RSMT/" target="_new">http://vlsicad.ucsd.edu/GSRC/bookshelf/Slots/RSMT/</a>.
+      <br>
+      <br>
+M. Sarrafzadeh and C. K. Wong, <i>An Introduction to VLSI Design</i>,
+McGraw-Hill, 1996.<br>
+      <br>
+      <font face="arial,helvetica" size="+1"><b>Acknowledgement</b></font>
+      <br>
+      <br>
+This RMST code in this applet is derived from Patrick Madden's Steiner
+ Tree code which can be found at the 
+ <A HREF="GSRC Bookshelf Steiner Tree Page" TARGET=_new>
+ href="http://vlsicad.ucsd.edu/GSRC/bookshelf/Slots/RSMT/" target="_new">http://vlsicad.ucsd.edu/GSRC/bookshelf/Slots/RSMT/</a>.
+      <br>
+      <br>
+      </p>
+      <hr></td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<br>
+<br>
+<font face="Arial,Helvetica" size="-1">
+| <a href="../index.html">CadApplets Home</a> | <b>RMST
+</b>| <a href="./SteinerDemo.html">Steiner Demo</a> | <a
+ href="../MazeRouter.html">Maze Router</a> | <a href="../MultiMaze.html">
+Multilayer Maze Router</a> |
+<a href="../PlacementApplet/PlacementIntro.html"> Placement</a> |
+<a href="../fp/fpIntro.html"> Annealing</a> |
+</font><br>
+<br>
+<font size="-2">
+Last updated on May 23, 2006 by <a
+ href="http://foghorn.cadlab.lafayette.edu/%7Enestorj">John A. Nestor</a>
+</font></center>
+</body>
+</html>
