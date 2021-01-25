@@ -4,12 +4,14 @@
  * and open the template in the editor.
  */
 package pathfinder_demo;
+
 import java.util.concurrent.CopyOnWriteArrayList;
+
 /**
  *
  * @author 15002
  */
-public class PFGraph {
-    private CopyOnWriteArrayList<PFNode> nodes = new CopyOnWriteArrayList<PFNode>();
-    private CopyOnWriteArrayList<PFNode> edges = new CopyOnWriteArrayList<PFNode>();
+public class ConnecBlock {
+
+    private CopyOnWriteArrayList<PFEdge> switches = new CopyOnWriteArrayList<PFEdge>();
 }

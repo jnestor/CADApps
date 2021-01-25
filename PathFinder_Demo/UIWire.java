@@ -18,16 +18,16 @@ public class UIWire {
     private UIDot terminalB;
     private CopyOnWriteArrayList<UIDot> switches = new CopyOnWriteArrayList<UIDot>();
     private CopyOnWriteArrayList<PFNode> wireSegs = new CopyOnWriteArrayList<PFNode>();
-    private int length;
     private Color color = Color.black;
     private Point locA, locB;
-    
-    public UIWire(UIDot a, UIDot b, int l){
+    private PFNode channel;
+    private Point pA;
+    private Point pB;
+    public UIWire(UIDot a, UIDot b){
         terminalA = a;
         terminalB = b;
-        length = l;
-        Point pA = terminalA.getLoc();
-        Point pB = terminalB.getLoc();
+        pA = terminalA.getLoc();
+        pB = terminalB.getLoc();
         if(pA.getX()!=pB.getX()){
             if(pA.getX()<pB.getX()){
                 locA=new Point((int)pA.getX()-terminalA.getSize()/2,(int)pA.getY());
@@ -50,6 +50,10 @@ public class UIWire {
         }
     }
     
+    public void setChan(PFNode c){
+        channel = c;
+    }
+    
     public Color getColor(){
         return color;
     }
@@ -58,5 +62,28 @@ public class UIWire {
         color = c;
     }
     
+    public Point getLocA(){
+        return locA;
+    }
+    
+    public Point getLocB(){
+        return locB;
+    }
+    
+    public int getAX(){
+        return (int)pA.getX();
+    }
+    
+    public int getAY(){
+        return (int)pA.getY();
+    }
+    
+    public int getBX(){
+        return (int)pB.getX();
+    }
+    
+    public int getBY(){
+        return (int)pB.getY();
+    }
     
 }
