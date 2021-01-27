@@ -21,119 +21,30 @@ import javax.swing.*;
  */
 public class UIGraph extends JPanel {
 
-    public final String SW = "SW";
-    public final String SB = "SB";
-    public final String LB = "LB";
-    public final String OP = "OP";
-    public final String IP = "IP";
-    public final String TM = "TM";
+    public static final String SW = "SW";
+    public static final String SB = "SB";
+    public static final String LB = "LB";
+    public static final String OP = "OP";
+    public static final String IP = "IP";
+    public static final String TM = "TM";
 
-    private CopyOnWriteArrayList<UIDot> nodes = new CopyOnWriteArrayList<UIDot>();
+    private CopyOnWriteArrayList<UIDotContainer> nodes = new CopyOnWriteArrayList<UIDotContainer>();
     private CopyOnWriteArrayList<UIWire> wires = new CopyOnWriteArrayList<UIWire>();
 
-    public static void main(String[] args) {
-        UIGraph u = new UIGraph();
-        JFrame f = new JFrame();
-        f.add(u);
-        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        f.setSize(1000, 1000);
-        f.setVisible(true);
-    }
+
 
     public UIGraph() {
-        for (int i = 0; i < 3; i++) {
-            int sbY = 45 + 270 * i;
-            for (int j = 0; j < 3; j++) {
-                int sbX = 45 + 270 * j;
-                nodes.add(new UIDot(new Point(sbX, sbY), SB, 90));
-            }
-        }
-        for (int i = 0; i < 2; i++) {
-            int lbY = 180 + 270 * i;
-            for (int j = 0; j < 2; j++) {
-                int lbX = 180 + 270 * j;
-                nodes.add(new UIDot(new Point(lbX, lbY), LB, 90));
-            }
-        }
         
-        for (int j = 0; j < 3; j++) {
-            int baseY = 270 * j;
-            for (int i = 0; i < 2; i++) {
-                int opX = 90 + 15 / 2 + i * 270;
-                for (int k = 0; k < 4; k++) {
-                    int opY = 15 / 2 + k * (15 + 10) + baseY;
-                    UIDot a = new UIDot(new Point(opX, opY), TM, 15);
-                    UIDot b = new UIDot(new Point(opX + 180 - 15, opY), TM, 15);
-                    nodes.add(a);
-                    nodes.add(b);
-                    wires.add(new UIWire(a, b));
-                }
-            }
-        }
-        for (int j = 0; j < 3; j++) {
-            int baseX = 270 * j;
-            for (int i = 0; i < 2; i++) {
-                int opY = 90 + 15 / 2 + i * 270;
-                for (int k = 0; k < 4; k++) {
-                    int opX = 15 / 2 + k * (15 + 10) + baseX;
-                    UIDot a = new UIDot(new Point(opX, opY), TM, 15);
-                    UIDot b = new UIDot(new Point(opX, opY + 180 - 15), TM, 15);
-                    nodes.add(a);
-                    nodes.add(b);
-                    wires.add(new UIWire(a, b));
-                }
-            }
-        }
-        for(int i =0;i<2;i++){
-            int opX = 270*i+45+90+15/2;
-            for(int j =0;j<2;j++){
-            int opY = 270*j+90+30+15/2;
-            UIDot a = new UIDot(new Point(opX,opY),IP,15);
-            UIDot b = new UIDot(new Point(opX+90-15,opY+90+15),IP,15);
-            UIDot saA = new UIDot(new Point(opX,opY-45),SW,15);
-            UIDot saB = new UIDot(new Point(opX,opY-45-50),SW,15);
-            UIDot sbA = new UIDot(new Point(opX+90-15,opY+90+15+45),SW,15);
-            UIDot sbB = new UIDot(new Point(opX+90-15,opY+90+15+45+50),SW,15);
-            nodes.add(a);
-            nodes.add(b);
-            nodes.add(saA);
-            nodes.add(saB);
-            nodes.add(sbA);
-            nodes.add(sbB);
-            wires.add(new UIWire(saA,a));
-            wires.add(new UIWire(saA,saB));
-            wires.add(new UIWire(sbA,b));
-            wires.add(new UIWire(sbA,sbB));
-            }
-        }
-        
-        for(int i =0;i<2;i++){
-            int opY = 270*i+45+90+15/2;
-            for(int j =0;j<2;j++){
-            int opX = 270*j+90+30+15/2;
-            UIDot a = new UIDot(new Point(opX,opY+90-15),OP,15);
-            UIDot b = new UIDot(new Point(opX+90+15,opY),OP,15);
-            UIDot saA = new UIDot(new Point(opX-45,opY+90-15),SW,15);
-            UIDot saB = new UIDot(new Point(opX-45-50,opY+90-15),SW,15);
-            UIDot sbA = new UIDot(new Point(opX+90+15+45,opY),SW,15);
-            UIDot sbB = new UIDot(new Point(opX+90+15+45+50,opY),SW,15);
-            nodes.add(a);
-            nodes.add(b);
-            nodes.add(saA);
-            nodes.add(saB);
-            nodes.add(sbA);
-            nodes.add(sbB);
-            wires.add(new UIWire(saA,a));
-            wires.add(new UIWire(saA,saB));
-            wires.add(new UIWire(sbA,b));
-            wires.add(new UIWire(sbA,sbB));
-            }
-        }
-
-        System.out.println(nodes.isEmpty());
-        System.out.println(wires.isEmpty());
     }
 
+    public void addNode(UIDotContainer d){
+        nodes.add(d);
+    }
+    
+    public void addWire(UIWire w){
+        wires.add(w);
+    }
+    
     private void drawNode(Graphics g, UIDot d) {
         Point loc = d.getLoc();
         int TERM_SIZE = d.getSize();
@@ -163,10 +74,10 @@ public class UIGraph extends JPanel {
         Graphics2D g = (Graphics2D) g2;
         g.setColor(w.getColor());
         g.setStroke(new BasicStroke(7));
-        int aX=(int)w.getLocA().getX();
-        int aY=(int)w.getLocA().getY();
-        int bX=(int)w.getLocB().getX();
-        int bY=(int)w.getLocB().getY();
+        int aX = (int) w.getLocA().getX();
+        int aY = (int) w.getLocA().getY();
+        int bX = (int) w.getLocB().getX();
+        int bY = (int) w.getLocB().getY();
         //	System.out.println("drawing edge from " + loc1 + " to " + loc2);
         g.drawLine(aX, aY, bX, bY);
         g.setStroke(new BasicStroke(1));
@@ -191,7 +102,8 @@ public class UIGraph extends JPanel {
     }
 
     private UIDot findNode(Point searchLoc) {
-        for (UIDot dot : nodes) {
+        for (UIDotContainer comp : nodes) {
+            UIDot dot=comp.getDot();
             if (dot.dotFound(searchLoc)) {
                 return dot;
             }
@@ -201,7 +113,8 @@ public class UIGraph extends JPanel {
 
     protected void drawNodes(Graphics g) {
         if (!nodes.isEmpty()) {
-            for (UIDot dot : nodes) {
+            for (UIDotContainer comp : nodes) {
+            UIDot dot=comp.getDot();
                 drawNode(g, dot);
             }
         }

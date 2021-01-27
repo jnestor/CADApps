@@ -22,6 +22,7 @@ public class UIDot {
     private String kind;
     private int size;
     private Color color;
+    private boolean clicked;
     public UIDot(Point l,String k,int s){
         loc = l;
         kind = k;
@@ -62,6 +63,14 @@ public class UIDot {
     
     public String getType(){
         return kind;
+    }
+    
+    public void setClicked(){
+        clicked=true;
+    }
+    
+    public boolean isClicked(){
+        return clicked;
     }
     
 }

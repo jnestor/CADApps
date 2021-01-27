@@ -20,7 +20,7 @@ public class UIWire {
     private CopyOnWriteArrayList<PFNode> wireSegs = new CopyOnWriteArrayList<PFNode>();
     private Color color = Color.black;
     private Point locA, locB;
-    private PFNode channel;
+    private Channel channel;
     private Point pA;
     private Point pB;
     public UIWire(UIDot a, UIDot b){
@@ -50,7 +50,7 @@ public class UIWire {
         }
     }
     
-    public void setChan(PFNode c){
+    public void setChan(Channel c){
         channel = c;
     }
     
@@ -62,6 +62,7 @@ public class UIWire {
         color = c;
     }
     
+    //Get the locations of terminals
     public Point getLocA(){
         return locA;
     }
@@ -70,6 +71,7 @@ public class UIWire {
         return locB;
     }
     
+    //Get the x/y coordinate of the two UIDots owned by the wire
     public int getAX(){
         return (int)pA.getX();
     }
@@ -86,4 +88,11 @@ public class UIWire {
         return (int)pB.getY();
     }
     
+    public UIDot getTermianlA(){
+        return terminalA;
+    }
+    
+    public UIDot getTermianlB(){
+        return terminalB;
+    }
 }

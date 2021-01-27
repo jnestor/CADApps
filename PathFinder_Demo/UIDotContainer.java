@@ -9,17 +9,18 @@ package pathfinder_demo;
  *
  * @author 15002
  */
-public class PFEdge {
-    private PFNode start;
-    private PFNode end;
-    private int cost;
+abstract class UIDotContainer{
+    private UIDot dot;
     
-    public PFEdge(PFNode s, PFNode e){
-        start = s;
-        end = e;
+    public UIDotContainer(UIDot d){
+        dot = d;
     }
     
-    public PFNode getEnd(){
-        return end;
+    public UIDot getDot(){
+        return dot;
+    }
+    
+    public void setDot(UIDot d){
+        dot=d;
     }
 }

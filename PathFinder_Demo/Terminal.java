@@ -9,17 +9,17 @@ package pathfinder_demo;
  *
  * @author 15002
  */
-public class PFEdge {
-    private PFNode start;
-    private PFNode end;
-    private int cost;
-    
-    public PFEdge(PFNode s, PFNode e){
-        start = s;
-        end = e;
+public class Terminal extends UIDotContainer{
+    Channel channel;
+    public Terminal(UIDot n){
+        super(n);
     }
     
-    public PFNode getEnd(){
-        return end;
+    public void setChannel(Channel c){
+        channel = c;
+    }
+    
+    public Channel getChannel(){
+        return channel;
     }
 }
