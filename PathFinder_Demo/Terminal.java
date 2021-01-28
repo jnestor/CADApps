@@ -9,7 +9,7 @@ package pathfinder_demo;
  *
  * @author 15002
  */
-public class Terminal extends UIDotContainer{
+public class Terminal extends UIBlock{
     Channel channel;
     public Terminal(UIDot n){
         super(n);

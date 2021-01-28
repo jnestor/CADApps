@@ -9,7 +9,7 @@ package pathfinder_demo;
  *
  * @author 15002
  */
-public class OutPin extends UIDotContainer{
+public class OutPin extends UIBlock implements NodeContainer{
 //    PFEdge fromOutEdge;
 //    PFEdge toOutEdge;
     Switch swA;

@@ -9,7 +9,7 @@ package pathfinder_demo;
  *
  * @author 15002
  */
-public class Switch extends UIDotContainer{
+public class Switch extends UIBlock{
     PFEdge edge;
     public Switch(UIDot n){
         super(n);
@@ -18,6 +18,10 @@ public class Switch extends UIDotContainer{
     //the edge links to the pin and wire segment
     public void setEdge(PFEdge e){
         edge = e;
+    }
+    
+    public PFEdge getEdge(){
+        return edge;
     }
 
 }

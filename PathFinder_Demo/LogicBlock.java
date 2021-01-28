@@ -11,7 +11,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *
  * @author 15002
  */
-public class LogicBlock extends UIDotContainer {
+public class LogicBlock extends UIBlock {
 
     private CopyOnWriteArrayList<OutPin> outPins = new CopyOnWriteArrayList<OutPin>();
     private CopyOnWriteArrayList<InPin> inPins = new CopyOnWriteArrayList<InPin>();
@@ -44,5 +44,9 @@ public class LogicBlock extends UIDotContainer {
     
     public PFNode getSink(){
         return sink;
+    }
+    
+    public CopyOnWriteArrayList<OutPin> getOutPins(){
+        return outPins;
     }
 }

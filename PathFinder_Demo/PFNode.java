@@ -11,6 +11,8 @@ import java.util.LinkedList;
  * @author 15002
  */
 public class PFNode {
+    private static int currID = 0;
+    private int ID;
     private int capacity;
     private int occupied;
     private LinkedList<PFEdge> edges = new LinkedList<PFEdge>();
@@ -19,6 +21,8 @@ public class PFNode {
     }
     public PFNode(int c){
         capacity = c;
+        ID = currID;
+        currID++;
     }
     
     public void addEdge(PFEdge edge){
@@ -32,6 +36,18 @@ public class PFNode {
     }
     public void clearStats(){
         occupied = 0;
+    }
+    
+        @Override 
+    public boolean equals(Object obj){
+        if(obj instanceof PFNode){
+            if (ID==((PFNode)obj).ID) return true;
+        }
+        return false;
+    }
+    
+    public int getID(){
+        return ID;
     }
 //    public void clearEdges(){
 //        edges.clear();

@@ -18,9 +18,9 @@ public class UIDot {
     public final String IP = "IP";
     public final String TM = "TM";
     public final String SB = "SB";
-    private Point loc;
-    private String kind;
-    private int size;
+    private final Point loc;
+    private final String kind;
+    private final int size;
     private Color color;
     private boolean clicked;
     public UIDot(Point l,String k,int s){
@@ -73,4 +73,14 @@ public class UIDot {
         return clicked;
     }
     
+    @Override
+    public boolean equals(Object obj){
+        if(obj instanceof UIDot){
+            UIDot d = (UIDot) obj;
+            if(loc.equals(d.getLoc())){
+                return true;
+            }
+        }
+        return false;
+    }
 }

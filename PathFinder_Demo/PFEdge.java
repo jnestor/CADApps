@@ -22,4 +22,19 @@ public class PFEdge {
     public PFNode getEnd(){
         return end;
     }
+    
+    public PFNode getStart(){
+        return start;
+    }
+    
+        @Override 
+    public boolean equals(Object obj){
+        if(obj instanceof PFEdge){
+            PFEdge edge = (PFEdge)obj;
+            if(start.equals(edge.start)&&
+                    end.equals(edge.end))
+                return true;
+        }
+        return false;
+    }
 }

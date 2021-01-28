@@ -11,7 +11,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *
  * @author 15002
  */
-public class SwitchBlock extends UIDotContainer {
+public class SwitchBlock extends UIBlock {
 
     private CopyOnWriteArrayList<PFEdge> edges = new CopyOnWriteArrayList<PFEdge>();
     
@@ -30,5 +30,8 @@ public class SwitchBlock extends UIDotContainer {
         edges.add(e);
     }
     
+    public CopyOnWriteArrayList<Channel> getChannels(){
+        return channels;
+    }
     
 }

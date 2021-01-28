@@ -95,4 +95,14 @@ public class UIWire {
     public UIDot getTermianlB(){
         return terminalB;
     }
+    
+    @Override
+    public boolean equals(Object obj){
+        if(obj instanceof UIWire){
+            UIWire w = (UIWire) obj;
+            if(locA.equals(w.getLocA())&&locB.equals(w.getLocB()))
+                return true;
+        }
+        return false;
+    }
 }

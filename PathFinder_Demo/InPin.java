@@ -9,9 +9,9 @@ package pathfinder_demo;
  *
  * @author 15002
  */
-public class InPin extends UIDotContainer{
+public class InPin extends UIBlock implements NodeContainer{
 //    PFEdge fromInEdge;
-//    PFEdge toInEdge;
+    PFEdge edge;
     Switch swA;
     Switch swB;
     PFNode node;
@@ -35,5 +35,9 @@ public class InPin extends UIDotContainer{
     
     public PFNode getNode(){
         return node;
+    }
+    
+    public PFEdge getEdge(){
+        return node.getEdges().get(0);
     }
 }

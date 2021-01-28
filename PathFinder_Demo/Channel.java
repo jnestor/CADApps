@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 package pathfinder_demo;
-
+import java.util.LinkedList;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -14,16 +14,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class Channel implements NodeContainer{
     private CopyOnWriteArrayList<UIWire> wires = new CopyOnWriteArrayList<UIWire>();
     private PFNode node;
-    private CopyOnWriteArrayList<PFEdge> edges = new CopyOnWriteArrayList<PFEdge>();
     
     
     public void setNode(PFNode n){
         node=n;
     }
     
-    public void addEdge(PFEdge e){
-        edges.add(e);
-    }
     
     public void addWire(UIWire w){
         wires.add(w);
@@ -31,5 +27,18 @@ public class Channel implements NodeContainer{
     
     public PFNode getNode(){
         return node;
+    }
+    
+    public LinkedList<PFEdge> getEdges(){
+        return node.getEdges();
+    }
+    
+    @Override 
+    public boolean equals(Object obj){
+        if(obj instanceof Channel){
+            Channel c = (Channel) obj;
+            return node.equals(c.getNode());
+        }
+        return false;
     }
 }
