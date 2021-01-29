@@ -4,13 +4,15 @@
  * and open the template in the editor.
  */
 package pathfinder_demo;
+import java.awt.Point;
 
 /**
  *
  * @author 15002
  */
 public class Terminal extends UIBlock{
-    Channel channel;
+    private Channel channel;
+    private Point wireLoc;
     public Terminal(UIDot n){
         super(n);
     }
@@ -21,5 +23,13 @@ public class Terminal extends UIBlock{
     
     public Channel getChannel(){
         return channel;
+    }
+    
+    public void setWireLoc(Point p){
+        wireLoc=p;
+    }
+    
+    public Point getWireLoc(){
+        return wireLoc;
     }
 }

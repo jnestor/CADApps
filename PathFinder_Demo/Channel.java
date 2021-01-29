@@ -41,4 +41,8 @@ public class Channel implements NodeContainer{
         }
         return false;
     }
+    
+    public CopyOnWriteArrayList<UIWire> getWires(){
+        return wires;
+    }
 }

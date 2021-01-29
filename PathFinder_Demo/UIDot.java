@@ -29,7 +29,7 @@ public class UIDot {
         size = s;
         if(k.equals(OP))color=Color.black;
         else if(k.equals(IP))color=Color.white;
-        else if(k.equals(SW))color=new Color(77,77,77);
+        else if(k.equals(SW))color=Color.white;
         else if(k.equals(LB))color=new Color(179, 179, 179);
         else if(k.equals(SB))color=new Color(255, 0, 0);
         else if(k.equals(TM))color = new Color((float)0.8,(float)0.8,(float)0.8,(float)0.8);

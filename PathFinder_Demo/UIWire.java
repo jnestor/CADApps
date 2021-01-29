@@ -5,6 +5,7 @@
  */
 package pathfinder_demo;
 
+import java.awt.BasicStroke;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.awt.Color;
 import java.awt.Point;
@@ -23,6 +24,7 @@ public class UIWire {
     private Channel channel;
     private Point pA;
     private Point pB;
+    private BasicStroke stroke = new BasicStroke(5);
     public UIWire(UIDot a, UIDot b){
         terminalA = a;
         terminalB = b;
@@ -40,14 +42,21 @@ public class UIWire {
         }
         else if(pA.getY()!=pB.getY()){
             if(pA.getY()>pB.getY()){
-                locA=new Point((int)pA.getX(),(int)pA.getY()+terminalA.getSize()/2);
-                locB=new Point((int)pB.getX(),(int)pB.getY()-terminalB.getSize()/2);
+                locA=new Point((int)pA.getX(),(int)pA.getY()+terminalA.getSize()/2-(int)(stroke.getLineWidth()/2));
+                locB=new Point((int)pB.getX(),(int)pB.getY()-terminalB.getSize()/2+(int)(stroke.getLineWidth()/2));
             }
             else if(pA.getY()<pB.getY()){
-                locA=new Point((int)pB.getX(),(int)pB.getY()+terminalB.getSize()/2);
-                locB=new Point((int)pA.getX(),(int)pA.getY()-terminalA.getSize()/2);
+                locB=new Point((int)pB.getX(),(int)pB.getY()+terminalB.getSize()/2-(int)(stroke.getLineWidth()/2));
+                locA=new Point((int)pA.getX(),(int)pA.getY()-terminalA.getSize()/2+(int)(stroke.getLineWidth()/2));
             }
         }
+    }
+    
+    public UIWire(UIDot a,UIDot b, int i,Point pA, Point pB){
+        this(a,b);
+        stroke = new BasicStroke(i);
+        locA = pA;
+        locB = pB;
     }
     
     public void setChan(Channel c){
@@ -104,5 +113,9 @@ public class UIWire {
                 return true;
         }
         return false;
+    }
+    
+    public BasicStroke getStroke(){
+        return stroke;
     }
 }

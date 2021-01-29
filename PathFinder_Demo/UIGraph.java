@@ -21,7 +21,7 @@ import java.util.Locale;
  *
  * @author 15002
  */
-public class UIGraph extends JPanel implements MouseListener{
+public class UIGraph extends JPanel implements MouseListener {
 
     public static final String SW = "SW";
     public static final String SB = "SB";
@@ -29,29 +29,44 @@ public class UIGraph extends JPanel implements MouseListener{
     public static final String OP = "OP";
     public static final String IP = "IP";
     public static final String TM = "TM";
-        private static final int END = 0;
+    private static final int END = 0;
     private static final int START = 1;
     private int state = END;
+    private boolean firstTime = true;
 
     private CopyOnWriteArrayList<UIBlock> nodes = new CopyOnWriteArrayList<UIBlock>();
+    private CopyOnWriteArrayList<UIBlock> top = new CopyOnWriteArrayList<UIBlock>();
+    private CopyOnWriteArrayList<UIBlock> bottom = new CopyOnWriteArrayList<UIBlock>();
     private CopyOnWriteArrayList<UIWire> wires = new CopyOnWriteArrayList<UIWire>();
-    
-    private CopyOnWriteArrayList<UIBlock> path = new CopyOnWriteArrayList<UIBlock>();
-    
+
+    private CopyOnWriteArrayList<UIBlock> pathBlocks = new CopyOnWriteArrayList<UIBlock>();
+    private CopyOnWriteArrayList<UIWire> path = new CopyOnWriteArrayList<UIWire>();
+
     private ColorSequencer colorSeq = new ColorSequencer();
 
     public UIGraph() {
         addMouseListener(this);
     }
 
-    public void addNode(UIBlock d){
+    public void addNode(UIBlock d) {
         nodes.add(d);
     }
     
-    public void addWire(UIWire w){
-        wires.add(w);
+    public void addToTop(UIBlock d) {
+        top.add(d);
+        addNode(d);
     }
     
+    
+    public void addToBottom(UIBlock d) {
+        bottom.add(d);
+        addNode(d);
+    }
+
+    public void addWire(UIWire w) {
+        wires.add(w);
+    }
+
     private void drawNode(Graphics g, UIDot d) {
         Point loc = d.getLoc();
         int TERM_SIZE = d.getSize();
@@ -80,7 +95,7 @@ public class UIGraph extends JPanel implements MouseListener{
     private void drawWire(Graphics g2, UIWire w) {
         Graphics2D g = (Graphics2D) g2;
         g.setColor(w.getColor());
-        g.setStroke(new BasicStroke(7));
+        g.setStroke(w.getStroke());
         int aX = (int) w.getLocA().getX();
         int aY = (int) w.getLocA().getY();
         int bX = (int) w.getLocB().getX();
@@ -117,10 +132,10 @@ public class UIGraph extends JPanel implements MouseListener{
         return null;
     }
 
-    protected void drawNodes(Graphics g) {
-        if (!nodes.isEmpty()) {
-            for (UIBlock comp : nodes) {
-            UIDot dot=comp.getDot();
+    protected void drawNodes(CopyOnWriteArrayList<UIBlock> n,Graphics g) {
+        if (!n.isEmpty()) {
+            for (UIBlock comp : n) {
+                UIDot dot = comp.getDot();
                 drawNode(g, dot);
             }
         }
@@ -132,16 +147,27 @@ public class UIGraph extends JPanel implements MouseListener{
                 drawWire((Graphics2D) g, wire);
             }
         }
+        firstTime = false;
+    }
+    
+    protected void drawPath(Graphics g){
+        if (!path.isEmpty()) {
+            for (UIWire wire : path) {
+                drawWire((Graphics2D) g, wire);
+            }
+        }
     }
 
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         drawWires(g);
-        drawNodes(g);
+        drawNodes(bottom,g);
+        drawPath(g);
+        drawNodes(top,g);
     }
-    
-        @Override
+
+    @Override
     public void mouseExited(MouseEvent e) { // do nothing
     }
 
@@ -154,7 +180,7 @@ public class UIGraph extends JPanel implements MouseListener{
     }
 
     @Override
-    public void mousePressed(MouseEvent e) { 
+    public void mousePressed(MouseEvent e) {
         System.out.println("pressed");
     }
 
@@ -165,134 +191,184 @@ public class UIGraph extends JPanel implements MouseListener{
         UIBlock selBlock = findNode(mouseLoc);
         boolean formWire = false;
         boolean accepted = false;
-        if(selBlock!=null){
-        String type = selBlock.getDot().getType();
-        System.out.println(selBlock.getDot().getType());
-        if (state == START) {
-            System.out.println("try to start");
-            UIBlock last = path.get(path.size() - 1);
-            if (type.equals(IP)) {
-                InPin in = (InPin) selBlock;
-                if (last.getDot().getType().equals(SW)) {
-                    Switch sw = (Switch) last;
-                    if (sw.getEdge().getEnd().equals(in.getNode())) {
-                        path.add(in);
-                        //in.getDot().setColor(colorSeq.current());
-                        formWire = true;
-                        in.getNode().itirate();
-                        accepted =true; 
+        if (selBlock != null) {
+            String type = selBlock.getDot().getType();
+            System.out.println(selBlock.getDot().getType());
+            if (state == START) {
+                System.out.println("try to start");
+                UIBlock last = pathBlocks.get(pathBlocks.size() - 1);
+                if (type.equals(IP)) {
+                    InPin in = (InPin) selBlock;
+                    if (last.getDot().getType().equals(SW)) {
+                        Switch swLast = (Switch) last;
+                        if (swLast.getEdge().getEnd().equals(in.getNode())) {
+                            pathBlocks.add(in);
+                            //in.getDot().setColor(colorSeq.current());
+                            formWire = true;
+                            in.getNode().itirate();
+                            accepted = true;
+                        }
                     }
-                }
-            } else if (type.equals(LB)) {
-                LogicBlock lb = (LogicBlock) selBlock;
-                if (last.getDot().getType().equals(IP)) {
-                    InPin in = (InPin) last;
-                    if (in.getEdge().getEnd().equals(lb.getSink())) {
-                        path.add(lb);
-                        lb.getSink().itirate();
-                        state = END;
-                        colorSeq.next();
-                        path.clear();
-                        accepted =true;
+                } else if (type.equals(LB)) {
+                    LogicBlock lb = (LogicBlock) selBlock;
+                    if (last.getDot().getType().equals(IP)) {
+                        InPin inLast = (InPin) last;
+                        if (inLast.getEdge().getEnd().equals(lb.getSink())) {
+                            pathBlocks.add(lb);
+                            lb.getSink().itirate();
+                            state = END;
+                            colorSeq.next();
+                            pathBlocks.clear();
+                            accepted = true;
+                        }
                     }
-                }
-            } else if (type.equals(OP)) {
-                System.out.println("try to connect to OP");
-                OutPin out = (OutPin) selBlock;
-                if (last.getDot().getType().equals(LB)) {
-                    System.out.println("last one is LB");
-                    LogicBlock lb = (LogicBlock) last;
-                    if (lb.getOutPins().get(0).getNode().equals(out.getNode())) {
-                        System.out.println("op is owned by this lb");
-                        System.out.println("accepted?"+accepted);
-                        path.add(out);
-                        System.out.println("accepted?"+accepted);
-                        //out.getDot().setColor(colorSeq.current());
-                        out.getNode().itirate();
-                        accepted =true;
-                        System.out.println("accepted?"+accepted);
+                } else if (type.equals(OP)) {
+//                    System.out.println("try to connect to OP");
+                    OutPin out = (OutPin) selBlock;
+                    if (last.getDot().getType().equals(LB)) {
+//                        System.out.println("last one is LB");
+                        LogicBlock lbLast = (LogicBlock) last;
+                        if (lbLast.getOutPins().get(0).getNode().equals(out.getNode())) {
+                            pathBlocks.add(out);
+                            //out.getDot().setColor(colorSeq.current());
+                            out.getNode().itirate();
+                            accepted = true;
+                        }
                     }
-                }
-            } else if (type.equals(SW)) {
-                Switch sw = (Switch) selBlock;
-                if (last.getDot().getType().equals(OP)) {
-                    OutPin out = (OutPin) last;
-                    if (out.getNode().getEdges().get(0).equals(sw.edge)) {
-                        path.add(out);
-                        sw.getDot().setColor(colorSeq.current());
-                        formWire = true;
-                        accepted =true;
-                    }
-                } else if (last.getDot().getType().equals(TM)) {
-                    Terminal tm = (Terminal) selBlock;
-                    Channel c = tm.getChannel();
-                    for (PFEdge edge : c.getEdges()) {
-                        if (sw.getEdge().equals(edge)) {
-                            path.add(sw);
+                } else if (type.equals(SW)) {
+                    Switch sw = (Switch) selBlock;
+                    if (last.getDot().getType().equals(OP)) {
+                        OutPin outLast = (OutPin) last;
+                        if (outLast.getNode().getEdges().get(0).equals(sw.edge)) {
+                            pathBlocks.add(sw);
                             sw.getDot().setColor(colorSeq.current());
                             formWire = true;
-                            accepted =true;
-                            break;
+                            accepted = true;
+                        }
+                    } else if (last.getDot().getType().equals(TM)) {
+                        Terminal tmLast = (Terminal) last;
+                        Channel cLast = tmLast.getChannel();
+                        for (PFEdge edge : cLast.getEdges()) {
+                            if (sw.getEdge().equals(edge)) {
+                                pathBlocks.add(sw);
+                                sw.getDot().setColor(colorSeq.current());
+                                formWire = true;
+                                accepted = true;
+                                break;
+                            }else {
+//                                System.out.println(cLast.getEdges().size());
+//                                System.out.println("swStart: "+sw.getEdge().getStart().getID());
+//                                System.out.println("swEnd: "+sw.getEdge().getEnd().getID());
+//                                System.out.println("edgeStart: "+edge.getStart().getID());
+//                                System.out.println("edgeEnd: "+edge.getEnd().getID());
+//                                System.out.println();
+                            }
                         }
                     }
-                }
-            } else if (type.equals(TM)) {
-                Terminal tm = (Terminal) selBlock;
-                Channel channel = tm.getChannel();
-                if (last.getDot().getType().equals(SW)) {
-                    Switch sw = (Switch) last;
-                    for (PFEdge edge : channel.getEdges()) {
-                        if (sw.getEdge().getEnd().equals(edge)) {
-                            if ((tm.getDot().getLoc().getX() == sw.getDot().getLoc().getX())
-                                    || (tm.getDot().getLoc().getY() == sw.getDot().getLoc().getY())) {
-                                path.add(tm);
+                } else if (type.equals(TM)) {
+                    Terminal tm = (Terminal) selBlock;
+                    Channel channel = tm.getChannel();
+                    if (last.getDot().getType().equals(SW)) {
+                        Switch swLast = (Switch) last;
+//                        System.out.println("last one is switch");
+                        if (swLast.getEdge().getEnd().equals(channel.getNode())) {
+//                            System.out.println("share the same edge");
+                            if ((tm.getDot().getLoc().getX() == swLast.getDot().getLoc().getX())
+                                    || (tm.getDot().getLoc().getY() == swLast.getDot().getLoc().getY())) {
+                                pathBlocks.add(tm);
                                 tm.getDot().setColor(colorSeq.current());
                                 formWire = true;
-                                accepted =true;
-                                break;
+                                accepted = true;
                             }
-
+                        } else {
+//                            System.out.println("tmChannel: " + tm.getChannel().getNode().getID());
+//                            System.out.println("swEdgeEnd: " + swLast.getEdge().getEnd().getID());
                         }
-                    }
-                } else if (last.getDot().getType().equals(TM)) {
-                    Terminal tm2 = (Terminal) last;
-                    Channel channel2 = tm2.getChannel();
-                    for (PFEdge edge : channel2.getEdges()) {
-                        if (edge.getEnd().equals(channel.getNode())) {
-                            path.add(tm);
-                            tm.getDot().setColor(colorSeq.current());
-                            formWire = true;
-                            accepted =true;
-                            break;
+
+                    } else if (last.getDot().getType().equals(TM)) {
+                        Terminal tmLast = (Terminal) last;
+                        Channel channelLast = tmLast.getChannel();
+                        if (!channel.equals(channelLast)) {
+//                            System.out.println("not same Channel");
+//                            System.out.println("current: "+channel.getNode().getID());
+//                            System.out.println("last: "+channelLast.getNode().getID());
+                            for (PFEdge edgeLast : channelLast.getEdges()) {
+                                if (edgeLast.getEnd().equals(channel.getNode())) {
+                                    pathBlocks.add(tm);
+                                    tm.getDot().setColor(colorSeq.current());
+//                                    System.out.println(tm.getWireLoc()==null);
+//                                    System.out.println(tmLast.getWireLoc()==null);
+                                    formPathWire(tm,tmLast,2,tm.getWireLoc(),tmLast.getWireLoc());
+                                    accepted = true;
+                                    break;
+                                }
+                            }
+                        } else if(!tmLast.getDot().equals(tm.getDot())){
+//                            System.out.println("same Channel");
+                            for(UIWire wire:channelLast.getWires()){
+                                if(wire.getTermianlA().equals(tm.getDot())^wire.getTermianlB().equals(tm.getDot())){
+                                    if(wire.getTermianlA().equals(tmLast.getDot())^wire.getTermianlB().equals(tmLast.getDot())){
+//                                    System.out.println("same Wire");
+//                                    System.out.println("current: " + tm.getDot().getLoc().toString());
+//                                    System.out.println("lastA: " + wire.getTermianlA().getLoc().toString());
+//                                    System.out.println("lastA: " + wire.getTermianlB().getLoc().toString());
+                                    pathBlocks.add(tm);
+                                    tm.getDot().setColor(colorSeq.current());
+                                    formWire = true;
+                                    accepted = true;
+                                    break;}
+                                }
+                            }
                         }
                     }
                 }
+            } else if (state == END) {
+
+                if (type.equals(LB)) {
+                    LogicBlock lb = (LogicBlock) selBlock;
+                    if (pathBlocks.isEmpty()) {
+                        pathBlocks.add(lb);
+                        lb.getSource().itirate();
+                        state = START;
+                        accepted = true;
+                    } else {
+                        System.out.println("Not empty");
+                    }
+                }
             }
-        } else if (state == END) {
-            
-            if (type.equals(LB)) {
-                LogicBlock lb = (LogicBlock) selBlock;
-                if (path.isEmpty()) {
-                    path.add(lb);
-                    lb.getSource().itirate();
-                    state = START;
-                    accepted =true;
-                }else System.out.println("Not empty");
+
+            if (formWire) {
+//                System.out.println("Form wire");
+//                UIWire w = new UIWire(selBlock.getDot(), pathBlocks.get(pathBlocks.size() - 2).getDot());
+//                w.setColor(colorSeq.current());
+//                path.add(w);
+                formPathWire(selBlock,pathBlocks.get(pathBlocks.size() - 2));
             }
         }
 
-        if (formWire) {
-            System.out.println("Form wire");
-            UIWire w = new UIWire(selBlock.getDot(), path.get(path.size() - 1).getDot());
-            w.setColor(colorSeq.current());
-            addWire(w);
+        if (accepted) {
+            System.out.println("accepted");
+            repaint();
+            System.out.println("current pathLength: " + pathBlocks.size());
+        } else {
+            System.out.println("denied");
         }
-        }
-        
-        if(accepted) System.out.println("accepted");
-        else System.out.println("denied");
-        System.out.println("state: "+state);
-        
+        System.out.println("state: " + state);
+
+    }
+    
+    public void formPathWire(UIBlock a, UIBlock b){
+        System.out.println("Form wire");
+        UIWire w = new UIWire(a.getDot(), b.getDot());
+        w.setColor(colorSeq.current());
+        path.add(w);
+    }
+    
+    public void formPathWire(UIBlock a, UIBlock b, int i, Point pA, Point pB){
+        System.out.println("Form wire");
+        UIWire w = new UIWire(a.getDot(), b.getDot(),i,pA,pB);
+        w.setColor(colorSeq.current());
+        path.add(w);
     }
 
 }

@@ -39,7 +39,7 @@ public class PathFinder_demo  {
             for (int j = 0; j < w; j++) {
                 int sbX = 45 + 270 * j;
                 SwitchBlock sb = new SwitchBlock(new UIDot(new Point(sbX, sbY), SB, 90));
-                u.addNode(sb);
+                u.addToBottom(sb);
                 sbArr[j][i] = sb;
             }
         }
@@ -51,7 +51,7 @@ public class PathFinder_demo  {
             for (int j = 0; j < w - 1; j++) {
                 int lbX = 180 + 270 * j;
                 LogicBlock lb = new LogicBlock(new UIDot(new Point(lbX, lbY), LB, 90));
-                u.addNode(lb);
+                u.addToBottom(lb);
                 lbArr[j][i] = lb;
                 PFNode source = new PFNode(2);
                 PFNode sink = new PFNode(2);
@@ -75,10 +75,12 @@ public class PathFinder_demo  {
                     int opY = 15 / 2 + k * (15 + 10) + baseY;
                     Terminal a = new Terminal(new UIDot(new Point(opX, opY), TM, 15));
                     Terminal b = new Terminal(new UIDot(new Point(opX + 180 - 15, opY), TM, 15));
-                    u.addNode(a);
-                    u.addNode(b);
+                    u.addToTop(a);
+                    u.addToTop(b);
                     UIWire wire = new UIWire(a.getDot(), b.getDot());
                     u.addWire(wire);
+                    a.setWireLoc(wire.getLocA());
+                    b.setWireLoc(wire.getLocB());
                     c.addWire(wire);
                     a.setChannel(c);
                     b.setChannel(c);
@@ -102,10 +104,12 @@ public class PathFinder_demo  {
                     int opX = 15 / 2 + k * (15 + 10) + baseX;
                     Terminal a = new Terminal(new UIDot(new Point(opX, opY), TM, 15));
                     Terminal b = new Terminal(new UIDot(new Point(opX, opY + 180 - 15), TM, 15));
-                    u.addNode(a);
-                    u.addNode(b);
+                    u.addToTop(a);
+                    u.addToTop(b);
                     UIWire wire = new UIWire(a.getDot(), b.getDot());
                     u.addWire(wire);
+                    a.setWireLoc(wire.getLocA());
+                    b.setWireLoc(wire.getLocB());
                     c.addWire(wire);
                     a.setChannel(c);
                     b.setChannel(c);
@@ -184,12 +188,12 @@ public class PathFinder_demo  {
                 lbArr[i][j].addIn(upIn);
                 lbArr[i][j].addIn(downIn);
 
-                u.addNode(upIn);
-                u.addNode(downIn);
-                u.addNode(swaA);
-                u.addNode(swaB);
-                u.addNode(swbA);
-                u.addNode(swbB);
+                u.addToTop(upIn);
+                u.addToTop(downIn);
+                u.addToTop(swaA);
+                u.addToTop(swaB);
+                u.addToTop(swbA);
+                u.addToTop(swbB);
                 u.addWire(new UIWire(saA, a));
                 u.addWire(new UIWire(saA, saB));
                 u.addWire(new UIWire(sbA, b));
@@ -240,19 +244,17 @@ public class PathFinder_demo  {
                 lbArr[j][i].addIn(leftIn);
                 lbArr[j][i].addOut(rightOut);
 
-                u.addNode(leftIn);
-                u.addNode(rightOut);
-                u.addNode(leftIn);
-                u.addNode(rightOut);
-                u.addNode(swaA);
-                u.addNode(swaB);
-                u.addNode(swbA);
-                u.addNode(swbB);
+                u.addToTop(leftIn);
+                u.addToTop(rightOut);
+                u.addToTop(swaA);
+                u.addToTop(swaB);
+                u.addToTop(swbA);
+                u.addToTop(swbB);
                 u.addWire(new UIWire(saA, a));
                 u.addWire(new UIWire(saA, saB));
                 u.addWire(new UIWire(sbA, b));
                 u.addWire(new UIWire(sbA, sbB));
-
+                
                 PFEdge leftSWToLeftIn = new PFEdge(channelVertArr[j][i].getNode(), leftIn.getNode());
                 PFEdge rightOutToRightSW = new PFEdge(rightOut.getNode(), channelVertArr[j + 1][i].getNode());
                 PFEdge leftInToSink = new PFEdge(leftIn.getNode(), lbArr[j][i].getSink());
@@ -263,7 +265,7 @@ public class PathFinder_demo  {
                 pfG.addEdge(sourceToRightOut);
                 leftIn.getNode().addEdge(leftInToSink);
                 rightOut.getNode().addEdge(rightOutToRightSW);
-                channelHoriArr[j][i].getNode().addEdge(leftSWToLeftIn);
+                channelVertArr[j][i].getNode().addEdge(leftSWToLeftIn);
                 lbArr[j][i].getSource().addEdge(sourceToRightOut);
                 swaA.setEdge(leftSWToLeftIn);
                 swaB.setEdge(leftSWToLeftIn);
