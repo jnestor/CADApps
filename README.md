@@ -5,4 +5,6 @@ part of the CADAPPLETS project (https://cadapplets.lafayette.edu).
 
 Now that applets are no more, we are converting these visualizations to
 Java applications that can be downloaded and run by interested parties.
-For more information, contact John Nestor at Lafayette College.
+For more  information about the specific visualizations, see:
+https://sites.lafayette.edu/cadapps/
+orcontact John Nestor at Lafayette College (nestorj@lafayette.edu).  
