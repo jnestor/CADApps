@@ -12,6 +12,10 @@ package pathfinder_demo;
 abstract class UIBlock{
     private UIDot dot;
     private boolean used;
+    private PFNode target;
+    private PFNode source;
+
+
     
     public UIBlock(UIDot d){
         dot = d;
@@ -36,4 +40,21 @@ abstract class UIBlock{
     public void clearUsage(){
         used=false;
     }
+    
+    public PFNode getTarget(){
+        return target;
+    }
+    
+    public void setTarget(PFNode target) {
+        this.target = target;
+    }
+
+    public void setSource(PFNode source) {
+        this.source = source;
+    }
+
+    public PFNode getSource() {
+        return source;
+    }
+    
 }

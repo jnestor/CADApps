@@ -10,5 +10,5 @@ package pathfinder_demo;
  * @author 15002
  */
 public interface NodeContainer {
-    abstract PFNode getNode();
+//    abstract PFNode getNode();
 }

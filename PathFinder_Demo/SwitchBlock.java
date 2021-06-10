@@ -13,25 +13,25 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class SwitchBlock extends UIBlock {
 
-    private CopyOnWriteArrayList<PFEdge> edges = new CopyOnWriteArrayList<PFEdge>();
-    
-    private CopyOnWriteArrayList<Channel> channels = new CopyOnWriteArrayList<Channel>();
-    
-    
-    public SwitchBlock(UIDot d){
-        super(d);
-    }
-    
-    public void addChannel(Channel c){
-        channels.add(c);
-    }
-    
-    public void addEdge(PFEdge e){
-        edges.add(e);
-    }
-    
-    public CopyOnWriteArrayList<Channel> getChannels(){
-        return channels;
-    }
+//    private CopyOnWriteArrayList<PFEdge> edges = new CopyOnWriteArrayList<PFEdge>();
+//    
+//    private CopyOnWriteArrayList<Channel> channels = new CopyOnWriteArrayList<Channel>();
+//    
+//    
+//    public SwitchBlock(UIDot d){
+//        super(d);
+//    }
+//    
+//    public void addChannel(Channel c){
+//        channels.add(c);
+//    }
+//    
+//    public void addEdge(PFEdge e){
+//        edges.add(e);
+//    }
+//    
+//    public CopyOnWriteArrayList<Channel> getChannels(){
+//        return channels;
+//    }
     
 }

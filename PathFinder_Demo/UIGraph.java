@@ -29,6 +29,7 @@ public class UIGraph extends JPanel implements MouseListener {
     public static final String OP = "OP";
     public static final String IP = "IP";
     public static final String TM = "TM";
+    public static final String CH = "CH";
     private static final int END = 0;
     private static final int START = 1;
     private int state = END;
@@ -87,7 +88,7 @@ public class UIGraph extends JPanel implements MouseListener {
             g.setColor(Color.black);
             g.drawRect(orig_x, orig_y, TERM_SIZE, TERM_SIZE);
             g.drawString("out", orig_x + TERM_SIZE - (int) ((float) 8 / 15 * TERM_SIZE), orig_y + TERM_SIZE + (int) ((float) 9 / 15 * TERM_SIZE));
-        } else {
+        } else if(!d.getType().equals(CH)) {
             g.fillRect(orig_x, orig_y, TERM_SIZE, TERM_SIZE);
         }
     }
@@ -306,12 +307,12 @@ public class UIGraph extends JPanel implements MouseListener {
                         } else if(!tmLast.getDot().equals(tm.getDot())){
 //                            System.out.println("same Channel");
                             for(UIWire wire:channelLast.getWires()){
-                                if(wire.getTermianlA().equals(tm.getDot())^wire.getTermianlB().equals(tm.getDot())){
-                                    if(wire.getTermianlA().equals(tmLast.getDot())^wire.getTermianlB().equals(tmLast.getDot())){
+                                if(wire.getTerminalA().equals(tm.getDot())^wire.getTerminalB().equals(tm.getDot())){
+                                    if(wire.getTerminalA().equals(tmLast.getDot())^wire.getTerminalB().equals(tmLast.getDot())){
 //                                    System.out.println("same Wire");
 //                                    System.out.println("current: " + tm.getDot().getLoc().toString());
-//                                    System.out.println("lastA: " + wire.getTermianlA().getLoc().toString());
-//                                    System.out.println("lastA: " + wire.getTermianlB().getLoc().toString());
+//                                    System.out.println("lastA: " + wire.getTerminalA().getLoc().toString());
+//                                    System.out.println("lastA: " + wire.getTerminalB().getLoc().toString());
                                     pathBlocks.add(tm);
                                     tm.getDot().setColor(colorSeq.current());
                                     formWire = true;
@@ -328,7 +329,7 @@ public class UIGraph extends JPanel implements MouseListener {
                     LogicBlock lb = (LogicBlock) selBlock;
                     if (pathBlocks.isEmpty()) {
                         pathBlocks.add(lb);
-                        lb.getSource().itirate();
+                        lb.getSource().occupy();
                         state = START;
                         accepted = true;
                     } else {

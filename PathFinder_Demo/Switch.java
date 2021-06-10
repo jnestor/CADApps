@@ -10,18 +10,18 @@ package pathfinder_demo;
  * @author 15002
  */
 public class Switch extends UIBlock{
-    PFEdge edge;
-    public Switch(UIDot n){
-        super(n);
-    }
-    
-    //the edge links to the pin and wire segment
-    public void setEdge(PFEdge e){
-        edge = e;
-    }
-    
-    public PFEdge getEdge(){
-        return edge;
-    }
+//    PFEdge edge;
+//    public Switch(UIDot n){
+//        super(n);
+//    }
+//    
+//    //the edge links to the pin and wire segment
+//    public void setEdge(PFEdge e){
+//        edge = e;
+//    }
+//    
+//    public PFEdge getEdge(){
+//        return edge;
+//    }
 
 }
