@@ -23,14 +23,17 @@ public class PFNode implements Comparable<PFNode>{
     private PFNode prev;
     private double pathCost;
     private double hVal =1;
+    private boolean visitException =false;
     public boolean inCapacity(){
         return occupied <= capacity;
     }
     
-    public PFNode(int c,double bc, boolean v){
+    public PFNode(int c,double bc,UIBlock b){
         capacity = c;
         baseCost = bc;
-        isVertical = v;
+        isVertical = b.getDot().isIsVertical();
+        block = b;
+        wires=block.getWires();
         ID = currID;
         currID++;
     }
@@ -142,8 +145,12 @@ public class PFNode implements Comparable<PFNode>{
         return wires;
     }
 
-    public void setWires(LinkedList<UIWire> wires) {
-        this.wires = wires;
+    public boolean isVisitException() {
+        return visitException;
+    }
+
+    public void setVisitException(boolean visitException) {
+        this.visitException = visitException;
     }
     
     

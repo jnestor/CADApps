@@ -14,7 +14,7 @@ import java.util.LinkedList;
 public class PFEdge {
     private PFNode start;
     private PFNode end;
-    private int cost;
+
     private LinkedList <UIWire> wires;
     public PFEdge(PFNode s, PFNode e){
         start = s;
@@ -52,13 +52,6 @@ public class PFEdge {
     public LinkedList<UIWire> getWires(){
         return wires;
     }
-    
-    public int getCost(){
-        return cost;
-    }
-    
-    public void setCost(int c){
-        cost = c;
-    }
+
 
 }

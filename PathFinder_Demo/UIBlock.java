@@ -5,56 +5,64 @@
  */
 package pathfinder_demo;
 
+import java.awt.Point;
+import java.util.LinkedList;
+
 /**
  *
  * @author 15002
  */
-abstract class UIBlock{
+class UIBlock {
+
     private UIDot dot;
     private boolean used;
-    private PFNode target;
-    private PFNode source;
+    private LinkedList<UIWire> wires = new LinkedList<UIWire>(); //For Channel
+    private Point wireLoc;
 
-
-    
-    public UIBlock(UIDot d){
+    public UIBlock(UIDot d) {
         dot = d;
+        wireLoc = d.getLoc();
     }
-    
-    public UIDot getDot(){
+
+    public UIDot getDot() {
         return dot;
     }
-    
-    public void setDot(UIDot d){
-        dot=d;
+
+    public void setDot(UIDot d) {
+        dot = d;
     }
-    
-    public void setUsed(){
-        used=true;
+
+    public void setUsed() {
+        used = true;
     }
-    
-    public boolean isUsed(){
+
+    public boolean isUsed() {
         return used;
     }
-    
-    public void clearUsage(){
-        used=false;
-    }
-    
-    public PFNode getTarget(){
-        return target;
-    }
-    
-    public void setTarget(PFNode target) {
-        this.target = target;
+
+    public void clearUsage() {
+        used = false;
     }
 
-    public void setSource(PFNode source) {
-        this.source = source;
+    public LinkedList<UIWire> getWires() {
+        return wires;
     }
 
-    public PFNode getSource() {
-        return source;
+    public void addWire(UIWire wire) {
+        wires.add(wire);
     }
-    
+
+    public Point getWireLoc() {
+        return wireLoc;
+    }
+
+    public void setWireLoc(Point wireLoc) {
+        this.wireLoc = wireLoc;
+    }
+    @Override
+    public boolean equals(Object bt){
+        UIBlock b = (UIBlock) bt;
+        return dot.equals(b.getDot());
+    }
+
 }

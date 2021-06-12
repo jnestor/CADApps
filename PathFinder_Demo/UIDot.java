@@ -21,18 +21,33 @@ public class UIDot {
     public static final String CH = "CH";
     private final Point loc;
     private final String kind;
-    private final int size;
+    private final int height;
     private Color color;
     private Color defColor;
     private boolean clicked;
+    private boolean isVertical;
     //private LinkedList<UIEdge> wires = new LinkedList<UIEdge>();
     private PFNode availableSink;
     private PFNode targetSink;
-    
-    public UIDot(Point l,String k,int s){
+    private int width;
+    private Color edgeColor = new Color(0,0,0,0);//for Channels
+    private boolean occupied = false;
+    public UIDot(Point l,String k,int s, boolean iV){
         loc = l;
         kind = k;
-        size = s;
+        isVertical = iV;
+        if(k.equals(CH)){
+            width = (180+90)*s/90;
+            if(isVertical){
+                height=width;
+                width=s;
+            }
+            else height = s;
+        }  
+        else{ 
+            height = s;
+            width = height;
+        }
         if(k.equals(OP))color=Color.black;
         else if(k.equals(IP))color=Color.white;
         else if(k.equals(SW))color=Color.white;
@@ -44,7 +59,7 @@ public class UIDot {
     }
 
     public boolean dotFound(Point searchLoc) {
-        int window = size;
+        int window = height;
         int lx = searchLoc.x - window / 2;
         int ly = searchLoc.y - window / 2;
         int ux = searchLoc.x + window / 2;
@@ -57,8 +72,8 @@ public class UIDot {
         return loc;
     }
     
-    public int getSize(){
-        return size;
+    public int getHeight(){
+        return height;
     }
     
     public void setColor(Color c){
@@ -99,11 +114,11 @@ public class UIDot {
     public PFNode getAvailableSink() {
         return availableSink;
     }
-
+    
     public void setAvailableSink(PFNode availableSink) {
         this.availableSink = availableSink;
     }
-
+    
     public PFNode getTargetSink() {
         return targetSink;
     }
@@ -115,4 +130,30 @@ public class UIDot {
     public void resetColor(){
         color=defColor;
     }
+
+    public boolean isIsVertical() {
+        return isVertical;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public Color getEdgeColor() {
+        return edgeColor;
+    }
+
+    public void setEdgeColor(Color edgeColor) {
+        this.edgeColor = edgeColor;
+    }
+
+    public boolean isOccupied() {
+        return occupied;
+    }
+
+    public void setOccupied(boolean occupied) {
+        this.occupied = occupied;
+    }
+    
+    
 }

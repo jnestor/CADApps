@@ -1,0 +1,496 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package pathfinder_demo;
+import java.awt.Color;
+import java.awt.Point;
+import java.util.LinkedList;
+
+/**
+ *
+ * @author 15002
+ */
+public class UIPathFinder {
+    public static final String SW = "SW";
+    public static final String LB = "LB";
+    public static final String OP = "OP";
+    public static final String IP = "IP";
+    public static final String TM = "TM";
+    public static final String SB = "SB";
+    public static final String CH = "CH";
+    
+    private UIGraph u = new UIGraph();
+    
+    private LinkedList<PFNode> nodes = new LinkedList<PFNode>();
+    PFNode[][] sources;
+    PFNode[][] sinks;
+    PFNode[][] chanVer;
+    PFNode[][] chanHori;
+    public UIPathFinder(int w, int h){
+        //Construct switchBlocks
+        UIBlock[][] sbArr = new UIBlock[w][h];
+        for (int i = 0; i < h; i++) {
+            int sbY = 45 + 270 * i;
+            for (int j = 0; j < w; j++) {
+                int sbX = 45 + 270 * j;
+                UIBlock sb = new UIBlock(new UIDot(new Point(sbX, sbY), SB, 90,false));
+                u.addToBottom(sb);
+                sbArr[j][i] = sb;
+            }
+        }
+        
+        //Construct logic blocks
+        PFNode[][] sourceArr = new PFNode [w-1][h-1];
+        PFNode[][] sinkArr = new PFNode [w-1][h-1];
+        for (int i = 0; i < h - 1; i++) {
+            int lbY = 180 + 270 * i;
+            for (int j = 0; j < w - 1; j++) {
+                int lbX = 180 + 270 * j;
+                UIBlock lb = new UIBlock(new UIDot(new Point(lbX, lbY), LB, 90,false));
+                u.addToBottom(lb);
+                PFNode source = new PFNode(1,1,lb);
+                PFNode sink = new PFNode(3,0,lb);
+                nodes.add(sink);
+                nodes.add(source);
+                sourceArr[j][i]=source;
+                sinkArr[j][i]=sink;
+            }
+        }
+        sources=sourceArr;
+        sinks=sinkArr;
+        
+        //Construct horizontal channels
+        PFNode[][] chanNodeHoriArr = new PFNode[w - 1][h];
+        for (int j = 0; j < h; j++) {
+            int baseY = 270 * j;
+            for (int i = 0; i < w - 1; i++) {
+                int opX = 90 + 15 / 2 + i * 270;
+                UIBlock c = new UIBlock(new UIDot(new Point(opX-15/2+(90+180)/2,baseY+45),CH,90,false));
+                u.addChan(c);
+                for (int k = 0; k < 4; k++) {
+                    int opY = 15 / 2 + k * (15 + 10) + baseY;
+                    UIBlock a = new UIBlock(new UIDot(new Point(opX, opY), TM, 15,false));
+                    UIBlock b = new UIBlock(new UIDot(new Point(opX + 180 - 15, opY), TM, 15,false));
+                    u.addToTop(a);
+                    u.addToTop(b);
+                    UIWire wire = new UIWire(a, b);
+                    wire.setColor(Color.black);
+                    u.addWire(wire);
+                    a.setWireLoc(wire.getLocA());
+                    b.setWireLoc(wire.getLocB());
+                    c.addWire(wire);
+                }
+                PFNode chan = new PFNode(4,1,c);
+                nodes.add(chan);
+                chanNodeHoriArr[i][j]=chan;
+            }
+        }
+        
+        //Construct vertical channels
+        PFNode[][] chanNodeVertArr = new PFNode[w][h - 1];
+        for (int j = 0; j < w; j++) {
+            int baseX = 270 * j;
+            for (int i = 0; i < h - 1; i++) {
+                int opY = 90 + 15 / 2 + i * 270;
+                UIBlock c = new UIBlock(new UIDot(new Point(baseX+45,opY-15/2+(90+180)/2),CH,90,true));
+                u.addChan(c);
+                for (int k = 0; k < 4; k++) {
+                    int opX = 15 / 2 + k * (15 + 10) + baseX;
+                    UIBlock a = new UIBlock(new UIDot(new Point(opX, opY), TM, 15,true));
+                    UIBlock b = new UIBlock(new UIDot(new Point(opX, opY + 180 - 15), TM, 15,true));
+                    u.addToTop(a);
+                    u.addToTop(b);
+                    UIWire wire = new UIWire(a, b);
+                    wire.setColor(Color.black);
+                    u.addWire(wire);
+                    a.setWireLoc(wire.getLocA());
+                    b.setWireLoc(wire.getLocB());
+                    c.addWire(wire);
+                }
+                PFNode chan = new PFNode(4,1,c);
+                nodes.add(chan);
+                chanNodeVertArr[j][i]=chan;
+            }
+        }
+        
+        PFNode[][] upInArr = new PFNode[w-1][h-1];
+        PFNode[][] downInArr = new PFNode[w-1][h-1];
+        UIWire[][] upSwWireArr = new UIWire[w-1][h-1];
+        UIWire[][] downSwWireArr = new UIWire[w-1][h-1];
+        //Construct pins and switches
+        //up and down pin and their switches
+        for (int i = 0; i < w - 1; i++) {
+            int opX = 270 * i + 45 + 90 + 15 / 2;
+            for (int j = 0; j < h - 1; j++) {
+                int opY = 270 * j + 90 + 30 + 15 / 2;
+                UIDot upDot = new UIDot(new Point(opX, opY), IP, 15,false);
+                UIDot downDot = new UIDot(new Point(opX + 90 - 15, opY + 90 + 15), IP, 15,false);
+                UIDot upSWLowDot = new UIDot(new Point(opX, opY - 45), SW, 15,false);
+                UIDot upSWHiDot = new UIDot(new Point(opX, opY - 45 - 50), SW, 15,false);
+                UIDot downSWHiDot = new UIDot(new Point(opX + 90 - 15, opY + 90 + 15 + 45), SW, 15,false);
+                UIDot downSWLowDot = new UIDot(new Point(opX + 90 - 15, opY + 90 + 15 + 45 + 50), SW, 15,false);
+
+                UIBlock upSWLow = new UIBlock(upSWLowDot);
+                UIBlock upSWHi = new UIBlock(upSWHiDot);
+                UIBlock downSWHi = new UIBlock(downSWHiDot);
+                UIBlock downSWLow = new UIBlock(downSWLowDot);
+                UIBlock upIn = new UIBlock(upDot);
+                UIBlock downIn = new UIBlock(downDot);
+                chanNodeHoriArr[i][j].getWires().get(1).setSwBlock(upSWHi);
+                chanNodeHoriArr[i][j].getWires().get(3).setSwBlock(upSWLow);
+                chanNodeHoriArr[i][j+1].getWires().get(0).setSwBlock(downSWHi);
+                chanNodeHoriArr[i][j+1].getWires().get(2).setSwBlock(downSWLow);
+                
+                UIWire upWire = new UIWire(upSWHi, upIn);
+                UIWire downWire = new UIWire(downIn, downSWLow);
+                upWire.setColor(Color.black);
+                downWire.setColor(Color.black);
+                
+                upInArr[i][j]=new PFNode(1,0.95,upIn);
+                downInArr[i][j]=new PFNode(1,0.95,downIn);
+                nodes.add(upInArr[i][j]);
+                nodes.add(downInArr[i][j]);
+                upSwWireArr[i][j]= upWire;
+                downSwWireArr[i][j] = downWire;
+
+                u.addToTop(upIn);
+                u.addToTop(downIn);
+                u.addToTop(upSWLow);
+                u.addToTop(upSWHi);
+                u.addToTop(downSWHi);
+                u.addToTop(downSWLow);
+                u.addWire(upWire);
+                u.addWire(downWire);
+            }
+        }
+        
+        //left and right pin and their switches
+        PFNode[][] leftInArr = new PFNode[w-1][h-1];
+        PFNode[][] rightOutArr = new PFNode[w-1][h-1];
+        UIWire[][] leftSwWireArr = new UIWire[w-1][h-1];
+        UIWire[][] rightSwWireArr = new UIWire[w-1][h-1];
+        for (int i = 0; i < h - 1; i++) {
+            int opY = 270 * i + 45 + 90 + 15 / 2;
+            for (int j = 0; j < w - 1; j++) {
+                int opX = 270 * j + 90 + 30 + 15 / 2;
+                UIDot leftDot = new UIDot(new Point(opX, opY + 90 - 15), IP, 15,false);
+                UIDot rightDot = new UIDot(new Point(opX + 90 + 15, opY), OP, 15,false);
+                UIDot leftSWCloseDot = new UIDot(new Point(opX - 45, opY + 90 - 15), SW, 15,false);
+                UIDot leftSWFarDot = new UIDot(new Point(opX - 45 - 50, opY + 90 - 15), SW, 15,false);
+                UIDot rightSWCloseDot = new UIDot(new Point(opX + 90 + 15 + 45, opY), SW, 15,false);
+                UIDot rightSWFarDot = new UIDot(new Point(opX + 90 + 15 + 45 + 50, opY), SW, 15,false);
+
+                UIBlock leftSWClose = new UIBlock(leftSWCloseDot);
+                UIBlock leftSWFar = new UIBlock(leftSWFarDot);
+                UIBlock rightSWClose = new UIBlock(rightSWCloseDot);
+                UIBlock rightSWFar = new UIBlock(rightSWFarDot);
+                UIBlock leftIn = new UIBlock(leftDot);
+                UIBlock rightOut = new UIBlock(rightDot);
+
+
+                chanNodeVertArr[j][i].getWires().get(1).setSwBlock(leftSWFar);
+                chanNodeVertArr[j][i].getWires().get(3).setSwBlock(leftSWClose);
+                chanNodeVertArr[j+1][i].getWires().get(0).setSwBlock(rightSWClose);
+                chanNodeVertArr[j+1][i].getWires().get(2).setSwBlock(rightSWFar);
+                
+                UIWire leftWire = new UIWire(leftIn, leftSWFar);
+                UIWire rightWire = new UIWire(rightOut, rightSWFar);
+                leftWire.setColor(Color.black);
+                rightWire.setColor(Color.black);
+                
+                leftInArr[j][i]=new PFNode(1,0.95,leftIn);
+                rightOutArr[j][i]=new PFNode(1,1,rightOut);
+                nodes.add(leftInArr[j][i]);
+                nodes.add(rightOutArr[j][i]);
+                leftSwWireArr[j][i]= leftWire;
+                rightSwWireArr[j][i] = rightWire;
+
+                u.addToTop(leftIn);
+                u.addToTop(rightOut);
+                u.addToTop(leftSWFar);
+                u.addToTop(leftSWClose);
+                u.addToTop(rightSWClose);
+                u.addToTop(rightSWFar);
+                u.addWire(leftWire);
+                u.addWire(rightWire);
+            }
+        }
+        
+        //Construct edges from each logic block to channel
+        for(int i =0; i<w-1; i++){
+            for(int j =0; j<h-1;j++){
+                PFNode source = sourceArr[i][j];
+                
+                PFNode outPin = rightOutArr[i][j];
+                PFEdge sourceEdge = new PFEdge(source,outPin);
+                source.addEdge(sourceEdge);
+                PFNode rightChan = chanNodeVertArr[i+1][j];
+                PFEdge outPinEdge = new PFEdge(outPin,rightChan);
+                outPinEdge.addWire(rightSwWireArr[i][j]);
+                outPin.addEdge(outPinEdge);
+                
+                PFNode sink = sinkArr[i][j];
+                
+                PFNode leftIn = leftInArr[i][j];
+                PFEdge sinkEdgeLeft = new PFEdge(leftIn,sink);
+                leftIn.addEdge(sinkEdgeLeft);
+                PFNode leftChan = chanNodeVertArr[i][j];
+                PFEdge leftInEdge = new PFEdge(leftChan,leftIn);
+                leftInEdge.addWire(leftSwWireArr[i][j]);
+                leftChan.addEdge(leftInEdge);
+                
+                PFNode upIn = upInArr[i][j];
+                PFEdge sinkEdgeUp = new PFEdge (upIn,sink);
+                upIn.addEdge(sinkEdgeUp);
+                PFNode upChan = chanNodeHoriArr[i][j];
+                PFEdge upInEdge = new PFEdge(upChan,upIn);
+                upInEdge.addWire(upSwWireArr[i][j]);
+                upChan.addEdge(upInEdge);
+                
+                PFNode downIn = downInArr[i][j];
+                PFEdge sinkEdgeDown = new PFEdge(downIn,sink);
+                downIn.addEdge(sinkEdgeDown);
+                PFNode downChan = chanNodeHoriArr[i][j+1];
+                PFEdge downInEdge = new PFEdge(downChan,downIn);
+                downInEdge.addWire(downSwWireArr[i][j]);
+                downChan.addEdge(downInEdge);
+            }
+        }
+        
+        Color wireC = new Color(0,0,0,0);
+        //Construct edges between channels
+        for(int i =0;i<w-1;i++){
+            for(int j =0; j<h; j++){
+                PFNode chanHori = chanNodeHoriArr[i][j];
+                
+                if(j>0){
+                    PFNode upL = chanNodeVertArr[i][j-1];
+                    PFNode upR = chanNodeVertArr[i+1][j-1];
+                    PFEdge chanToUpL = new PFEdge(chanHori,upL);
+                    PFEdge upLToChan = new PFEdge(upL,chanHori);
+                    PFEdge chanToUpR = new PFEdge(chanHori,upR);
+                    PFEdge upRToChan = new PFEdge(upR, chanHori);
+                    chanHori.addEdge(chanToUpL);
+                    chanHori.addEdge(chanToUpR);
+                    upL.addEdge(upLToChan);
+                    upR.addEdge(upRToChan);
+                    for(UIWire wire : chanHori.getWires()){
+                        //left up channel connection
+                        for(UIWire wireL : upL.getWires()){
+                            UIWire thinWire = new UIWire(wire.getBlockA(), 
+                                    wireL.getBlockB(), 2,
+                                    wire.getLocA(), wireL.getLocB(), wireC);
+                            chanToUpL.addWire(thinWire);
+                            upLToChan.addWire(thinWire);
+                            u.addSwWire(thinWire);
+                        }
+                        //right up channel connection
+                        for(UIWire wireR : upR.getWires()){
+                            UIWire thinWire = new UIWire(wire.getBlockB(), 
+                                    wireR.getBlockB(), 2,
+                                    wire.getLocB(), wireR.getLocB(), wireC);
+                            chanToUpR.addWire(thinWire);
+                            upRToChan.addWire(thinWire);
+                            u.addSwWire(thinWire);
+                        }
+                    }
+                }
+                if(j<h-1){
+                    PFNode downL = chanNodeVertArr[i][j];
+                    PFNode downR = chanNodeVertArr[i+1][j];
+                    PFEdge chanToDownL = new PFEdge(chanHori,downL);
+                    PFEdge downLToChan = new PFEdge(downL,chanHori);
+                    PFEdge chanToDownR = new PFEdge(chanHori,downR);
+                    PFEdge downRToChan = new PFEdge(downR, chanHori);
+                    
+                    chanHori.addEdge(chanToDownL);
+                    chanHori.addEdge(chanToDownR);
+                    downL.addEdge(downLToChan);
+                    downR.addEdge(downRToChan);
+                    
+                    for(UIWire wire : chanHori.getWires()){
+                        //left down channel connection
+                        for(UIWire wireL : downL.getWires()){
+                            UIWire thinWire = new UIWire(wire.getBlockA(), 
+                                    wireL.getBlockA(), 2,
+                                    wire.getLocA(), wireL.getLocA(), wireC);
+                            chanToDownL.addWire(thinWire);
+                            downLToChan.addWire(thinWire);
+                            u.addSwWire(thinWire);
+                        }
+                        //right down channel connection
+                        for(UIWire wireR : downR.getWires()){
+                            UIWire thinWire = new UIWire(wire.getBlockB(), 
+                                    wireR.getBlockA(), 2,
+                                    wire.getLocB(), wireR.getLocA(), wireC);
+                            chanToDownR.addWire(thinWire);
+                            downRToChan.addWire(thinWire);
+                            u.addSwWire(thinWire);
+                        }
+                    }
+                }
+                
+                if(i>0){
+                    PFNode left = chanNodeHoriArr[i-1][j];
+                    PFEdge chanToLeft = new PFEdge(chanHori,left);
+                    PFEdge leftToChan = new PFEdge (left,chanHori);
+                    
+                    chanHori.addEdge(chanToLeft);
+                    left.addEdge(leftToChan);
+                    
+                    for(UIWire wire : chanHori.getWires()){
+                        //left channel connection
+                        for(UIWire wireL : left.getWires()){
+                            UIWire thinWire = new UIWire(wire.getBlockA(), 
+                                    wireL.getBlockB(), 2,
+                                    wire.getLocA(), wireL.getLocB(), wireC);
+                            chanToLeft.addWire(thinWire);
+                            leftToChan.addWire(thinWire);
+                            u.addSwWire(thinWire);
+                        }
+                    }
+                }
+                
+                if(i<w-2){
+                    PFNode right = chanNodeHoriArr[i+1][j];
+                    PFEdge chanToRight = new PFEdge(chanHori,right);
+                    PFEdge rightToChan = new PFEdge (right,chanHori);
+                    
+                    chanHori.addEdge(chanToRight);
+                    right.addEdge(rightToChan);
+                    
+                    for(UIWire wire : chanHori.getWires()){
+                        //left channel connection
+                        for(UIWire wireL : right.getWires()){
+                            UIWire thinWire = new UIWire(wire.getBlockB(), 
+                                    wireL.getBlockA(), 2,
+                                    wire.getLocB(), wireL.getLocA(), wireC);
+                            chanToRight.addWire(thinWire);
+                            rightToChan.addWire(thinWire);
+                            u.addSwWire(thinWire);
+                        }
+                    }
+                }
+            }
+        }
+        
+        //Connect vertical channels
+        for(int i =0; i<w;i++){
+            for(int j =0; j<h-1;j++){
+                PFNode chanVert = chanNodeVertArr[i][j];
+                if(j>0){
+                    PFNode up = chanNodeVertArr[i][j-1];
+                    PFEdge chanToUp = new PFEdge(chanVert,up);
+                    PFEdge upToChan = new PFEdge(up,chanVert);
+                    chanVert.addEdge(chanToUp);
+                    up.addEdge(upToChan);
+                    
+                    for(UIWire wire : chanVert.getWires()){
+                        for(UIWire wireU : up.getWires()){
+                            UIWire thinWire = new UIWire(wire.getBlockA(), 
+                                    wireU.getBlockB(), 2,
+                                    wire.getLocA(), wireU.getLocB(), wireC);
+                            chanToUp.addWire(thinWire);
+                            upToChan.addWire(thinWire);
+                            u.addSwWire(thinWire);
+                        }
+                    }
+                }
+                if(j<h-2){
+                    PFNode down = chanNodeVertArr[i][j+1];
+                    PFEdge chanToDown = new PFEdge(chanVert,down);
+                    PFEdge downToChan = new PFEdge(down,chanVert);
+                    chanVert.addEdge(chanToDown);
+                    down.addEdge(downToChan);
+                    
+                    for(UIWire wire : chanVert.getWires()){
+                        for(UIWire wireU : down.getWires()){
+                            UIWire thinWire = new UIWire(wire.getBlockB(), 
+                                    wireU.getBlockA(), 2,
+                                    wire.getLocB(), wireU.getLocA(), wireC);
+                            chanToDown.addWire(thinWire);
+                            downToChan.addWire(thinWire);
+                            u.addSwWire(thinWire);
+                        }
+                    }
+                }
+            }
+        }
+        
+        //Set available sinks
+        //for horizontal channels
+        for(int i =0;i<w-1;i++){
+            for(int j =0; j<h;j++){
+                for(int k = 0; k<4;k++){
+                    if((k+1)%2==0){
+                        if(j<h-1){
+                            chanNodeHoriArr[i][j].getWires().
+                                    get(k).setAvailableSink(sinkArr[i][j]);
+                        }
+                    }
+                    else{
+                        if(j>0){
+                            chanNodeHoriArr[i][j].getWires().
+                                    get(k).setAvailableSink(sinkArr[i][j-1]);
+                        }
+                    }
+                }
+            }
+        }
+        
+        //for vertical channels
+        for(int i=0; i<w;i++){
+            for(int j =0; j<h-1;j++){
+                for(int k =0; k<4;k++){
+                    if((k+1)%2==0){
+                        if(i<w-1){
+                            chanNodeVertArr[i][j].getWires().
+                                    get(k).setAvailableSink(sinkArr[i][j]);
+                        }
+                    }
+                    else{
+                        if(i>0){
+                            chanNodeVertArr[i][j].getWires().
+                                    get(k).setAvailableSink(sourceArr[i-1][j]);
+                        }
+                    }
+                        
+                }
+            }
+        }
+        chanVer=chanNodeVertArr;
+        chanHori=chanNodeHoriArr;
+//        System.out.println("verT: "+ chanNodeVertArr[1][1].getID());
+//        System.out.println("horiT: "+ chanNodeHoriArr[1][1].getID());
+        
+    }
+
+    public UIGraph getU() {
+        return u;
+    }
+
+    public LinkedList<PFNode> getNodes() {
+        return nodes;
+    }
+
+    public PFNode[][] getSources() {
+        return sources;
+    }
+
+    public PFNode[][] getSinks() {
+        return sinks;
+    }
+
+    public PFNode[][] getChanVer() {
+        return chanVer;
+    }
+
+    public PFNode[][] getChanHori() {
+        return chanHori;
+    }
+    
+    
+    
+}

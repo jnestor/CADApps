@@ -16,10 +16,20 @@ import java.util.PriorityQueue;
  * @author 15002
  */
 public class PFNet {
+    
+    public static final String SW = "SW";
+    public static final String LB = "LB";
+    public static final String OP = "OP";
+    public static final String IP = "IP";
+    public static final String TM = "TM";
+    public static final String SB = "SB";
+    public static final String CH = "CH";
+    
     private LinkedList<PFNode> sinks;
     private PFNode source;
     private LinkedList<PFNode> path;
     private LinkedList<UIWire> wires;
+    private LinkedList<UIBlock> blocks;
     private Color color;
     
     public PFNet(LinkedList<PFNode> sinks, PFNode source) {
@@ -27,6 +37,7 @@ public class PFNet {
         this.source = source;
         path = new LinkedList<PFNode>();
         wires=new LinkedList<UIWire>();
+        blocks=new LinkedList<UIBlock>();
     }
 
     public LinkedList<PFNode> getSinks() {
@@ -48,9 +59,10 @@ public class PFNet {
     public void clearPath(){
         path.clear();
         wires.clear();
+        blocks.clear();
     }
 
-    public LinkedList<PFNode> getPath() {
+    public LinkedList<PFNode> getPathNodes() {
         return path;
     }
     /**
@@ -59,6 +71,8 @@ public class PFNet {
      */
     public void addWire(UIWire w){
         wires.addLast(w);
+        blocks.add(w.getBlockA());
+        blocks.add(w.getBlockB());
     }
 
     public Color getColor() {
@@ -69,10 +83,44 @@ public class PFNet {
         this.color = color;
     }
 
-    public LinkedList<UIWire> getWires() {
+    public LinkedList<UIWire> getPathWires() {
         return wires;
     }
     
+    public void paintPath(){
+        for(UIWire wire:wires){
+            //color a switch block' target node matches a sink
+            if(wire.getSwBlock()!=null
+                    &&(sinks.contains(wire.getTargetSink())
+                        ||source.equals(wire.getTargetSink())))
+            {
+                wire.getSwBlock().getDot().setColor(color);
+            }
+            wire.setColor(color);
+            
+            //Only color the non switch blocks
+            if(!wire.getTerminalA().getType().equals(SW))
+            wire.getTerminalA().setColor(color);
+            if(!wire.getTerminalB().getType().equals(SW))
+            wire.getTerminalB().setColor(color);
+        }
+    }
     
+    public void clearNodes(){
+        for(PFNode n: path){
+            n.clearStats();
+        }
+    }
     
+    public void resetChannels(){
+        for(PFNode n: path){
+            n.resetWires();
+        }
+    }
+    
+    public void clearWires(){
+        for(UIWire wire: wires){
+            wire.setOccupied(false);
+        }
+    }
 }
