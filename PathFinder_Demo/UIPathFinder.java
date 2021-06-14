@@ -279,18 +279,34 @@ public class UIPathFinder {
                     for(UIWire wire : chanHori.getWires()){
                         //left up channel connection
                         for(UIWire wireL : upL.getWires()){
+                            int x = wire.getAX()-wire.getTerminalA().getWidth()/2;
+                            int y = wire.getAY();
+                            Point wirePoint = new Point(x,y);
+                            
+                            int xL = wireL.getBX();
+                            int yL = wireL.getBY()+wireL.getTerminalB().getHeight()/2;
+                            Point wirePointL = new Point(xL,yL);
+                            
                             UIWire thinWire = new UIWire(wire.getBlockA(), 
-                                    wireL.getBlockB(), 2,
-                                    wire.getLocA(), wireL.getLocB(), wireC);
+                                    wireL.getBlockB(), 5,
+                                    wirePoint, wirePointL, wireC);
                             chanToUpL.addWire(thinWire);
                             upLToChan.addWire(thinWire);
                             u.addSwWire(thinWire);
                         }
                         //right up channel connection
                         for(UIWire wireR : upR.getWires()){
+                            int x =wire.getBX()+wire.getTerminalB().getWidth()/2;
+                            int y = wire.getBY();
+                            Point wirePoint = new Point(x,y);
+                            
+                            int xR = wireR.getBX();
+                            int yR = wireR.getBY()+wireR.getTerminalB().getHeight()/2;
+                            Point wirePointR = new Point(xR,yR);
+                            
                             UIWire thinWire = new UIWire(wire.getBlockB(), 
-                                    wireR.getBlockB(), 2,
-                                    wire.getLocB(), wireR.getLocB(), wireC);
+                                    wireR.getBlockB(), 5,
+                                    wirePoint, wirePointR, wireC);
                             chanToUpR.addWire(thinWire);
                             upRToChan.addWire(thinWire);
                             u.addSwWire(thinWire);
@@ -313,18 +329,34 @@ public class UIPathFinder {
                     for(UIWire wire : chanHori.getWires()){
                         //left down channel connection
                         for(UIWire wireL : downL.getWires()){
+                            int x = wire.getAX()-wire.getTerminalA().getWidth()/2;
+                            int y = wire.getAY();
+                            Point wirePoint = new Point(x,y);
+                            
+                            int xL = wireL.getAX();
+                            int yL = wireL.getAY()-wireL.getTerminalB().getHeight()/2;
+                            Point wirePointL = new Point(xL,yL);
+                            
                             UIWire thinWire = new UIWire(wire.getBlockA(), 
-                                    wireL.getBlockA(), 2,
-                                    wire.getLocA(), wireL.getLocA(), wireC);
+                                    wireL.getBlockA(), 5,
+                                    wirePoint, wirePointL, wireC);
                             chanToDownL.addWire(thinWire);
                             downLToChan.addWire(thinWire);
                             u.addSwWire(thinWire);
                         }
                         //right down channel connection
                         for(UIWire wireR : downR.getWires()){
+                            int x =wire.getBX()+wire.getTerminalB().getWidth()/2;
+                            int y = wire.getBY();
+                            Point wirePoint = new Point(x,y);
+                            
+                            int xR = wireR.getAX();
+                            int yR = wireR.getAY()-wireR.getTerminalA().getHeight()/2;
+                            Point wirePointR = new Point(xR,yR);
+                            
                             UIWire thinWire = new UIWire(wire.getBlockB(), 
-                                    wireR.getBlockA(), 2,
-                                    wire.getLocB(), wireR.getLocA(), wireC);
+                                    wireR.getBlockA(), 5,
+                                    wirePoint, wirePointR, wireC);
                             chanToDownR.addWire(thinWire);
                             downRToChan.addWire(thinWire);
                             u.addSwWire(thinWire);
@@ -344,7 +376,7 @@ public class UIPathFinder {
                         //left channel connection
                         for(UIWire wireL : left.getWires()){
                             UIWire thinWire = new UIWire(wire.getBlockA(), 
-                                    wireL.getBlockB(), 2,
+                                    wireL.getBlockB(), 5,
                                     wire.getLocA(), wireL.getLocB(), wireC);
                             chanToLeft.addWire(thinWire);
                             leftToChan.addWire(thinWire);
@@ -365,7 +397,7 @@ public class UIPathFinder {
                         //left channel connection
                         for(UIWire wireL : right.getWires()){
                             UIWire thinWire = new UIWire(wire.getBlockB(), 
-                                    wireL.getBlockA(), 2,
+                                    wireL.getBlockA(), 5,
                                     wire.getLocB(), wireL.getLocA(), wireC);
                             chanToRight.addWire(thinWire);
                             rightToChan.addWire(thinWire);
@@ -390,7 +422,7 @@ public class UIPathFinder {
                     for(UIWire wire : chanVert.getWires()){
                         for(UIWire wireU : up.getWires()){
                             UIWire thinWire = new UIWire(wire.getBlockA(), 
-                                    wireU.getBlockB(), 2,
+                                    wireU.getBlockB(), 5,
                                     wire.getLocA(), wireU.getLocB(), wireC);
                             chanToUp.addWire(thinWire);
                             upToChan.addWire(thinWire);
@@ -408,7 +440,7 @@ public class UIPathFinder {
                     for(UIWire wire : chanVert.getWires()){
                         for(UIWire wireU : down.getWires()){
                             UIWire thinWire = new UIWire(wire.getBlockB(), 
-                                    wireU.getBlockA(), 2,
+                                    wireU.getBlockA(), 5,
                                     wire.getLocB(), wireU.getLocA(), wireC);
                             chanToDown.addWire(thinWire);
                             downToChan.addWire(thinWire);
@@ -467,7 +499,7 @@ public class UIPathFinder {
         
     }
 
-    public UIGraph getU() {
+    public UIGraph getGraph() {
         return u;
     }
 

@@ -60,7 +60,7 @@ public class PFNode implements Comparable<PFNode>{
     public void resetWires(){
         if(!wires.isEmpty()){
             for(UIWire wire : wires){
-                wire.clearTarget();
+                wire.clearTargets();
             }
         }
     }

@@ -9,6 +9,7 @@ import java.awt.BasicStroke;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.awt.Color;
 import java.awt.Point;
+import java.util.LinkedList;
 
 /**
  *
@@ -21,15 +22,16 @@ public class UIWire {
     private UIDot terminalA;
     private UIDot terminalB;
     private Color color = new Color(0, 0, 0, 0); //Set to non transparent for non SWB wires
-    private Color defColor = new Color(0, 0, 0, 0);
+    private Color defColor = new Color(0, 0, 0);
     private Point locA, locB;
     private Point pA;
     private Point pB;
     private BasicStroke stroke = new BasicStroke(5);
     private PFNode availableSink;
-    private PFNode targetSink;
+    private LinkedList<PFNet> targetNets = new LinkedList<PFNet>();
     private UIBlock swBlock;
-    private boolean occupied;
+    //private boolean occupied;
+    private boolean swOn = false;
 
     public UIWire(UIBlock a, UIBlock b) {
         blockA = a;
@@ -40,11 +42,11 @@ public class UIWire {
         pB = terminalB.getLoc();
         if (pA.getX() != pB.getX()) {
             if (pA.getX() < pB.getX()) {
-                locA = new Point((int) pA.getX() - terminalA.getHeight() / 2, (int) pA.getY());
-                locB = new Point((int) pB.getX() + terminalB.getHeight() / 2, (int) pB.getY());
+                locA = new Point((int) pA.getX() - terminalA.getHeight() / 2+ (int) (stroke.getLineWidth() / 2), (int) pA.getY());
+                locB = new Point((int) pB.getX() + terminalB.getHeight() / 2- (int) (stroke.getLineWidth() / 2), (int) pB.getY());
             } else if (pA.getX() > pB.getX()) {
-                locA = new Point((int) pB.getX() - terminalB.getHeight() / 2, (int) pB.getY());
-                locB = new Point((int) pA.getX() + terminalA.getHeight() / 2, (int) pA.getY());
+                locA = new Point((int) pB.getX() - terminalB.getHeight() / 2+ (int) (stroke.getLineWidth() / 2), (int) pB.getY());
+                locB = new Point((int) pA.getX() + terminalA.getHeight() / 2- (int) (stroke.getLineWidth() / 2), (int) pA.getY());
             }
         } else if (pA.getY() != pB.getY()) {
             if (pA.getY() > pB.getY()) {
@@ -147,8 +149,8 @@ public class UIWire {
         return availableSink;
     }
 
-    public PFNode getTargetSink() {
-        return targetSink;
+    public LinkedList<PFNet> getTargetNets() {
+        return targetNets;
     }
 
     public void setAvailableSink(PFNode availableSink) {
@@ -160,22 +162,23 @@ public class UIWire {
         }
     }
 
-    public void setTargetSink(PFNode targetSink) {
-        this.targetSink = targetSink;
-        terminalA.setTargetSink(targetSink);
-        terminalB.setTargetSink(targetSink);
+    public void addTargetNet(PFNet targetNet) {
+        targetNets.add(targetNet);
+        terminalA.addTargetNet(targetNet);
+        terminalB.addTargetNet(targetNet);
         if(swBlock!=null){
-            swBlock.getDot().setTargetSink(targetSink);
+            swBlock.getDot().addTargetNet(targetNet);
         }
     }
 
-    public void clearTarget() {
-        targetSink = null;
-        terminalA.setTargetSink(null);
-        terminalB.setTargetSink(null);
+    public void clearTargets() {
+        targetNets.clear();
+        terminalA.clearTargetNets();
+        terminalB.clearTargetNets();
         if(swBlock!=null){
-            swBlock.getDot().setTargetSink(null);
+            swBlock.getDot().clearTargetNets();
         }
+        swOn=false;
     }
 
     public Color getDefColor() {
@@ -191,17 +194,18 @@ public class UIWire {
         blockA.getDot().resetColor();
         blockB.getDot().resetColor();
         if(swBlock!=null) swBlock.getDot().resetColor();
+        swOn=false;
     }
 
-    public boolean isOccupied() {
-        return occupied;
-    }
+//    public boolean isOccupied() {
+//        return occupied;
+//    }
 
-    public void setOccupied(boolean occupied) {
-        this.occupied = occupied;
-        terminalA.setOccupied(occupied);
-        terminalB.setOccupied(occupied);
-    }
+//    public void setOccupied(boolean occupied) {
+//        this.occupied = occupied;
+//        terminalA.setOccupied(occupied);
+//        terminalB.setOccupied(occupied);
+//    }
 
     public UIBlock getSwBlock() {
         return swBlock;
@@ -209,6 +213,14 @@ public class UIWire {
 
     public void setSwBlock(UIBlock swBlock) {
         this.swBlock = swBlock;
+    }
+
+    public boolean isSwOn() {
+        return swOn;
+    }
+
+    public void setSwOn(boolean swOn) {
+        this.swOn = swOn;
     }
     
     

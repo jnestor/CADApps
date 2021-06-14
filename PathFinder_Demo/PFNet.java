@@ -31,6 +31,8 @@ public class PFNet {
     private LinkedList<UIWire> wires;
     private LinkedList<UIBlock> blocks;
     private Color color;
+    private static int NETID = 0;
+    private int id;
     
     public PFNet(LinkedList<PFNode> sinks, PFNode source) {
         this.sinks = sinks;
@@ -38,6 +40,8 @@ public class PFNet {
         path = new LinkedList<PFNode>();
         wires=new LinkedList<UIWire>();
         blocks=new LinkedList<UIBlock>();
+        id=NETID;
+        NETID++;
     }
 
     public LinkedList<PFNode> getSinks() {
@@ -88,11 +92,11 @@ public class PFNet {
     }
     
     public void paintPath(){
+        //System.out.println("paint");
+        PFNet net = this;
         for(UIWire wire:wires){
             //color a switch block' target node matches a sink
-            if(wire.getSwBlock()!=null
-                    &&(sinks.contains(wire.getTargetSink())
-                        ||source.equals(wire.getTargetSink())))
+            if(wire.isSwOn())
             {
                 wire.getSwBlock().getDot().setColor(color);
             }
@@ -110,6 +114,10 @@ public class PFNet {
         for(PFNode n: path){
             n.clearStats();
         }
+        for(PFNode n:sinks){
+            n.clearStats();
+        }
+        source.clearStats();
     }
     
     public void resetChannels(){
@@ -120,7 +128,19 @@ public class PFNet {
     
     public void clearWires(){
         for(UIWire wire: wires){
-            wire.setOccupied(false);
+            wire.clearTargets();
         }
+    }
+
+    public int getId() {
+        return id;
+    }
+    
+    
+    
+    @Override
+    public boolean equals(Object obj){
+        PFNet n= (PFNet) obj;
+        return id==n.getId();
     }
 }

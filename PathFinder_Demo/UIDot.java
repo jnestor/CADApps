@@ -28,10 +28,10 @@ public class UIDot {
     private boolean isVertical;
     //private LinkedList<UIEdge> wires = new LinkedList<UIEdge>();
     private PFNode availableSink;
-    private PFNode targetSink;
+    private LinkedList<PFNet> targetNets = new LinkedList<PFNet>();
     private int width;
     private Color edgeColor = new Color(0,0,0,0);//for Channels
-    private boolean occupied = false;
+    //private boolean occupied = false;
     public UIDot(Point l,String k,int s, boolean iV){
         loc = l;
         kind = k;
@@ -119,12 +119,16 @@ public class UIDot {
         this.availableSink = availableSink;
     }
     
-    public PFNode getTargetSink() {
-        return targetSink;
+    public LinkedList<PFNet> getTargetNets() {
+        return targetNets;
     }
-
-    public void setTargetSink(PFNode targetSink) {
-        this.targetSink = targetSink;
+    
+    public void clearTargetNets(){
+        targetNets.clear();
+    }
+    
+    public void addTargetNet(PFNet targetNet) {
+        targetNets.add(targetNet);
     }
     
     public void resetColor(){
@@ -147,13 +151,13 @@ public class UIDot {
         this.edgeColor = edgeColor;
     }
 
-    public boolean isOccupied() {
-        return occupied;
-    }
-
-    public void setOccupied(boolean occupied) {
-        this.occupied = occupied;
-    }
+//    public boolean isOccupied() {
+//        return occupied;
+//    }
+//
+//    public void setOccupied(boolean occupied) {
+//        this.occupied = occupied;
+//    }
     
     
 }
