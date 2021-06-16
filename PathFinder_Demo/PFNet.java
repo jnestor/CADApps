@@ -1,6 +1,5 @@
 package pathfinder_demo;
 
-
 import java.awt.Color;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
@@ -10,13 +9,12 @@ import java.util.PriorityQueue;
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 /**
  *
  * @author 15002
  */
 public class PFNet {
-    
+
     public static final String SW = "SW";
     public static final String LB = "LB";
     public static final String OP = "OP";
@@ -24,7 +22,7 @@ public class PFNet {
     public static final String TM = "TM";
     public static final String SB = "SB";
     public static final String CH = "CH";
-    
+
     private LinkedList<PFNode> sinks;
     private PFNode source;
     private LinkedList<PFNode> path;
@@ -33,14 +31,19 @@ public class PFNet {
     private Color color;
     private static int NETID = 0;
     private int id;
-    
+
     public PFNet(LinkedList<PFNode> sinks, PFNode source) {
         this.sinks = sinks;
         this.source = source;
         path = new LinkedList<PFNode>();
-        wires=new LinkedList<UIWire>();
-        blocks=new LinkedList<UIBlock>();
-        id=NETID;
+        wires = new LinkedList<UIWire>();
+        blocks = new LinkedList<UIBlock>();
+        id = NETID;
+        NETID++;
+    }
+
+    public PFNet() {
+        id = NETID;
         NETID++;
     }
 
@@ -51,16 +54,17 @@ public class PFNet {
     public PFNode getSource() {
         return source;
     }
-    
+
     /**
      * add a node to the tail of the LinkedList
-     * @param n  the node to add
+     *
+     * @param n the node to add
      */
-    public void addNode(PFNode n){
+    public void addNode(PFNode n) {
         path.addLast(n);
     }
-    
-    public void clearPath(){
+
+    public void clearPath() {
         path.clear();
         wires.clear();
         blocks.clear();
@@ -69,11 +73,13 @@ public class PFNet {
     public LinkedList<PFNode> getPathNodes() {
         return path;
     }
+
     /**
      * add a UIwire to the tail of LinkedList
+     *
      * @param w UIWire to add
      */
-    public void addWire(UIWire w){
+    public void addWire(UIWire w) {
         wires.addLast(w);
         blocks.add(w.getBlockA());
         blocks.add(w.getBlockB());
@@ -90,44 +96,45 @@ public class PFNet {
     public LinkedList<UIWire> getPathWires() {
         return wires;
     }
-    
-    public void paintPath(){
+
+    public void paintPath() {
         //System.out.println("paint");
         PFNet net = this;
-        for(UIWire wire:wires){
+        for (UIWire wire : wires) {
             //color a switch block' target node matches a sink
-            if(wire.isSwOn())
-            {
+            if (wire.isSwOn()) {
                 wire.getSwBlock().getDot().setColor(color);
             }
             wire.setColor(color);
-            
+
             //Only color the non switch blocks
-            if(!wire.getTerminalA().getType().equals(SW))
-            wire.getTerminalA().setColor(color);
-            if(!wire.getTerminalB().getType().equals(SW))
-            wire.getTerminalB().setColor(color);
+            if (!wire.getTerminalA().getType().equals(SW)&&!wire.getTerminalA().getType().equals(IP)) {
+                wire.getTerminalA().setColor(color);
+            }
+            if (!wire.getTerminalB().getType().equals(SW)&&!wire.getTerminalB().getType().equals(IP)) {
+                wire.getTerminalB().setColor(color);
+            }
         }
     }
-    
-    public void clearNodes(){
-        for(PFNode n: path){
+
+    public void clearNodes() {
+        for (PFNode n : path) {
             n.clearStats();
         }
-        for(PFNode n:sinks){
+        for (PFNode n : sinks) {
             n.clearStats();
         }
         source.clearStats();
     }
-    
-    public void resetChannels(){
-        for(PFNode n: path){
+
+    public void resetChannels() {
+        for (PFNode n : path) {
             n.resetWires();
         }
     }
-    
-    public void clearWires(){
-        for(UIWire wire: wires){
+
+    public void clearWires() {
+        for (UIWire wire : wires) {
             wire.clearTargets();
         }
     }
@@ -135,12 +142,20 @@ public class PFNet {
     public int getId() {
         return id;
     }
-    
-    
-    
+
     @Override
-    public boolean equals(Object obj){
-        PFNet n= (PFNet) obj;
-        return id==n.getId();
+    public boolean equals(Object obj) {
+        PFNet n = (PFNet) obj;
+        return id == n.getId();
     }
+
+    public void addSink(PFNode sink) {
+        sinks.add(sink);
+    }
+
+    public void setSource(PFNode source) {
+        this.source = source;
+    }
+    
+    
 }

@@ -47,9 +47,10 @@ public class PathFinderFrame_demo extends JFrame {
     LinkedList<PFNet> nets = new LinkedList<PFNet>();
     private UIPathFinder p;
     RoutibilityPathFinder router;
-    private static final int WAITFORSRC = 0;
-    private static final int WAITFORTGT = 1;
-    private static final int EXPANDING = 2;
+    private static final int WAITFORNET = 0;
+    private static final int WAITFORSRC = 1;
+    private static final int WAITFORTGT = 2;
+    private static final int EXPANDING = 3;
 
     private final JLabel msgBoard = new JLabel();
     private final JLabel title = new JLabel("PathFinder Algorithm", SwingConstants.CENTER);
@@ -59,6 +60,7 @@ public class PathFinderFrame_demo extends JFrame {
     private final JToggleButton pauseBtn = new JToggleButton(resume);
     private final JToggleButton stopBtn = new JToggleButton(new ImageIcon(getClass().getResource("images/stop.gif")));
     private final JToggleButton stepBtn = new JToggleButton(new ImageIcon(getClass().getResource("images/step.gif")));
+    private final JToggleButton creanetBtn = new JToggleButton("new net");
     private final JButton resizeWindowBtn = new JButton("RESIZE");
     private JDialog resizeWindow = new JDialog(this, "Resize Option", true);
     private WarningDialog resizeWarning = new WarningDialog("Resize the Router will clear all the grids, "
@@ -91,7 +93,9 @@ public class PathFinderFrame_demo extends JFrame {
         clearBtn.setToolTipText("Delete everything on the screen");
         resizeWindowBtn.setToolTipText("Drag the window to your preferred size and "
                 + "click on this button to refill the entire window");
+        
         btnPanel.add(msgBoard);
+        btnPanel.add(creanetBtn);
         btnPanel.add(pauseBtn);
         btnPanel.add(stepBtn);
         btnPanel.add(stopBtn);
@@ -104,6 +108,8 @@ public class PathFinderFrame_demo extends JFrame {
         router.setPause(true);
         pauseBtn.setSelectedIcon(resume);
         pauseBtn.setToolTipText(router.isPause() ? "Start":"Pause");
+        p.getGraph().setState(WAITFORNET);
+        
         
     }
 
@@ -120,6 +126,7 @@ public class PathFinderFrame_demo extends JFrame {
         LinkedList<PFNode> sinks1 = new LinkedList<PFNode>();
         sinks1.add(demo.getP().getSinks()[0][0]);
         sinks1.add(demo.getP().getSinks()[2][2]);
+        sinks1.add(demo.getP().getSinks()[3][0]);
 //        System.out.println(demo.getP().getSinks()[2][2].getID());
         PFNode source1 = demo.getP().getSources()[2][0];
         PFNet net1 = new PFNet(sinks1, source1);
@@ -179,6 +186,10 @@ public class PathFinderFrame_demo extends JFrame {
         //System.out.println(net1.getPathNodes().getFirst().getBlock().getDot().getColor());
         //f.repaint();
         //System.out.println(demo.getP().getChanHori()[0][1].getWires().get(2).getTargetNet());
+        for(PFNode n:sinks1){
+            System.out.println(n.getOccupied());
+        }
+        source1.occupy();
     }
 
     public UIPathFinder getP() {
@@ -187,7 +198,6 @@ public class PathFinderFrame_demo extends JFrame {
 
     private void pauseAction(ActionEvent evt) {
         router.setPause(!router.isPause());
-        stepBtn.setEnabled(router.isPause());
         pauseBtn.setSelectedIcon(router.isPause() ? resume : pause);
         pauseBtn.setToolTipText(router.isPause() ? "Start":"Pause");
     }
@@ -209,9 +219,11 @@ public class PathFinderFrame_demo extends JFrame {
     private void clearAction(ActionEvent evt) {
         Toolkit.getDefaultToolkit().beep();
         int n = clearWarning.showConfirmDialog(this);
-        if(n==JOptionPane.YES_OPTION)
+        if(n==JOptionPane.YES_OPTION){
             router.resetAll();
+            p.getGraph().setMaxPenalty(0);
             p.getGraph().repaint();
+        }
         clearBtn.setSelected(false);
     }
 

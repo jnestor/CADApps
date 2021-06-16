@@ -30,14 +30,15 @@ public class UIDot {
     private PFNode availableSink;
     private LinkedList<PFNet> targetNets = new LinkedList<PFNet>();
     private int width;
-    private Color edgeColor = new Color(0,0,0,0);//for Channels
+    private Color defEdgeColor;
+    private Color edgeColor = new Color(0,0,0);//for Channels
     //private boolean occupied = false;
     public UIDot(Point l,String k,int s, boolean iV){
         loc = l;
         kind = k;
         isVertical = iV;
         if(k.equals(CH)){
-            width = (180+90)*s/90;
+            width = (180)*s/90;
             if(isVertical){
                 height=width;
                 width=s;
@@ -49,13 +50,26 @@ public class UIDot {
             width = height;
         }
         if(k.equals(OP))color=Color.black;
-        else if(k.equals(IP))color=Color.white;
+        else if(k.equals(IP)){
+            color=Color.white;
+            edgeColor = new Color(0,0,0,0);
+        }
         else if(k.equals(SW))color=Color.white;
-        else if(k.equals(LB))color=new Color(179, 179, 179);
-        else if(k.equals(SB))color=new Color(255, 0, 0);
-        else if(k.equals(TM))color = new Color((float)0.8,(float)0.8,(float)0.8,(float)0.8);
-        else if(k.equals(CH))color = new Color(0,0,0,0);
+        else if(k.equals(LB)){
+            color=new Color(179, 179, 179);
+            edgeColor = new Color(0,0,0,0);
+        }
+        else if(k.equals(SB))color=new Color(0, 0, 0,0);
+        else if(k.equals(TM)){
+            color = new Color((float)0.8,(float)0.8,(float)0.8,(float)0.8);
+            edgeColor = new Color(0,0,0,0);
+        }
+        else if(k.equals(CH)){
+            color = new Color(0,0,0,0);
+            edgeColor = new Color(0,0,0,0);
+        }
         defColor=color;
+        defEdgeColor = edgeColor;
     }
 
     public boolean dotFound(Point searchLoc) {
@@ -133,6 +147,7 @@ public class UIDot {
     
     public void resetColor(){
         color=defColor;
+        edgeColor = defEdgeColor;
     }
 
     public boolean isIsVertical() {

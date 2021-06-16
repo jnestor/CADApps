@@ -45,6 +45,7 @@ class ColorSequencer {
         }
         // System.out.println("New color: r=" + newr + " g=" + newg + " b=" + newb);
         curColor = new Color(newr, newg, newb);
+        if(last.equals(Color.orange)||last.equals(Color.red)) next();
         return (last);
     }
 

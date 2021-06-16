@@ -17,6 +17,7 @@ import java.awt.event.*;
 public class WarningDialog extends JPanel {
 
     private boolean willDisplay = true;
+    JLabel message = new JLabel();
 
     public WarningDialog(String text) {
         JButton confirmBtn = new JButton("Confirm");
@@ -24,7 +25,8 @@ public class WarningDialog extends JPanel {
         JCheckBox dontAskMeAgain= new JCheckBox("Don't ask me again");
         dontAskMeAgain.addItemListener(this::doNotDisplay);
         setLayout(new BorderLayout());
-        add(new JLabel(text));
+        add(message);
+        message.setText(text);
         JPanel subPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         subPanel.add(dontAskMeAgain);
         add(subPanel,BorderLayout.SOUTH);
@@ -46,4 +48,8 @@ public class WarningDialog extends JPanel {
                         JOptionPane.YES_NO_OPTION,JOptionPane.WARNING_MESSAGE);
         return result;
     }
+   
+   public void setMessage(String text){
+       message.setText(text);
+   }
 }

@@ -28,11 +28,12 @@ public class UIPathFinder {
     PFNode[][] sinks;
     PFNode[][] chanVer;
     PFNode[][] chanHori;
+    protected int size = 1;
     public UIPathFinder(int w, int h){
         //Construct switchBlocks
         UIBlock[][] sbArr = new UIBlock[w][h];
         for (int i = 0; i < h; i++) {
-            int sbY = 45 + 270 * i;
+            int sbY = (45 + 270 * i)*size;
             for (int j = 0; j < w; j++) {
                 int sbX = 45 + 270 * j;
                 UIBlock sb = new UIBlock(new UIDot(new Point(sbX, sbY), SB, 90,false));
@@ -40,6 +41,7 @@ public class UIPathFinder {
                 sbArr[j][i] = sb;
             }
         }
+        u.setPenaltyHeatMap((45+270*(w-1)+45*3),90,30,270);
         
         //Construct logic blocks
         PFNode[][] sourceArr = new PFNode [w-1][h-1];
@@ -56,6 +58,8 @@ public class UIPathFinder {
                 nodes.add(source);
                 sourceArr[j][i]=source;
                 sinkArr[j][i]=sink;
+                u.addSource(source);
+                u.addSink(sink);
             }
         }
         sources=sourceArr;
@@ -67,7 +71,7 @@ public class UIPathFinder {
             int baseY = 270 * j;
             for (int i = 0; i < w - 1; i++) {
                 int opX = 90 + 15 / 2 + i * 270;
-                UIBlock c = new UIBlock(new UIDot(new Point(opX-15/2+(90+180)/2,baseY+45),CH,90,false));
+                UIBlock c = new UIBlock(new UIDot(new Point(opX-15/2+(90+180)/2-45,baseY+45),CH,90,false));
                 u.addChan(c);
                 for (int k = 0; k < 4; k++) {
                     int opY = 15 / 2 + k * (15 + 10) + baseY;
@@ -94,7 +98,7 @@ public class UIPathFinder {
             int baseX = 270 * j;
             for (int i = 0; i < h - 1; i++) {
                 int opY = 90 + 15 / 2 + i * 270;
-                UIBlock c = new UIBlock(new UIDot(new Point(baseX+45,opY-15/2+(90+180)/2),CH,90,true));
+                UIBlock c = new UIBlock(new UIDot(new Point(baseX+45,opY-15/2+(90+180)/2-45),CH,90,true));
                 u.addChan(c);
                 for (int k = 0; k < 4; k++) {
                     int opX = 15 / 2 + k * (15 + 10) + baseX;
@@ -259,6 +263,7 @@ public class UIPathFinder {
             }
         }
         
+        int twStroke = 4;
         Color wireC = new Color(0,0,0,0);
         //Construct edges between channels
         for(int i =0;i<w-1;i++){
@@ -288,7 +293,7 @@ public class UIPathFinder {
                             Point wirePointL = new Point(xL,yL);
                             
                             UIWire thinWire = new UIWire(wire.getBlockA(), 
-                                    wireL.getBlockB(), 5,
+                                    wireL.getBlockB(), twStroke,
                                     wirePoint, wirePointL, wireC);
                             chanToUpL.addWire(thinWire);
                             upLToChan.addWire(thinWire);
@@ -305,7 +310,7 @@ public class UIPathFinder {
                             Point wirePointR = new Point(xR,yR);
                             
                             UIWire thinWire = new UIWire(wire.getBlockB(), 
-                                    wireR.getBlockB(), 5,
+                                    wireR.getBlockB(), twStroke,
                                     wirePoint, wirePointR, wireC);
                             chanToUpR.addWire(thinWire);
                             upRToChan.addWire(thinWire);
@@ -338,7 +343,7 @@ public class UIPathFinder {
                             Point wirePointL = new Point(xL,yL);
                             
                             UIWire thinWire = new UIWire(wire.getBlockA(), 
-                                    wireL.getBlockA(), 5,
+                                    wireL.getBlockA(), twStroke,
                                     wirePoint, wirePointL, wireC);
                             chanToDownL.addWire(thinWire);
                             downLToChan.addWire(thinWire);
@@ -355,7 +360,7 @@ public class UIPathFinder {
                             Point wirePointR = new Point(xR,yR);
                             
                             UIWire thinWire = new UIWire(wire.getBlockB(), 
-                                    wireR.getBlockA(), 5,
+                                    wireR.getBlockA(), twStroke,
                                     wirePoint, wirePointR, wireC);
                             chanToDownR.addWire(thinWire);
                             downRToChan.addWire(thinWire);
@@ -376,7 +381,7 @@ public class UIPathFinder {
                         //left channel connection
                         for(UIWire wireL : left.getWires()){
                             UIWire thinWire = new UIWire(wire.getBlockA(), 
-                                    wireL.getBlockB(), 5,
+                                    wireL.getBlockB(), twStroke,
                                     wire.getLocA(), wireL.getLocB(), wireC);
                             chanToLeft.addWire(thinWire);
                             leftToChan.addWire(thinWire);
@@ -397,7 +402,7 @@ public class UIPathFinder {
                         //left channel connection
                         for(UIWire wireL : right.getWires()){
                             UIWire thinWire = new UIWire(wire.getBlockB(), 
-                                    wireL.getBlockA(), 5,
+                                    wireL.getBlockA(), twStroke,
                                     wire.getLocB(), wireL.getLocA(), wireC);
                             chanToRight.addWire(thinWire);
                             rightToChan.addWire(thinWire);
@@ -422,7 +427,7 @@ public class UIPathFinder {
                     for(UIWire wire : chanVert.getWires()){
                         for(UIWire wireU : up.getWires()){
                             UIWire thinWire = new UIWire(wire.getBlockA(), 
-                                    wireU.getBlockB(), 5,
+                                    wireU.getBlockB(), twStroke,
                                     wire.getLocA(), wireU.getLocB(), wireC);
                             chanToUp.addWire(thinWire);
                             upToChan.addWire(thinWire);
@@ -440,7 +445,7 @@ public class UIPathFinder {
                     for(UIWire wire : chanVert.getWires()){
                         for(UIWire wireU : down.getWires()){
                             UIWire thinWire = new UIWire(wire.getBlockB(), 
-                                    wireU.getBlockA(), 5,
+                                    wireU.getBlockA(), twStroke,
                                     wire.getLocB(), wireU.getLocA(), wireC);
                             chanToDown.addWire(thinWire);
                             downToChan.addWire(thinWire);
