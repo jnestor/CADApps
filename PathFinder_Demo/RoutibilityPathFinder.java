@@ -40,12 +40,13 @@ public class RoutibilityPathFinder {
     private boolean pause;
     private boolean step;
     private PFNet selNet;
-    
+    private boolean done;
+
     UIGraph graph;
     private Timer routingTimer = new Timer(400, new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
-            iterate();
+            netIterate(selNet);
         }
     });
 
@@ -85,7 +86,7 @@ public class RoutibilityPathFinder {
     }
 
     private double heatMapVal(PFNode n) {
-        return n.getBaseCost()*p(n)* n.getHVal();
+        return n.getBaseCost() * p(n) * n.getHVal();
     }
 
     private int bendCost(PFNode n, PFNode m) {
@@ -118,7 +119,42 @@ public class RoutibilityPathFinder {
         }
         for (PFNet net : nets) {
             selNet = net;
-            netIterate(net);
+            while (!done) {
+                if (!routingTimer.isRunning() && !pause) {
+                    if (!step) {
+                        routingTimer.setInitialDelay(1000);
+                    }
+                    System.out.println("Start");
+                    routingTimer.start();
+                    if (step) {
+                        pause = true;
+                        step = false;
+                    }
+                }
+            }
+            done = false;
+            for (PFNode n : net.getPathNodes()) {
+                //oveeruse heatmap
+                if (!n.inCapacity()) {
+                    if ((n.getBlock().getDot().getType().equals(IP))) {
+                        double costN = heatMapVal(n);
+                        if (costN > maxPenalty) {
+                            maxPenalty = costN + 2;
+                            graph.setMaxPenalty(maxPenalty);
+                            System.out.println(costN);
+                        }
+                        n.getBlock().getDot().setEdgeColor(new Color(255, 0, 0, (int) (costN / maxPenalty * 255)));
+                    } else if (n.getBlock().getDot().getType().equals(CH)) {
+                        double costN = heatMapVal(n);
+                        if (costN > maxPenalty) {
+                            maxPenalty = costN + 2;
+                            graph.setMaxPenalty(maxPenalty);
+                        }
+                        n.getBlock().getDot().setColor(new Color(255, 0, 0, (int) (costN / maxPenalty * 255)));
+                    }
+                }
+            }
+            graph.repaint();
         }
         iteration++;
         pFac *= 1.5;
@@ -128,35 +164,15 @@ public class RoutibilityPathFinder {
                 pass = false;
                 System.out.println(n.getID() + "is illegal " + n.getType());
             }
-            
-            //oveeruse heatmap
-            if(!n.inCapacity())
-            if ((n.getBlock().getDot().getType().equals(IP))) {
-                double costN = heatMapVal(n);
-                if (costN > maxPenalty) {
-                    maxPenalty = costN+2;
-                    graph.setMaxPenalty(maxPenalty);
-                    System.out.println(costN);
-                }
-                n.getBlock().getDot().setEdgeColor(new Color(255, 0, 0, (int) (costN / maxPenalty * 255)));
-            } else if (n.getBlock().getDot().getType().equals(CH)) {
-                double costN = heatMapVal(n);
-                if (costN > maxPenalty) {
-                    maxPenalty = costN+2;
-                    graph.setMaxPenalty(maxPenalty);
-                }
-                n.getBlock().getDot().setColor(new Color(255, 0, 0, (int) (costN / maxPenalty * 255)));
-            }
-        
+
+        }
+        legal = pass;
+
+        //graph.repaint();
+
     }
-    legal  = pass;
 
-    graph.repaint ();
-
-    routingTimer.stop ();
-}
-
-private void netIterate(PFNet net) {
+    private void netIterate(PFNet net) {
 
         //set a color to each net when the net is created
         //net.setColor(ColorSequencer.next());
@@ -209,6 +225,8 @@ private void netIterate(PFNet net) {
             //Back Trace
             backTrace(sink, source, net);
         }
+        done=true;
+        routingTimer.stop();
     }
 
     public boolean route() {
@@ -225,19 +243,8 @@ private void netIterate(PFNet net) {
 //                run = false;
 //                break;
 //            }
-            if (!routingTimer.isRunning() && !pause) {
-                System.out.println("start");
-                if (!step) {
-                    routingTimer.setInitialDelay(1000);
-                }
-                System.out.println("Start");
-                routingTimer.start();
-                if (step) {
-                    pause = true;
-                    step = false;
-                }
-            }
-            //iterate();
+
+            iterate();
             //System.out.println(run);
 
         }
