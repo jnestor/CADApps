@@ -178,7 +178,7 @@ public class UIWire {
         if(swBlock!=null){
             swBlock.getDot().clearTargetNets();
         }
-        swOn=false;
+        //swOn=false;
     }
 
     public Color getDefColor() {

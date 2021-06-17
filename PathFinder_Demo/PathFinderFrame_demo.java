@@ -42,8 +42,7 @@ import javax.swing.Timer;
  * @author 15002
  */
 public class PathFinderFrame_demo extends JFrame {
-    
-    
+
     LinkedList<PFNet> nets = new LinkedList<PFNet>();
     private UIPathFinder p;
     RoutibilityPathFinder router;
@@ -70,7 +69,7 @@ public class PathFinderFrame_demo extends JFrame {
 
     public PathFinderFrame_demo(int w, int h) {
         p = new UIPathFinder(w, h);
-        router= new RoutibilityPathFinder(nets, p.getNodes(), p.getGraph());
+        router = new RoutibilityPathFinder(nets, p.getNodes(), p.getGraph());
         setLayout(new BorderLayout());
         getContentPane().add(p.getGraph(), "Center");
         getContentPane().add(title, "North");
@@ -93,7 +92,7 @@ public class PathFinderFrame_demo extends JFrame {
         clearBtn.setToolTipText("Delete everything on the screen");
         resizeWindowBtn.setToolTipText("Drag the window to your preferred size and "
                 + "click on this button to refill the entire window");
-        
+
         btnPanel.add(msgBoard);
         btnPanel.add(creanetBtn);
         btnPanel.add(pauseBtn);
@@ -107,10 +106,9 @@ public class PathFinderFrame_demo extends JFrame {
         //stepBtn.setEnabled(false);
         router.setPause(true);
         pauseBtn.setSelectedIcon(resume);
-        pauseBtn.setToolTipText(router.isPause() ? "Start":"Pause");
+        pauseBtn.setToolTipText(router.isPause() ? "Start" : "Pause");
         p.getGraph().setState(WAITFORNET);
-        
-        
+
     }
 
     public UIGraph getUIG() {
@@ -121,6 +119,7 @@ public class PathFinderFrame_demo extends JFrame {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+
         PathFinderFrame_demo demo = new PathFinderFrame_demo(5, 4);
         LinkedList<PFNet> nets = new LinkedList<PFNet>();
         LinkedList<PFNode> sinks1 = new LinkedList<PFNode>();
@@ -140,6 +139,7 @@ public class PathFinderFrame_demo extends JFrame {
 
         LinkedList<PFNode> sinks3 = new LinkedList<PFNode>();
         sinks3.add(demo.getP().getSinks()[0][0]);
+        sinks3.add(demo.getP().getSinks()[3][0]);
         PFNode source3 = demo.getP().getSources()[0][2];
         PFNet net3 = new PFNet(sinks3, source3);
         net3.setColor(Color.green);
@@ -154,17 +154,19 @@ public class PathFinderFrame_demo extends JFrame {
         LinkedList<PFNode> sinks5 = new LinkedList<PFNode>();
         sinks5.add(demo.getP().getSinks()[1][0]);
         sinks5.add(demo.getP().getSinks()[2][0]);
+        sinks5.add(demo.getP().getSinks()[2][1]);
         sinks5.add(demo.getP().getSinks()[3][0]);
         sinks5.add(demo.getP().getSinks()[3][2]);
+        sinks5.add(demo.getP().getSinks()[1][1]);
         PFNode source5 = demo.getP().getSources()[2][2];
         PFNet net5 = new PFNet(sinks5, source5);
-        net5.setColor(Color.ORANGE);
+        net5.setColor(new Color(138,43,226));
 
         LinkedList<PFNode> sinks6 = new LinkedList<PFNode>();
-        sinks6.add(demo.getP().getSinks()[1][0]);
+        sinks6.add(demo.getP().getSinks()[0][0]);
         PFNode source6 = demo.getP().getSources()[1][2];
         PFNet net6 = new PFNet(sinks6, source6);
-        net6.setColor(Color.PINK);
+        net6.setColor(Color.magenta);
 
         nets.add(net2);
         nets.add(net1);
@@ -172,24 +174,29 @@ public class PathFinderFrame_demo extends JFrame {
         nets.add(net4);
         nets.add(net5);
         nets.add(net6);
-        demo.nets=nets;
+        demo.nets = nets;
         demo.router.setNets(nets);
-        
+
         JFrame f = demo;
-        
+
         //f.add(demo);
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         f.setSize(1000, 1000);
         f.setVisible(true);
         //System.out.println("ID of 25: "+demo.getP().getSources()[1][1].getID());
+        System.out.println(demo.getP().getSinks()[2][1].getID());
+        System.out.println(demo.getP().getChanHori()[2][1].getWires().get(0).getAvailableSink().getID());
         demo.router.route();
         //System.out.println(net1.getPathNodes().getFirst().getBlock().getDot().getColor());
         //f.repaint();
         //System.out.println(demo.getP().getChanHori()[0][1].getWires().get(2).getTargetNet());
-        for(PFNode n:sinks1){
-            System.out.println(n.getOccupied());
-        }
+//        for(PFNode n:sinks1){
+//            System.out.println(n.getOccupied());
+//        }
         source1.occupy();
+        System.out.println(demo.getP().getSinks()[2][0].getID());
+        System.out.println(demo.getP().getChanHori()[2][1].getID());
+        System.out.println(demo.getP().getChanVer()[3][1].getID());
     }
 
     public UIPathFinder getP() {
@@ -199,7 +206,7 @@ public class PathFinderFrame_demo extends JFrame {
     private void pauseAction(ActionEvent evt) {
         router.setPause(!router.isPause());
         pauseBtn.setSelectedIcon(router.isPause() ? resume : pause);
-        pauseBtn.setToolTipText(router.isPause() ? "Start":"Pause");
+        pauseBtn.setToolTipText(router.isPause() ? "Start" : "Pause");
     }
 
     private void stepAction(ActionEvent evt) {
@@ -219,7 +226,7 @@ public class PathFinderFrame_demo extends JFrame {
     private void clearAction(ActionEvent evt) {
         Toolkit.getDefaultToolkit().beep();
         int n = clearWarning.showConfirmDialog(this);
-        if(n==JOptionPane.YES_OPTION){
+        if (n == JOptionPane.YES_OPTION) {
             router.resetAll();
             p.getGraph().setMaxPenalty(0);
             p.getGraph().repaint();
@@ -277,7 +284,6 @@ public class PathFinderFrame_demo extends JFrame {
 //        }
 //    }
 //    );
-    
 //    private void initiResizeWindow() {
 //        this.setLocationByPlatform(true);
 //        JTextField layerField = new JTextField("1");

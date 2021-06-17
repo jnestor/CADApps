@@ -64,12 +64,11 @@ public class UIGraph extends JPanel implements MouseListener {
     private int hmPH;
 
     private int hmHXC;
-    private int hmHYC;
-    private int hmHW;
-    private int hmHH;
-    
+
     private double maxPenalty;
-    GradientPaint gradient1;
+    private double maxHVal = 2;
+    GradientPaint gradientP;
+    GradientPaint gradientH;
 
     public UIGraph() {
         addMouseListener(this);
@@ -101,7 +100,7 @@ public class UIGraph extends JPanel implements MouseListener {
         chanBlocks.add(b);
     }
 
-    private void drawNode(Graphics g, UIDot d) {
+    private void drawNode(Graphics g, UIDot d, boolean edge) {
         Point loc = d.getLoc();
         int height = d.getHeight();
         int width = d.getWidth();
@@ -115,6 +114,9 @@ public class UIGraph extends JPanel implements MouseListener {
             g.setColor(Color.black);
             g.drawOval(orig_x, orig_y, width, height);
         } else if (d.getType().equals(IP)) {
+            g.setColor(Color.white);
+            g.fillRect(orig_x, orig_y, width, height);
+            g.setColor(d.getColor());
             g.fillRect(orig_x, orig_y, width, height);
             g2.setColor(d.getEdgeColor());
             g2.setStroke(new BasicStroke(5));
@@ -128,10 +130,13 @@ public class UIGraph extends JPanel implements MouseListener {
             g.drawString("out", orig_x + width - (int) ((float) 8 / 15 * width), orig_y + height + (int) ((float) 9 / 15 * height));
         } else if (d.getType().equals(CH)) {
 //            g2.setColor(Color.blue);
-            g.fillRect(orig_x, orig_y, width, height);
-            g2.setColor(d.getEdgeColor());
-            g2.setStroke(new BasicStroke(5));
-            g.drawRoundRect​(orig_x, orig_y, width, height, 5, 5);
+            if (!edge) {
+                g.fillRect(orig_x, orig_y, width, height);
+            } else {
+                g2.setColor(d.getEdgeColor());
+                g2.setStroke(new BasicStroke(5));
+                g.drawRoundRect​(orig_x, orig_y, width, height, 5, 5);
+            }
         } else if (d.getType().equals(SB)) {
 
             g.setColor(d.getEdgeColor());
@@ -141,16 +146,15 @@ public class UIGraph extends JPanel implements MouseListener {
         }
     }
 
-    public void paintNets(Graphics g2, LinkedList<PFNet> nets) {
-        for (PFNet net : nets) {
-            for (UIWire wire : net.getPathWires()) {
-                drawWire(g2, wire);
-                drawNode(g2, wire.getTerminalA());
-                drawNode(g2, wire.getTerminalB());
-            }
-        }
-    }
-
+//    public void paintNets(Graphics g2, LinkedList<PFNet> nets) {
+//        for (PFNet net : nets) {
+//            for (UIWire wire : net.getPathWires()) {
+//                drawWire(g2, wire);
+//                drawNode(g2, wire.getTerminalA());
+//                drawNode(g2, wire.getTerminalB());
+//            }
+//        }
+//    }
     private void drawWire(Graphics g2, UIWire w) {
         Graphics2D g = (Graphics2D) g2;
         g.setColor(w.getColor());
@@ -200,11 +204,11 @@ public class UIGraph extends JPanel implements MouseListener {
         return null;
     }
 
-    protected void drawNodes(CopyOnWriteArrayList<UIBlock> n, Graphics g) {
+    protected void drawNodes(CopyOnWriteArrayList<UIBlock> n, Graphics g, boolean edge) {
         if (!n.isEmpty()) {
             for (UIBlock comp : n) {
                 UIDot dot = comp.getDot();
-                drawNode(g, dot);
+                drawNode(g, dot, edge);
             }
         }
     }
@@ -237,19 +241,27 @@ public class UIGraph extends JPanel implements MouseListener {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        drawNodes(chanBlocks, g);
+        drawNodes(chanBlocks, g, false);
         drawWires(g);
-        drawNodes(bottom, g);
+        drawNodes(bottom, g, false);
         drawSwWires(g);
-        drawNodes(top, g);
+        drawNodes(top, g, false);
+        drawNodes(chanBlocks, g, true);
 
-        ((Graphics2D) g).setPaint(gradient1);
+        ((Graphics2D) g).setPaint(gradientP);
 //        g.setColor(Color.red);
         g.fillRect(hmPXC, hmPYC, hmPW, hmPH);
         g.setColor(Color.black);
         g.drawString("0", hmPXC + (int) (hmPW * 1.5), hmPYC + hmPH);
-        g.drawString(Double.toString(maxPenalty), hmPXC + (int) (hmPW * 1.5), hmPYC + hmPW / 4);
-        g.drawString("Penalty", hmPXC , hmPYC -hmPW/4);
+        g.drawString(Double.toString(maxPenalty).substring(0,Math.min(5, Double.toString(maxPenalty).length())), hmPXC + (int) (hmPW * 1.5), hmPYC + hmPW / 4);
+        g.drawString("Penalty", hmPXC, hmPYC - hmPW / 4);
+        
+        ((Graphics2D) g).setPaint(gradientH);
+        g.fillRect(hmHXC, hmPYC, hmPW, hmPH);
+        g.setColor(Color.black);
+        g.drawString("0", hmHXC + (int) (hmPW * 1.5), hmPYC + hmPH);
+        g.drawString(Double.toString(maxHVal).substring(0,Math.min(5, Double.toString(maxHVal).length())), hmHXC + (int) (hmPW * 1.5), hmPYC + hmPW / 4);
+        g.drawString("h(n)", hmHXC, hmPYC - hmPW / 4);
     }
 
     @Override
@@ -311,7 +323,9 @@ public class UIGraph extends JPanel implements MouseListener {
         this.hmPYC = hmYC;
         this.hmPW = hmW;
         this.hmPH = hmH;
-        gradient1 = new GradientPaint(hmXC, hmYC + hmH, new Color(255, 0, 0, 0), hmXC, hmYC, Color.red);
+        hmHXC = hmXC + hmW * 3;
+        gradientP = new GradientPaint(hmXC, hmYC + hmH, new Color(255, 0, 0, 0), hmXC, hmYC, Color.red);
+        gradientH = new GradientPaint(hmHXC, hmYC + hmH, new Color(255, 0, 0, 0), hmHXC, hmYC, new Color(255, 153, 51));
     }
 
     public void setMaxPenalty(double maxPenalty) {
@@ -320,6 +334,10 @@ public class UIGraph extends JPanel implements MouseListener {
 
     public void setState(int state) {
         this.state = state;
+    }
+
+    public void setMaxHVal(double maxHVal) {
+        this.maxHVal = maxHVal;
     }
 
 }
