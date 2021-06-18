@@ -56,8 +56,8 @@ public class UIGraph extends JPanel implements MouseListener {
     private CopyOnWriteArrayList<PFNode> sources = new CopyOnWriteArrayList<PFNode>();
     private CopyOnWriteArrayList<PFNode> sinks = new CopyOnWriteArrayList<PFNode>();
 
-    private PFNode curNode;
-    private PFNet selNet;
+    private boolean hSw;
+    private boolean pSw;
     private int hmPXC;
     private int hmPYC;
     private int hmPW;
@@ -116,11 +116,15 @@ public class UIGraph extends JPanel implements MouseListener {
         } else if (d.getType().equals(IP)) {
             g.setColor(Color.white);
             g.fillRect(orig_x, orig_y, width, height);
-            g.setColor(d.getColor());
-            g.fillRect(orig_x, orig_y, width, height);
-            g2.setColor(d.getEdgeColor());
-            g2.setStroke(new BasicStroke(5));
-            g.drawRoundRect​(orig_x, orig_y, width, height, 5, 5);
+            if (hSw) {
+                g.setColor(d.getColor());
+                g.fillRect(orig_x, orig_y, width, height);
+            }
+            if (pSw) {
+                g2.setColor(d.getEdgeColor());
+                g2.setStroke(new BasicStroke(5));
+                g.drawRoundRect​(orig_x, orig_y, width, height, 5, 5);
+            }
             g.setColor(Color.black);
             g.drawString("in", orig_x + width + (int) ((float) 4 / 15 * width), orig_y + height - (int) ((float) 2 / 15 * height));
         } else if (d.getType().equals(OP)) {
@@ -130,9 +134,9 @@ public class UIGraph extends JPanel implements MouseListener {
             g.drawString("out", orig_x + width - (int) ((float) 8 / 15 * width), orig_y + height + (int) ((float) 9 / 15 * height));
         } else if (d.getType().equals(CH)) {
 //            g2.setColor(Color.blue);
-            if (!edge) {
+            if (!edge && hSw) {
                 g.fillRect(orig_x, orig_y, width, height);
-            } else {
+            } else if (pSw) {
                 g2.setColor(d.getEdgeColor());
                 g2.setStroke(new BasicStroke(5));
                 g.drawRoundRect​(orig_x, orig_y, width, height, 5, 5);
@@ -248,20 +252,25 @@ public class UIGraph extends JPanel implements MouseListener {
         drawNodes(top, g, false);
         drawNodes(chanBlocks, g, true);
 
-        ((Graphics2D) g).setPaint(gradientP);
+        if (pSw) {
+            ((Graphics2D) g).setPaint(gradientP);
 //        g.setColor(Color.red);
-        g.fillRect(hmPXC, hmPYC, hmPW, hmPH);
-        g.setColor(Color.black);
-        g.drawString("0", hmPXC + (int) (hmPW * 1.5), hmPYC + hmPH);
-        g.drawString(Double.toString(maxPenalty).substring(0,Math.min(5, Double.toString(maxPenalty).length())), hmPXC + (int) (hmPW * 1.5), hmPYC + hmPW / 4);
-        g.drawString("Penalty", hmPXC, hmPYC - hmPW / 4);
+            g.fillRect(hmPXC, hmPYC, hmPW, hmPH);
+            g.setColor(Color.black);
+            g.drawString("0", hmPXC + (int) (hmPW * 1.5), hmPYC + hmPH);
+            g.drawString(Double.toString(maxPenalty).substring(0, Math.min(5, Double.toString(maxPenalty).length())), hmPXC + (int) (hmPW * 1.5), hmPYC + hmPW / 4);
+            g.drawString("Penalty", hmPXC, hmPYC - hmPW / 4);
+        }
+
+        if (hSw) {
+            ((Graphics2D) g).setPaint(gradientH);
+            g.fillRect(hmHXC, hmPYC, hmPW, hmPH);
+            g.setColor(Color.black);
+            g.drawString("1", hmHXC + (int) (hmPW * 1.5), hmPYC + hmPH);
+            g.drawString(Double.toString(maxHVal).substring(0, Math.min(5, Double.toString(maxHVal).length())), hmHXC + (int) (hmPW * 1.5), hmPYC + hmPW / 4);
+            g.drawString("h(n)", hmHXC, hmPYC - hmPW / 4);
+        }
         
-        ((Graphics2D) g).setPaint(gradientH);
-        g.fillRect(hmHXC, hmPYC, hmPW, hmPH);
-        g.setColor(Color.black);
-        g.drawString("0", hmHXC + (int) (hmPW * 1.5), hmPYC + hmPH);
-        g.drawString(Double.toString(maxHVal).substring(0,Math.min(5, Double.toString(maxHVal).length())), hmHXC + (int) (hmPW * 1.5), hmPYC + hmPW / 4);
-        g.drawString("h(n)", hmHXC, hmPYC - hmPW / 4);
     }
 
     @Override
@@ -274,43 +283,43 @@ public class UIGraph extends JPanel implements MouseListener {
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        System.out.println("released");
-        if (curNode != null) {
-            if (state == WAITFORSRC) {
-                if (curNode.getOccupied() < 1) {
-                    selNet.setSource(curNode);
-                    curNode.occupy();
-                } else {
-                    Toolkit.getDefaultToolkit().beep();
-                    JOptionPane.showMessageDialog(
-                            this, "This source is used in another net", "Invalid Source", JOptionPane.ERROR_MESSAGE);
-                    repaint();
-                }
-            } else if (state == WAITFORTGT) {
-                if (curNode.getOccupied() < 3) {
-                    selNet.addSink(curNode);
-                    curNode.occupy();
-                } else {
-                    Toolkit.getDefaultToolkit().beep();
-                    JOptionPane.showMessageDialog(
-                            this, "This sink is fully occupied", "Invalid Sink", JOptionPane.ERROR_MESSAGE);
-                    repaint();
-                }
-            }
-        }
+//        System.out.println("released");
+//        if (curNode != null) {
+//            if (state == WAITFORSRC) {
+//                if (curNode.getOccupied() < 1) {
+//                    selNet.setSource(curNode);
+//                    curNode.occupy();
+//                } else {
+//                    Toolkit.getDefaultToolkit().beep();
+//                    JOptionPane.showMessageDialog(
+//                            this, "This source is used in another net", "Invalid Source", JOptionPane.ERROR_MESSAGE);
+//                    repaint();
+//                }
+//            } else if (state == WAITFORTGT) {
+//                if (curNode.getOccupied() < 3) {
+//                    selNet.addSink(curNode);
+//                    curNode.occupy();
+//                } else {
+//                    Toolkit.getDefaultToolkit().beep();
+//                    JOptionPane.showMessageDialog(
+//                            this, "This sink is fully occupied", "Invalid Sink", JOptionPane.ERROR_MESSAGE);
+//                    repaint();
+//                }
+//            }
+//        }
     }
 
     @Override
     public void mousePressed(MouseEvent e) {
-        System.out.println("pressed");
-        if (state == WAITFORSRC) {
-            curNode = findSource(e.getPoint());
-        } else if (state == WAITFORSRC) {
-            curNode = findSource(e.getPoint());
-        }
-        if (curNode == null) {
-            System.out.println("not found");
-        }
+//        System.out.println("pressed");
+//        if (state == WAITFORSRC) {
+//            curNode = findSource(e.getPoint());
+//        } else if (state == WAITFORSRC) {
+//            curNode = findSource(e.getPoint());
+//        }
+//        if (curNode == null) {
+//            System.out.println("not found");
+//        }
     }
 
     @Override
@@ -338,6 +347,26 @@ public class UIGraph extends JPanel implements MouseListener {
 
     public void setMaxHVal(double maxHVal) {
         this.maxHVal = maxHVal;
+    }
+
+    public CopyOnWriteArrayList<UIBlock> getBlocks() {
+        return blocks;
+    }
+
+    public CopyOnWriteArrayList<UIBlock> getBottom() {
+        return bottom;
+    }
+
+    public CopyOnWriteArrayList<UIBlock> getChanBlocks() {
+        return chanBlocks;
+    }
+
+    public void setHSw(boolean hSw) {
+        this.hSw = hSw;
+    }
+
+    public void setPSw(boolean pSw) {
+        this.pSw = pSw;
     }
 
 }

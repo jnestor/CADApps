@@ -98,11 +98,10 @@ public class PFNet {
     }
 
     public void paintPath() {
-        //System.out.println("paint");
         PFNet net = this;
         for (UIWire wire : wires) {
             //color a switch block' target node matches a sink
-            if (wire.isSwOn()&&sinks.contains(wire.getAvailableSink())) {
+            if (wire.isSwOn()&&(sinks.contains(wire.getAvailableSink())||source.equals(wire.getAvailableSink()))) {
                 wire.getSwBlock().getDot().setColor(color);
             }
             wire.setColor(color);
