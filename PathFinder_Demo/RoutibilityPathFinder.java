@@ -1,3 +1,26 @@
+/**
+ *                   _ooOoo_
+ *                  o8888888o
+ *                  88" . "88
+ *                  (| -_- |)
+ *                  O\  =  /O
+ *               ____/`---'\____
+ *             .'  \\|     |//  `.
+ *            /  \\|||  :  |||//  \
+ *           /  _||||| -:- |||||-  \
+ *           |   | \\\  -  /// |   |
+ *           | \_|  ''\---/''  |   |
+ *           \  .-\__  `-`  ___/-. /
+ *         ___`. .'  /--.--\  `. . __
+ *      ."" '<  `.___\_<|>_/___.'  >'"".
+ *     | | :  `- \`.;`\ _ /`;.`/ - ` : | |
+ *     \  \ `-.   \_ __\ /__ _/   .-` /  /
+ *======`-.____`-.___\_____/___.-`____.-'======
+ *                   `=---=' 
+ *^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ * Buddha of Debug blessing never BUG
+ */
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -42,6 +65,7 @@ public class RoutibilityPathFinder {
     private boolean step;
     private PFNet selNet;
     private boolean done;
+    private boolean stop;
     private PFNet ghostNet = new PFNet(null, null);
 
     UIGraph graph;
@@ -93,7 +117,6 @@ public class RoutibilityPathFinder {
 
     private int bendCost(PFNode n, PFNode m) {
         if ((n.isIsVertical() ^ m.isIsVertical()) && (n.getBlock().getDot().getType().equals(CH) && m.getBlock().getDot().getType().equals(CH))) {
-            //System.out.println("bend"+n.getID()+" "+m.getID());
             return 1;
         } else {
             return 0;
@@ -102,7 +125,7 @@ public class RoutibilityPathFinder {
 
     public void iterate() {
         System.out.println("real route");
-        resetColor();
+        resetColor(false);
         //set a color to each net when the net is created
         //Wires and nodes are cleared before each iteration
         for (PFNet net : nets) {
@@ -134,7 +157,10 @@ public class RoutibilityPathFinder {
         for (PFNet net : nets) {
             selNet = net;
             while (!done) {
-                if (!routingTimer.isRunning() && !pause) {
+                if (stop) {
+                    return;
+                }
+                if (!routingTimer.isRunning() && !pause && !done) {
                     if (!step) {
                         routingTimer.setInitialDelay(1000);
                     }
@@ -147,50 +173,36 @@ public class RoutibilityPathFinder {
                 }
             }
             done = false;
+            //heatmap
             for (PFNode n : nodes) {
-//                System.out.println(n.getID() + "NODE" + n.getOccupied());
-                //oveeruse heatmap
-
                 if ((n.getBlock().getDot().getType().equals(IP)) || (n.getBlock().getDot().getType().equals(CH))) {
                     if (!n.inCapacity()) {
                         double costN = heatMapVal(n);
                         if (costN > maxPenalty) {
                             maxPenalty = costN + 2;
                             graph.setMaxPenalty(maxPenalty);
-                            System.out.println(costN);
                         }
                         n.getBlock().getDot().setEdgeColor(new Color(255, 0, 0, (int) (costN / maxPenalty * 255)));
-                        System.out.println(n.getID() + "is illegal " + n.getType());
                     }
                     double hVal = n.getHVal();
-                    if(hVal>maxHVal){
+                    if (hVal > maxHVal) {
                         maxHVal = hVal + 1;
                         graph.setMaxHVal(maxHVal);
-                        System.out.println(maxHVal);
                     }
-                    n.getBlock().getDot().setColor(new Color(255, 153, 51, (int) (n.getHVal() / maxHVal * 255)));
+                    n.getBlock().getDot().setColor(new Color(255, 153, 51, (int) ((n.getHVal()) / maxHVal * 255)));
                     graph.repaint();
                 }
-//                        else if () {
-//                        double costN = heatMapVal(n);
-//                        if (costN > maxPenalty) {
-//                            maxPenalty = costN + 2;
-//                            graph.setMaxPenalty(maxPenalty);
-//                        }
-//                        n.getBlock().getDot().setColor(new Color(255, 0, 0, (int) (costN / maxPenalty * 255)));
-//                    }
-                
-
             }
             graph.repaint();
         }
+        resetColor(false);
         iteration++;
         pFac *= 1.5;
         boolean pass = true;
         for (PFNode n : nodes) {
             if (!n.inCapacity()) {
                 pass = false;
-                System.out.println(n.getID() + "is illegal " + n.getType());
+//                System.out.println(n.getID() + "is illegal " + n.getType());
             }
 
         }
@@ -201,11 +213,7 @@ public class RoutibilityPathFinder {
 
     private void netIterate(PFNet net) {
         if (!net.equals(ghostNet)) {
-
-            //set a color to each net when the net is created
-            //net.setColor(ColorSequencer.next());
             PFNode source = net.getSource();
-            //System.out.println("sourceID: " + source.getID());
             for (PFNode sink : net.getSinks()) {
                 for (PFNode n : nodes) {
                     n.setPrev(null);
@@ -221,31 +229,22 @@ public class RoutibilityPathFinder {
                     PFNode m = pQueue.poll();
                     for (PFEdge e : m.getEdges()) {
                         PFNode n = e.getEnd();
-
-//                            if(m.getID()==33)System.out.println("leave ID: "+n.getID());
                         if (n.getPrev() == null) {
                             n.setPrev(m);
                             if (n.equals(sink)) {
 
                                 if (m.getPrev().getPrev().getBlock().getDot().getType().equals("OP")) {
                                     n.setPrev(null);
+//                                    System.out.println("wrong");
                                 } else {
                                     pQueue.clear();
-//                                        System.out.println("found");
+//                                    System.out.println("found");
                                     break;
                                 }
                             } else {
                                 if (!net.getPathNodes().contains(n)) {
-
                                     n.setPathCost(m.getPathCost() + cost(n, m));
                                 }
-//                                    if(n.getID()==34){
-//                                        System.out.println("34 cost: "+n.getPathCost());
-//                                    }
-//                                    if(n.getID()==22){
-//                                        System.out.println("22 cost: "+n.getPathCost());
-//                                    }
-
                                 pQueue.add(n);
                             }
                         }
@@ -262,22 +261,11 @@ public class RoutibilityPathFinder {
 
     public boolean route() {
         iteration = 1;
-        //routingTimer.setRepeats(true);
-        //routingTimer.start();
-        boolean run = true;
-        //routingTimer.start();
         while (!legal) {
             if (iteration == threshold) {
                 break;
             }
-//            if(legal){
-//                run = false;
-//                break;
-//            }
-
             iterate();
-            //System.out.println(run);
-
         }
         routingTimer.stop();
         if (legal) {
@@ -292,44 +280,21 @@ public class RoutibilityPathFinder {
     private void backTrace(PFNode sink, PFNode source, PFNet net) {
         //Back Trace
         PFNode backNode = sink;
-        PFNode lastChannel = sink.getPrev().getPrev();
-        boolean addLast = false;
-        int index = 0;
-//        for (UIWire wire : lastChannel.getWires()) {
-//            System.out.println("try");
-//            if (wire.getTargetNets().contains(net) && wire.getAvailableSink().equals(sink)&&net.getPathWires().contains(wire)) {
-//                System.out.println("NET5currSink: " + sink.getID()+"yes"+index+"avaSink"+wire.getAvailableSink().getID());
-//                addLast = true;
-//                break;
-//            }
-//            index++;
-//        }
-//        if (!addLast) {
-//            lastChannel.occupy();
-//            System.out.println("no");
-//        }
-//        if (lastChannel.getID() == 30) {
-//            System.out.println("NET5currSink: " + sink.getID() + "currOccu: " + lastChannel.getOccupied());
-//        }
+//        PFNode lastChannel = sink.getPrev().getPrev();
+//        boolean addLast = false;
+//        System.out.println(lastChannel.getID());
         while (!backNode.equals(source)) {
             //System.out.println("trace" + backNode.getID());
             if (!net.getPathNodes().contains(backNode)) {
                 //Trace back a node
                 PFNode prev = backNode.getPrev();
                 net.addNode(backNode);
-                if (!backNode.equals(sink)) {
-                    if (!backNode.getType().equals(CH)) {
-                        backNode.occupy();
-                    }
-//                    if (backNode.getID() == 30) {
-//                        System.out.println("currSink: " + sink.getID() + "currOccu: " + backNode.getOccupied());
-//                    }
+                if (!backNode.getType().equals(CH)) {
+                    backNode.occupy();
                 }
                 //Choose a wire segment in the channel
                 if (!backNode.getWires().isEmpty()) {
-//                    lastChan = backNode;
                     //System.out.println("ChannelID: " + backNode.getID());
-//                    UIWire lastWire = net.getPathWires().getLast();
                     LinkedList<UIWire> nodeWires = backNode.getWires();
                     boolean added = false;
                     for (UIWire wire : nodeWires) {
@@ -398,7 +363,6 @@ public class RoutibilityPathFinder {
                                         for (int i = 0; i < 2; i++) {
                                             for (int j = 0; j < 2; j++) {
                                                 if (lasts[i].equals(curs[j])) {
-
                                                     int x = 0;
                                                     if (j == 0) {
                                                         x = 1;
@@ -475,9 +439,11 @@ public class RoutibilityPathFinder {
                     }
                 }
             }
+
             backNode = backNode.getPrev();
         }
         net.paintPath();
+
     }
 
     //A rough routing without visualization just so that I know which wire seg in a channel will be used for which net
@@ -511,6 +477,7 @@ public class RoutibilityPathFinder {
                             if (n.getPrev() == null) {
                                 //System.out.println("leafID: "+n.getID());
                                 n.setPrev(m);
+
                                 //System.out.println("current Prev: "+n.getPrev().getID()+"\n");
                                 if (n.equals(sink)) {
                                     if (m.getPrev().getPrev().getBlock().getDot().getType().equals("OP")) {
@@ -518,12 +485,12 @@ public class RoutibilityPathFinder {
                                         n.setPrev(null);
                                     } else {
                                         pQueue.clear();
-                                        System.out.println("found");
+//                                        System.out.println("found");
                                         break;
                                     }
                                 } else {
                                     if (!net.getPathNodes().contains(n)) {
-                                        n.setPathCost(m.getPathCost() + this.cost(n, m));
+                                        n.setPathCost(m.getPathCost() + cost(n, m));
                                     }
                                     pQueue.add(n);
                                 }
@@ -536,9 +503,6 @@ public class RoutibilityPathFinder {
                     PFNode lastChannel = sink.getPrev().getPrev();
 
                     while (!backNode.equals(source)) {
-                        //if(backNode.getID()==25){
-                        //System.out.println("current Prev: "+backNode.getPrev().getID());
-                        //}
                         if (!net.getPathNodes().contains(backNode)) {
                             net.addNode(backNode);
                             backNode.occupy();
@@ -547,7 +511,6 @@ public class RoutibilityPathFinder {
                     }
                     //System.out.println("fakeLastChan: " + net.getPathNodes().get(1).getID());
                     //System.out.println("sinkID: " + sink.getID());
-
                     //Wire arrangement
                     //Find the target switch
                     if (firstSink) {
@@ -568,12 +531,10 @@ public class RoutibilityPathFinder {
                             }
                         }
                     }
-                    //find the sink swith
+                    //find the sink switch
                     int useCount = 0;
                     for (UIWire wire : lastChannel.getWires()) {
-                        if (wire.getTargetNets().contains(net)) {
-                            useCount++;
-                        }
+
                         if (wire.getAvailableSink() != null) {
                             boolean inCapMatch = lastChannel.inCapacity() && wire.getAvailableSink().equals(sink) && wire.getTargetNets().isEmpty();
                             boolean outOfCapMatch = !lastChannel.inCapacity()
@@ -586,71 +547,26 @@ public class RoutibilityPathFinder {
                                 //System.out.println("math sink, sinkID: " + sink.getID() + " channelID: " + lastChannel.getID() + "wireIndex: " + lastChannel.getWires().indexOf(wire));
                                 wire.addTargetNet(net);
                                 wire.setSwOn(true);
-                                useCount++;
                                 break;
                             }
                         }
                     }
-                    if (useCount > 1) {
-                        lastChannel.occupy();
+                    for (UIWire wire : lastChannel.getWires()) {
+                        if (wire.getTargetNets().contains(net)) {
+                            useCount++;
+                        }
                     }
-                    if (lastChannel.getID() == 30) {
-                        System.out.println("NET5currSink: " + sink.getID() + "currOccu: " + lastChannel.getOccupied());
-                    }
+//                    if (useCount > 1) {
+//                        lastChannel.occupy();
+//                        System.out.println("added extra occupancy" + lastChannel.getID());
+//                    }
                     //Wire arrangment done
                 }
             }
         }
     }
 
-    private void wireArrange() {
-////        System.out.println("arrange");
-//        for (PFNet net : nets) {
-//            System.out.println("one net");
-//            LinkedList<PFNode> path = net.getPathNodes();
-//            PFNode lastChannel = path.get(1);
-//            PFNode firstChannel = path.get(path.size() - 2);
-//            System.out.println("lastChan ID: " + lastChannel.getID());
-//            for (PFNode sink : net.getSinks()) {
-//                int i = -1;
-//                for (UIWire wire : lastChannel.getWires()) {
-//                    if (wire.getAvailableSink() != null) {
-//                        boolean inCapMatch = lastChannel.inCapacity() && wire.getAvailableSink().equals(sink) && !wire.isOccupied();
-//                        boolean outOfCapMatch = !lastChannel.inCapacity()
-//                                && wire.getAvailableSink().equals(sink);
-//
-//                        //System.out.println("avaSink: " + wire.getAvailableSink().getID());
-//                        //System.out.println("inCap: " + inCapMatch);
-//                        //System.out.println("outCap: " + outOfCapMatch);
-//                        if (inCapMatch || outOfCapMatch) {
-//                            //System.out.println("math sink, sinkID: " + sink.getID() + " channelID: " + lastChannel.getID() + "wireIndex: " + lastChannel.getWires().indexOf(wire));
-//                            wire.setTargetNet(net);
-//                            wire.setOccupied(true);
-//                            break;
-//                        }
-//                    }
-//                }
-//            }
-//            for (UIWire wire : firstChannel.getWires()) {
-//                if (wire.getAvailableSink() != null) {
-//                    boolean inCapMatch = firstChannel.inCapacity()
-//                            && wire.getAvailableSink().equals(net.getSource()) && !wire.isOccupied();
-//                    boolean outOfCapMatch = !firstChannel.inCapacity()
-//                            && wire.getAvailableSink().equals(net.getSource());
-//                    if (inCapMatch || outOfCapMatch) {
-//                        wire.setTargetNet(net);
-//                        wire.setOccupied(true);
-//                        break;
-//                    }
-//                }
-//            }
-//            //System.out.println();
-////            net.clearPath();
-//        }
-//        //System.out.println("done arrange");
-    }
-
-    private void resetColor() {
+    private void resetColor(boolean resetHeatMap) {
         for (PFNet net : nets) {
 
             for (UIWire wire : net.getPathWires()) {
@@ -658,9 +574,9 @@ public class RoutibilityPathFinder {
             }
             for (PFNode node : net.getPathNodes()) {
                 node.getBlock().getDot().resetColor();
-                if (node.getBlock().getDot().getType().equals(IP)||node.getBlock().getDot().getType().equals(CH)) {
+                if ((node.getBlock().getDot().getType().equals(IP) || node.getBlock().getDot().getType().equals(CH)) && !resetHeatMap) {
                     node.getBlock().getDot().setColor(new Color(255, 153, 51, (int) (node.getHVal() / maxHVal * 255)));
-                }    
+                }
             }
         }
     }
@@ -683,16 +599,26 @@ public class RoutibilityPathFinder {
 
     public void resetAll() {
         System.out.println("reset");
-        resetColor();
+        legal = true;
+        stop = true;
+        routingTimer.stop();
+        resetColor(true);
+        for (PFNode n : nodes) {
+            n.clearStats(true);
+            n.resetWires();
+            n.getBlock().getDot().resetColor();
+        }
         for (PFNet net : nets) {
-            net.clearNodes(true);
-            net.resetChannels();
-            net.clearWires();
-            net.clearPath();
+            if (!net.equals(ghostNet)) {
+                net.clearWires();
+                net.clearPath();
+            }
         }
 
         nets.clear();
         iteration = 1;
+        graph.repaint();
+
     }
 
     public LinkedList<PFNet> getNets() {
