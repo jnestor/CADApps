@@ -9,6 +9,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -34,31 +35,38 @@ import javax.swing.JOptionPane;
 import static pathfinder_demo.UIGraph.IP;
 import static pathfinder_demo.UIGraph.SW;
 import javax.swing.JPanel;
+import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.ChangeEvent;
 
 /**
  *
  * @author 15002
  */
-public class PathFinderFrame_demo extends JFrame {
+public class PathFinderFrame_demo extends JFrame implements Runnable {
+    
+    
+    
 
     LinkedList<PFNet> nets = new LinkedList<PFNet>();
     private UIPathFinder p;
     RoutibilityPathFinder router;
-    private static final int WAITFORNET = 0;
-    private static final int WAITFORSRC = 1;
-    private static final int WAITFORTGT = 2;
-    private static final int EXPANDING = 3;
+
+    private UIGraph graph;
+
+    private static final int DONE = 0;
+    private static final int EXPANDING = 1;
 
     private final JLabel msgBoard = new JLabel();
     private final JLabel title = new JLabel("PathFinder Algorithm", SwingConstants.CENTER);
     private final ImageIcon pause = new ImageIcon(getClass().getResource("images/pause.gif"));
     private final ImageIcon resume = new ImageIcon(getClass().getResource("images/start.gif"));
     private final JToggleButton clearBtn = new JToggleButton(new ImageIcon(getClass().getResource("images/clear.png")));
-    private final JToggleButton pauseBtn = new JToggleButton(resume);
+    private final JToggleButton pauseBtn = new JToggleButton(pause);
     private final JToggleButton stopBtn = new JToggleButton(new ImageIcon(getClass().getResource("images/stop.gif")));
     private final JToggleButton stepBtn = new JToggleButton(new ImageIcon(getClass().getResource("images/step.gif")));
 //    private final JToggleButton creanetBtn = new JToggleButton("new net");
@@ -68,15 +76,21 @@ public class PathFinderFrame_demo extends JFrame {
             + "are you sure you want to resize");
     private WarningDialog clearWarning = new WarningDialog("This will clear all the grids, are you "
             + "sure you want to do this");
+    private JSlider speedSlider = new JSlider(10, 800, 400);
 
     private final JCheckBox hValBox = new JCheckBox("h(n) Heatmap");
     private final JCheckBox penaltyBox = new JCheckBox("Penalty Heatmap");
     private boolean hBoxSw = false;
     private boolean pBoxSw = true;
+    
+    private Thread myThread;
 
     public PathFinderFrame_demo(int w, int h) {
+        title.setFont(new Font("Bold", Font.PLAIN, 25));
+        title.setBorder(new EmptyBorder(10, 10, 10, 20));
         p = new UIPathFinder(w, h);
         router = new RoutibilityPathFinder(nets, p.getNodes(), p.getGraph());
+        graph = p.getGraph();
         setLayout(new BorderLayout());
         getContentPane().add(p.getGraph(), "Center");
         getContentPane().add(title, "North");
@@ -86,6 +100,8 @@ public class PathFinderFrame_demo extends JFrame {
         stopBtn.addActionListener(this::stopAction);
         stepBtn.addActionListener(this::stepAction);
         resizeWindowBtn.addActionListener(this::resizeAction);
+        speedSlider.addChangeListener(this::speedChanged);
+
         btnPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         msgBoard.setPreferredSize(new Dimension(290, 25));
         pauseBtn.setPreferredSize(new Dimension(25, 25));
@@ -93,6 +109,8 @@ public class PathFinderFrame_demo extends JFrame {
         stepBtn.setPreferredSize(new Dimension(25, 25));
         stopBtn.setPreferredSize(new Dimension(25, 25));
         resizeWindowBtn.setPreferredSize(new Dimension(90, 25));
+        speedSlider.setPreferredSize(new Dimension(160, 25));
+        speedSlider.setToolTipText("Change the speed of the expansion");
         pauseBtn.setToolTipText("Pause");
         stepBtn.setToolTipText("Step");
         stopBtn.setToolTipText("Stop");
@@ -111,26 +129,37 @@ public class PathFinderFrame_demo extends JFrame {
         btnPanel.add(resizeWindowBtn);
         btnPanel.add(penaltyBox);
         btnPanel.add(hValBox);
-        
+        btnPanel.add(speedSlider);
+
         getContentPane().add(btnPanel, "South");
 //        refreshTimer.start();
         repaint();
-        //stepBtn.setEnabled(false);
+        stepBtn.setEnabled(false);
         router.setPause(true);
         pauseBtn.setSelectedIcon(resume);
+        pauseBtn.setSelected(true);
         pauseBtn.setToolTipText(router.isPause() ? "Start" : "Pause");
-        p.getGraph().setState(WAITFORNET);
-
+        p.getGraph().setState(DONE);
+        refreshTimer.start();
+//        start();
     }
 
     public UIGraph getUIG() {
         return p.getGraph();
     }
 
+    public static void main(String[] args) throws InterruptedException {
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                createAndShowGUI();
+            }
+        });
+    }
+
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
+    private static void createAndShowGUI() {
 
         PathFinderFrame_demo demo = new PathFinderFrame_demo(4, 3);
         LinkedList<PFNet> nets = new LinkedList<PFNet>();
@@ -207,10 +236,12 @@ public class PathFinderFrame_demo extends JFrame {
 
         //f.add(demo);
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        f.setSize(1000, 1000);
+        f.setSize(1030, 1000);
+        f.setMinimumSize(new Dimension(1030, 1000));
+        f.pack();
         f.setVisible(true);
-        demo.router.route();
-        source1.occupy();
+
+//        demo.router.route();
     }
 
     public UIPathFinder getP() {
@@ -218,9 +249,16 @@ public class PathFinderFrame_demo extends JFrame {
     }
 
     private void pauseAction(ActionEvent evt) {
-        router.setPause(!router.isPause());
-        pauseBtn.setSelectedIcon(router.isPause() ? resume : pause);
-        pauseBtn.setToolTipText(router.isPause() ? "Start" : "Pause");
+        if (graph.getState() == DONE) {
+            System.out.println("first try");
+            router.setPause(false);
+            start();
+        } else {
+            router.setPause(!router.isPause());
+            pauseBtn.setSelectedIcon(router.isPause() ? resume : pause);
+            pauseBtn.setToolTipText(router.isPause() ? "Start" : "Pause");
+            System.out.println(router.isPause() ? "Start" : "Pause");
+        }
     }
 
     private void stepAction(ActionEvent evt) {
@@ -264,18 +302,27 @@ public class PathFinderFrame_demo extends JFrame {
         p.getGraph().setPSw(pBoxSw);
         p.getGraph().repaint();
     }
-//    Timer refreshTimer = new Timer(5, new ActionListener() {
-//        @Override
-//        public void actionPerformed(ActionEvent e) {
-//            pauseBtn.setSelectedIcon(myGrid.isPaused() ? resume : pause);
-//            pauseBtn.setToolTipText(myGrid.isPaused() ? "Start":"Pause");
-//            pauseBtn.setSelected(myGrid.isPaused());
+
+    public void speedChanged(ChangeEvent e) {
+        JSlider source = (JSlider) e.getSource();
+        if (!source.getValueIsAdjusting()) {
+            int speed = (int) source.getValue();
+            router.setDelay(speed);
+        }
+    }
+
+    Timer refreshTimer = new Timer(5, new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            pauseBtn.setSelectedIcon(router.isPause() ? resume : pause);
+            pauseBtn.setToolTipText(router.isPause() ? "Start" : "Pause");
+            pauseBtn.setSelected(router.isPause());
 //            msgBoard.setText(myGrid.getMSG());
-//            if (myGrid.getState() == WAITFORSRC) {
-//                pauseBtn.setEnabled(false);
-//                stopBtn.setEnabled(false);
-//                stepBtn.setEnabled(false);
-//                clearBtn.setEnabled(true);
+            if (graph.getState() == DONE) {
+                pauseBtn.setEnabled(true);
+                stopBtn.setEnabled(false);
+                stepBtn.setEnabled(false);
+                clearBtn.setEnabled(true);
 //                routerComboBox.setEnabled(true);
 //                if (routerMode == 0) {
 //                    parallelExpandBox.setVisible(true);
@@ -284,14 +331,15 @@ public class PathFinderFrame_demo extends JFrame {
 //                    parallelExpandBox.setVisible(false);
 //                    parallelExpandBox.setEnabled(false);
 //                }
-//            } else if (myGrid.getState() == WAITFORTGT) {
-//                pauseBtn.setEnabled(false);
-//                stopBtn.setEnabled(false);
-//                stepBtn.setEnabled(false);
-//                clearBtn.setEnabled(false);
+            } else if (graph.getState() == EXPANDING) {
+                pauseBtn.setEnabled(true);
+                stopBtn.setEnabled(true);
+                stepBtn.setEnabled(router.isPause());
+                clearBtn.setEnabled(false);
 //                routerComboBox.setEnabled(false);
 //                parallelExpandBox.setEnabled(false);
-//            } else if (myGrid.getState() == EXPANDING) {
+            }
+//            else if (myGrid.getState() == EXPANDING) {
 //                pauseBtn.setEnabled(true);
 //                stopBtn.setEnabled(true);
 //                stepBtn.setEnabled(myGrid.isPaused());
@@ -306,9 +354,9 @@ public class PathFinderFrame_demo extends JFrame {
 //                routerComboBox.setEnabled(false);
 //                parallelExpandBox.setEnabled(false);
 //            }
-//        }
-//    }
-//    );
+        }
+    }
+    );
 //    private void initiResizeWindow() {
 //        this.setLocationByPlatform(true);
 //        JTextField layerField = new JTextField("1");
@@ -357,4 +405,19 @@ public class PathFinderFrame_demo extends JFrame {
 //        resizeWindow.pack();
 //        resizeWindow.setLocationRelativeTo(this);
 //    }
+
+    @Override
+    public void run() {
+        while(true){
+            if(graph.getState()==DONE)
+            router.route();
+        }
+    }
+
+    public void start() {
+        if (myThread == null) {
+            myThread = new Thread(this);
+            myThread.start();
+        }
+    }
 }

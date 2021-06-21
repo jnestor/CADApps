@@ -15,6 +15,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
+import java.awt.Font;
 import java.awt.GradientPaint;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -22,6 +23,7 @@ import java.awt.event.MouseEvent;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.JPanel;
 import java.awt.event.MouseListener;
+import java.text.DecimalFormat;
 import java.util.LinkedList;
 import java.util.Locale;
 import javax.swing.JOptionPane;
@@ -32,10 +34,8 @@ import javax.swing.JOptionPane;
  */
 public class UIGraph extends JPanel implements MouseListener {
 
-    private static final int WAITFORNET = 0;
-    private static final int WAITFORSRC = 1;
-    private static final int WAITFORTGT = 2;
-    private static final int EXPANDING = 3;
+    private static final int DONE = 0;
+    private static final int EXPANDING = 1;
 
     public static final String SW = "SW";
     public static final String SB = "SB";
@@ -45,7 +45,7 @@ public class UIGraph extends JPanel implements MouseListener {
     public static final String TM = "TM";
     public static final String CH = "CH";
 
-    private int state = WAITFORNET;
+    private int state = DONE;
 
     private CopyOnWriteArrayList<UIBlock> blocks = new CopyOnWriteArrayList<UIBlock>();
     private CopyOnWriteArrayList<UIBlock> top = new CopyOnWriteArrayList<UIBlock>();
@@ -55,6 +55,7 @@ public class UIGraph extends JPanel implements MouseListener {
     private CopyOnWriteArrayList<UIBlock> chanBlocks = new CopyOnWriteArrayList<UIBlock>();
     private CopyOnWriteArrayList<PFNode> sources = new CopyOnWriteArrayList<PFNode>();
     private CopyOnWriteArrayList<PFNode> sinks = new CopyOnWriteArrayList<PFNode>();
+    private DecimalFormat numberFormat = new DecimalFormat("#.00");
 
     private boolean hSw;
     private boolean pSw;
@@ -64,11 +65,15 @@ public class UIGraph extends JPanel implements MouseListener {
     private int hmPH;
 
     private int hmHXC;
+    private int hmHYC;
 
     private double maxPenalty;
     private double maxHVal = 2;
-    GradientPaint gradientP;
-    GradientPaint gradientH;
+    private int iteration;
+    private GradientPaint gradientP;
+    private GradientPaint gradientH;
+    
+    
 
     public UIGraph() {
         addMouseListener(this);
@@ -252,23 +257,27 @@ public class UIGraph extends JPanel implements MouseListener {
         drawNodes(top, g, false);
         drawNodes(chanBlocks, g, true);
 
+        g.setColor(Color.black);
+        g.setFont(new Font("TimesRoman", Font.PLAIN, 15));
+        g.drawString("Iteration: "+iteration, hmPXC, hmPYC - hmPW);
+        
         if (pSw) {
             ((Graphics2D) g).setPaint(gradientP);
 //        g.setColor(Color.red);
             g.fillRect(hmPXC, hmPYC, hmPW, hmPH);
             g.setColor(Color.black);
             g.drawString("0", hmPXC + (int) (hmPW * 1.5), hmPYC + hmPH);
-            g.drawString(Double.toString(maxPenalty).substring(0, Math.min(5, Double.toString(maxPenalty).length())), hmPXC + (int) (hmPW * 1.5), hmPYC + hmPW / 4);
+            g.drawString(numberFormat.format(maxPenalty), hmPXC + (int) (hmPW * 1.5), hmPYC + hmPW / 4);
             g.drawString("Penalty", hmPXC, hmPYC - hmPW / 4);
         }
 
         if (hSw) {
             ((Graphics2D) g).setPaint(gradientH);
-            g.fillRect(hmHXC, hmPYC, hmPW, hmPH);
+            g.fillRect(hmHXC, hmHYC, hmPW, hmPH);
             g.setColor(Color.black);
-            g.drawString("1", hmHXC + (int) (hmPW * 1.5), hmPYC + hmPH);
-            g.drawString(Double.toString(maxHVal).substring(0, Math.min(5, Double.toString(maxHVal).length())), hmHXC + (int) (hmPW * 1.5), hmPYC + hmPW / 4);
-            g.drawString("h(n)", hmHXC, hmPYC - hmPW / 4);
+            g.drawString("1", hmHXC + (int) (hmPW * 1.5), hmHYC + hmPH);
+            g.drawString(Double.toString(maxHVal).substring(0, Math.min(5, Double.toString(maxHVal).length())), hmHXC + (int) (hmPW * 1.5), hmHYC + hmPW / 4);
+            g.drawString("h(n)", hmHXC, hmHYC - hmPW / 4);
         }
         
     }
@@ -327,14 +336,15 @@ public class UIGraph extends JPanel implements MouseListener {
 
     }
 
-    public void setPenaltyHeatMap(int hmXC, int hmYC, int hmW, int hmH) {
+    public void setHeatMap(int hmXC, int hmYC, int hmW, int hmH) {
         this.hmPXC = hmXC;
         this.hmPYC = hmYC;
         this.hmPW = hmW;
         this.hmPH = hmH;
-        hmHXC = hmXC + hmW * 3;
+        hmHXC = hmXC;
+        hmHYC = hmPYC+hmH+50;
         gradientP = new GradientPaint(hmXC, hmYC + hmH, new Color(255, 0, 0, 0), hmXC, hmYC, Color.red);
-        gradientH = new GradientPaint(hmHXC, hmYC + hmH, new Color(255, 0, 0, 0), hmHXC, hmYC, new Color(255, 153, 51));
+        gradientH = new GradientPaint(hmHXC, hmH + hmHYC, new Color(255, 153, 51,0), hmHXC, hmHYC, new Color(255, 153, 51));
     }
 
     public void setMaxPenalty(double maxPenalty) {
@@ -343,6 +353,10 @@ public class UIGraph extends JPanel implements MouseListener {
 
     public void setState(int state) {
         this.state = state;
+    }
+
+    public int getState() {
+        return state;
     }
 
     public void setMaxHVal(double maxHVal) {
@@ -369,4 +383,9 @@ public class UIGraph extends JPanel implements MouseListener {
         this.pSw = pSw;
     }
 
+    public void setIteration(int iteration) {
+        this.iteration = iteration;
+    }
+
+    
 }

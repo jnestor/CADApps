@@ -1,26 +1,3 @@
-/**
- *                   _ooOoo_
- *                  o8888888o
- *                  88" . "88
- *                  (| -_- |)
- *                  O\  =  /O
- *               ____/`---'\____
- *             .'  \\|     |//  `.
- *            /  \\|||  :  |||//  \
- *           /  _||||| -:- |||||-  \
- *           |   | \\\  -  /// |   |
- *           | \_|  ''\---/''  |   |
- *           \  .-\__  `-`  ___/-. /
- *         ___`. .'  /--.--\  `. . __
- *      ."" '<  `.___\_<|>_/___.'  >'"".
- *     | | :  `- \`.;`\ _ /`;.`/ - ` : | |
- *     \  \ `-.   \_ __\ /__ _/   .-` /  /
- *======`-.____`-.___\_____/___.-`____.-'======
- *                   `=---=' 
- *^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
- * Buddha of Debug blessing never BUG
- */
-
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -43,6 +20,9 @@ import javax.swing.Timer;
  */
 public class RoutibilityPathFinder {
 
+    private static final int DONE = 0;
+    private static final int EXPANDING = 1;
+
     public static final String SW = "SW";
     public static final String SB = "SB";
     public static final String LB = "LB";
@@ -53,6 +33,8 @@ public class RoutibilityPathFinder {
 
     private double maxPenalty = 1;
     private double maxHVal = 2;
+    private int delay=400;
+    
     private boolean legal = false;
     private double pFac = 0.5;//increase by 1.5 to 2 times each iteration
     //for easy ones, pfac = 10000 at first
@@ -69,7 +51,7 @@ public class RoutibilityPathFinder {
     private PFNet ghostNet = new PFNet(null, null);
 
     UIGraph graph;
-    private Timer routingTimer = new Timer(400, new ActionListener() {
+    Timer routingTimer = new Timer(400, new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
             netIterate(selNet);
@@ -125,6 +107,7 @@ public class RoutibilityPathFinder {
 
     public void iterate() {
         System.out.println("real route");
+        graph.setIteration(iteration);
         resetColor(false);
         //set a color to each net when the net is created
         //Wires and nodes are cleared before each iteration
@@ -162,16 +145,17 @@ public class RoutibilityPathFinder {
                 }
                 if (!routingTimer.isRunning() && !pause && !done) {
                     if (!step) {
-                        routingTimer.setInitialDelay(1000);
+                        routingTimer.setInitialDelay(delay);
                     }
-                    System.out.println("Start");
                     routingTimer.start();
+                    System.out.println("started");
                     if (step) {
                         pause = true;
                         step = false;
                     }
                 }
             }
+            System.out.println("Step: "+step);
             done = false;
             //heatmap
             for (PFNode n : nodes) {
@@ -179,7 +163,7 @@ public class RoutibilityPathFinder {
                     if (!n.inCapacity()) {
                         double costN = heatMapVal(n);
                         if (costN > maxPenalty) {
-                            maxPenalty = costN + 2;
+                            maxPenalty = costN + pFac * Math.pow(pFac, 0.25);
                             graph.setMaxPenalty(maxPenalty);
                         }
                         n.getBlock().getDot().setEdgeColor(new Color(255, 0, 0, (int) (costN / maxPenalty * 255)));
@@ -207,14 +191,17 @@ public class RoutibilityPathFinder {
 
         }
         legal = pass;
-
+        System.out.println(pFac);
         //graph.repaint();
     }
 
     private void netIterate(PFNet net) {
+        System.out.println(nets.size());
+        
         if (!net.equals(ghostNet)) {
             PFNode source = net.getSource();
             for (PFNode sink : net.getSinks()) {
+                
                 for (PFNode n : nodes) {
                     n.setPrev(null);
                 }
@@ -256,13 +243,16 @@ public class RoutibilityPathFinder {
         }
         done = true;
         routingTimer.stop();
-
+        System.out.println("done");
+        
     }
 
     public boolean route() {
         iteration = 1;
+//        pause = false;
+        graph.setState(EXPANDING);
         while (!legal) {
-            if (iteration == threshold) {
+            if (iteration > threshold) {
                 break;
             }
             iterate();
@@ -274,6 +264,9 @@ public class RoutibilityPathFinder {
             System.out.println("Fail");
             System.out.println(iteration);
         }
+        restartReset();
+        graph.setState(DONE);
+        pause = true;
         return legal;
     }
 
@@ -599,7 +592,7 @@ public class RoutibilityPathFinder {
 
     public void resetAll() {
         System.out.println("reset");
-        legal = true;
+        legal = false;
         stop = true;
         routingTimer.stop();
         resetColor(true);
@@ -621,6 +614,36 @@ public class RoutibilityPathFinder {
 
     }
 
+    public void restartReset() {
+        System.out.println("reset");
+        legal = false;
+        stop = false;
+        done = false;
+        resetColor(true);
+        for (PFNode n : nodes) {
+            n.clearStats(true);
+            n.resetWires();
+            n.getBlock().getDot().resetColor();
+        }
+        for (PFNet net : nets) {
+            if (!net.equals(ghostNet)) {
+                net.clearWires();
+                net.clearPath();
+            }
+        }
+
+//        nets.clear();
+        pFac = 0.5;
+        iteration = 1;
+        maxHVal = 2;
+        maxPenalty = 1;
+        graph.setIteration(1);
+        graph.setMaxHVal(maxHVal);
+        graph.setMaxPenalty(maxPenalty);
+        graph.repaint();
+        
+    }
+
     public LinkedList<PFNet> getNets() {
         return nets;
     }
@@ -630,4 +653,14 @@ public class RoutibilityPathFinder {
         nets.addLast(ghostNet);
     }
 
+    public void setDelay(int delay) {
+        this.delay = delay;
+    }
+
+    public Timer getRoutingTimer() {
+        return routingTimer;
+    }
+    
+    
+    
 }

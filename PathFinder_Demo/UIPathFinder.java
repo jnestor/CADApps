@@ -41,7 +41,7 @@ public class UIPathFinder {
                 sbArr[j][i] = sb;
             }
         }
-        u.setPenaltyHeatMap((45+270*(w-1)+45*3),90,30,270);
+        u.setHeatMap((45+270*(w-1)+45*2),45,30,270);
         
         //Construct logic blocks
         PFNode[][] sourceArr = new PFNode [w-1][h-1];

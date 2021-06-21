@@ -70,6 +70,22 @@ public class PFNet {
         blocks.clear();
     }
 
+    public void clearWires() {
+        for (UIWire wire : wires) {
+            wire.clearTargets();
+        }
+    }
+
+    public void clearNodes(boolean h) {
+        for (PFNode n : path) {
+            n.clearStats(h);
+        }
+        for (PFNode n : sinks) {
+            n.clearStats(h);
+        }
+        source.clearStats(h);
+    }
+
     public LinkedList<PFNode> getPathNodes() {
         return path;
     }
@@ -101,7 +117,7 @@ public class PFNet {
         PFNet net = this;
         for (UIWire wire : wires) {
             //color a switch block' target node matches a sink
-            if (wire.isSwOn()&&(sinks.contains(wire.getAvailableSink())||source.equals(wire.getAvailableSink()))) {
+            if (wire.isSwOn() && (sinks.contains(wire.getAvailableSink()) || source.equals(wire.getAvailableSink()))) {
                 wire.getSwBlock().getDot().setColor(color);
             }
             wire.setColor(color);
@@ -114,16 +130,6 @@ public class PFNet {
                 wire.getTerminalB().setColor(color);
             }
         }
-    }
-
-    public void clearNodes(boolean h) {
-        for (PFNode n : path) {
-            n.clearStats(h);
-        }
-        for (PFNode n : sinks) {
-            n.clearStats(h);
-        }
-        source.clearStats(h);
     }
 
     public void backUpHVal() {
@@ -139,12 +145,6 @@ public class PFNet {
     public void resetChannels() {
         for (PFNode n : path) {
             n.resetWires();
-        }
-    }
-
-    public void clearWires() {
-        for (UIWire wire : wires) {
-            wire.clearTargets();
         }
     }
 
