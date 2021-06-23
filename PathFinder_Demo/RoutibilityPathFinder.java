@@ -9,8 +9,10 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import static java.lang.Math.max;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
@@ -32,23 +34,24 @@ public class RoutibilityPathFinder {
     public static final String CH = "CH";
 
     private double maxPenalty = 1;
-    private double maxHVal = 2;
-    private int delay=400;
-    
+    private double maxHVal = 25;
+
     private boolean legal = false;
     private double pFac = 0.5;//increase by 1.5 to 2 times each iteration
     //for easy ones, pfac = 10000 at first
     private double hFac = 0.5;//remain constant
     private int iteration = 1;
     private int threshold = 45;
-    private LinkedList<PFNet> nets;
+    private CopyOnWriteArrayList<PFNet> nets;
     private LinkedList<PFNode> nodes;
     private boolean pause;
-    private boolean step;
+//    private boolean step;
     private PFNet selNet;
-    private boolean done;
+    private boolean done = true;
     private boolean stop;
     private PFNet ghostNet = new PFNet(null, null);
+    private PFNet firstNet;
+    Iterator iterator;
 
     UIGraph graph;
     Timer routingTimer = new Timer(400, new ActionListener() {
@@ -58,7 +61,7 @@ public class RoutibilityPathFinder {
         }
     });
 
-    public RoutibilityPathFinder(LinkedList<PFNet> nets, LinkedList<PFNode> nodes, UIGraph g) {
+    public RoutibilityPathFinder(CopyOnWriteArrayList<PFNet> nets, LinkedList<PFNode> nodes, UIGraph g) {
         this.nets = nets;
         this.nodes = nodes;
         graph = g;
@@ -105,7 +108,7 @@ public class RoutibilityPathFinder {
         }
     }
 
-    public void iterate() {
+    public void iterateReset() {
         System.out.println("real route");
         graph.setIteration(iteration);
         resetColor(false);
@@ -137,33 +140,128 @@ public class RoutibilityPathFinder {
                 net.clearPath();
             }
         }
-        for (PFNet net : nets) {
-            selNet = net;
-            while (!done) {
-                if (stop) {
-                    return;
-                }
-                if (!routingTimer.isRunning() && !pause && !done) {
-                    if (!step) {
-                        routingTimer.setInitialDelay(delay);
+    }
+
+//    public void iterate() {
+////        iterateReset();
+//        while (iterator.hasNext()) {
+//            
+//            while (!done) {
+//                if (stop) {
+//                    return;
+//                }
+//                if (!routingTimer.isRunning() && !pause && !done) {
+//                    if (!step) {
+//                        routingTimer.setInitialDelay(delay);
+//                    }
+//                    routingTimer.start();
+////                    System.out.println("started");
+//                    if (step) {
+//                        pause = true;
+//                        step = false;
+//                    }
+//                }
+//            }
+////            System.out.println("Step: " + step);
+//            done = false;
+//        }
+//        //graph.repaint();
+//    }
+
+    private void legalCheck() {
+        iterator = nets.iterator();
+//        System.out.println(iterator.hasNext());
+        boolean pass = true;
+        for (PFNode n : nodes) {
+            if (!n.inCapacity()) {
+                pass = false;
+//                System.out.println(n.getID() + "is illegal " + n.getType());
+            }
+        }
+        legal = pass;
+        iteration++;
+        if (!legal && !(iteration > threshold)) {
+            resetColor(false);
+//            System.out.println(iteration);
+        }
+
+        if (legal || iteration > threshold) {
+            graph.setState(DONE);
+            pause = true;
+//            step = true;
+            routingTimer.stop();
+        }
+        pFac *= 1.5;
+//        System.out.println(pFac);
+    }
+
+    private void netIterate(PFNet net) {
+        System.out.println("test");
+        if (pause) {
+            System.out.println("pause");
+            routingTimer.stop();
+            
+        }
+        if (done) {
+            System.out.println("start");
+            done = false;
+            if (net.equals(firstNet)) {
+                iterateReset();
+            }
+            if (!net.equals(ghostNet)) {
+                PFNode source = net.getSource();
+                for (PFNode sink : net.getSinks()) {
+
+                    for (PFNode n : nodes) {
+                        n.setPrev(null);
                     }
-                    routingTimer.start();
-                    System.out.println("started");
-                    if (step) {
-                        pause = true;
-                        step = false;
+                    graph.repaint();
+                    PriorityQueue<PFNode> pQueue = new PriorityQueue<PFNode>();
+                    pQueue.add(source);
+                    source.setPathCost(0);
+                    for (PFNode n : net.getPathNodes()) {
+                        n.setPathCost(0);
                     }
+                    while (!pQueue.isEmpty()) {
+                        PFNode m = pQueue.poll();
+                        for (PFEdge e : m.getEdges()) {
+                            PFNode n = e.getEnd();
+                            if (n.getPrev() == null) {
+                                n.setPrev(m);
+                                if (n.equals(sink)) {
+
+                                    if (m.getPrev().getPrev().getBlock().getDot().getType().equals("OP")) {
+                                        n.setPrev(null);
+//                                    System.out.println("wrong");
+                                    } else {
+                                        pQueue.clear();
+//                                    System.out.println("found");
+                                        break;
+                                    }
+                                } else {
+                                    if (!net.getPathNodes().contains(n)) {
+                                        n.setPathCost(m.getPathCost() + cost(n, m));
+                                    }
+                                    pQueue.add(n);
+                                }
+                            }
+                        }
+                    }
+                    //Back Trace
+                    backTrace(sink, source, net);
                 }
             }
-            System.out.println("Step: "+step);
-            done = false;
+            done = true;
+//            routingTimer.stop();
+//        System.out.println("done");
+
             //heatmap
             for (PFNode n : nodes) {
                 if ((n.getBlock().getDot().getType().equals(IP)) || (n.getBlock().getDot().getType().equals(CH))) {
                     if (!n.inCapacity()) {
                         double costN = heatMapVal(n);
                         if (costN > maxPenalty) {
-                            maxPenalty = costN + pFac * Math.pow(pFac, 0.25);
+                            maxPenalty = costN + pFac * Math.pow(pFac, 0.15);
                             graph.setMaxPenalty(maxPenalty);
                         }
                         n.getBlock().getDot().setEdgeColor(new Color(255, 0, 0, (int) (costN / maxPenalty * 255)));
@@ -177,98 +275,39 @@ public class RoutibilityPathFinder {
                     graph.repaint();
                 }
             }
+            if (net.equals(ghostNet)) {
+                legalCheck();
+                if (legal) {
+                    return;
+                }
+            }
             graph.repaint();
+            System.out.println(iterator.hasNext());
+            selNet = (PFNet) iterator.next();
         }
-        resetColor(false);
-        iteration++;
-        pFac *= 1.5;
-        boolean pass = true;
-        for (PFNode n : nodes) {
-            if (!n.inCapacity()) {
-                pass = false;
-//                System.out.println(n.getID() + "is illegal " + n.getType());
-            }
-
-        }
-        legal = pass;
-        System.out.println(pFac);
-        //graph.repaint();
     }
 
-    private void netIterate(PFNet net) {
-        System.out.println(nets.size());
-        
-        if (!net.equals(ghostNet)) {
-            PFNode source = net.getSource();
-            for (PFNode sink : net.getSinks()) {
-                
-                for (PFNode n : nodes) {
-                    n.setPrev(null);
-                }
-                graph.repaint();
-                PriorityQueue<PFNode> pQueue = new PriorityQueue<PFNode>();
-                pQueue.add(source);
-                source.setPathCost(0);
-                for (PFNode n : net.getPathNodes()) {
-                    n.setPathCost(0);
-                }
-                while (!pQueue.isEmpty()) {
-                    PFNode m = pQueue.poll();
-                    for (PFEdge e : m.getEdges()) {
-                        PFNode n = e.getEnd();
-                        if (n.getPrev() == null) {
-                            n.setPrev(m);
-                            if (n.equals(sink)) {
-
-                                if (m.getPrev().getPrev().getBlock().getDot().getType().equals("OP")) {
-                                    n.setPrev(null);
-//                                    System.out.println("wrong");
-                                } else {
-                                    pQueue.clear();
-//                                    System.out.println("found");
-                                    break;
-                                }
-                            } else {
-                                if (!net.getPathNodes().contains(n)) {
-                                    n.setPathCost(m.getPathCost() + cost(n, m));
-                                }
-                                pQueue.add(n);
-                            }
-                        }
-                    }
-                }
-                //Back Trace
-                backTrace(sink, source, net);
-            }
-        }
-        done = true;
-        routingTimer.stop();
-        System.out.println("done");
-        
-    }
-
-    public boolean route() {
-        iteration = 1;
-//        pause = false;
-        graph.setState(EXPANDING);
-        while (!legal) {
-            if (iteration > threshold) {
-                break;
-            }
-            iterate();
-        }
-        routingTimer.stop();
-        if (legal) {
-            System.out.println("Succeed");
-        } else {
-            System.out.println("Fail");
-            System.out.println(iteration);
-        }
-        restartReset();
-        graph.setState(DONE);
-        pause = true;
-        return legal;
-    }
+//    public boolean route() {
+//        iteration = 1;
+////        pause = false;
+//        
+//        while (!legal) {
+//            if (iteration > threshold) {
+//                break;
+//            }
+//            iterate();
+//        }
+////        routingTimer.stop();
+////        if (legal) {
+////            System.out.println("Succeed");
+////        } else {
+////            System.out.println("Fail");
+////            System.out.println(iteration);
+////        }
+//////        restartReset();
+//
+//        return legal;
+//    }
 
     private void backTrace(PFNode sink, PFNode source, PFNet net) {
         //Back Trace
@@ -525,34 +564,38 @@ public class RoutibilityPathFinder {
                         }
                     }
                     //find the sink switch
+                    UIWire tempWire = null;
+                    boolean added = false;
                     int useCount = 0;
                     for (UIWire wire : lastChannel.getWires()) {
-
                         if (wire.getAvailableSink() != null) {
+                            if(wire.getAvailableSink().equals(sink))tempWire = wire;
                             boolean inCapMatch = lastChannel.inCapacity() && wire.getAvailableSink().equals(sink) && wire.getTargetNets().isEmpty();
-                            boolean outOfCapMatch = !lastChannel.inCapacity()
-                                    && wire.getAvailableSink().equals(sink);
+//                            boolean outOfCapMatch = !lastChannel.inCapacity()
+//                                    && wire.getAvailableSink().equals(sink);
 
                             //System.out.println("avaSink: " + wire.getAvailableSink().getID());
                             //System.out.println("inCap: " + inCapMatch);
                             //System.out.println("outCap: " + outOfCapMatch);
-                            if (inCapMatch || outOfCapMatch) {
+                            if (inCapMatch /*|| outOfCapMatch*/) {
                                 //System.out.println("math sink, sinkID: " + sink.getID() + " channelID: " + lastChannel.getID() + "wireIndex: " + lastChannel.getWires().indexOf(wire));
                                 wire.addTargetNet(net);
                                 wire.setSwOn(true);
+                                added = true;
                                 break;
                             }
                         }
                     }
+                    if(!added) tempWire.addTargetNet(net);
                     for (UIWire wire : lastChannel.getWires()) {
                         if (wire.getTargetNets().contains(net)) {
                             useCount++;
                         }
                     }
-//                    if (useCount > 1) {
-//                        lastChannel.occupy();
-//                        System.out.println("added extra occupancy" + lastChannel.getID());
-//                    }
+                    if (useCount > 1) {
+                        lastChannel.occupy();
+                        System.out.println("added extra occupancy" + lastChannel.getID());
+                    }
                     //Wire arrangment done
                 }
             }
@@ -582,13 +625,13 @@ public class RoutibilityPathFinder {
         this.pause = pause;
     }
 
-    public boolean isStep() {
-        return step;
-    }
-
-    public void setStep(boolean step) {
-        this.step = step;
-    }
+//    public boolean isStep() {
+//        return step;
+//    }
+//
+//    public void setStep(boolean step) {
+//        this.step = step;
+//    }
 
     public void resetAll() {
         System.out.println("reset");
@@ -618,7 +661,7 @@ public class RoutibilityPathFinder {
         System.out.println("reset");
         legal = false;
         stop = false;
-        done = false;
+        done = true;
         resetColor(true);
         for (PFNode n : nodes) {
             n.clearStats(true);
@@ -635,32 +678,30 @@ public class RoutibilityPathFinder {
 //        nets.clear();
         pFac = 0.5;
         iteration = 1;
-        maxHVal = 2;
+        maxHVal = 25;
         maxPenalty = 1;
         graph.setIteration(1);
         graph.setMaxHVal(maxHVal);
         graph.setMaxPenalty(maxPenalty);
         graph.repaint();
-        
+
     }
 
-    public LinkedList<PFNet> getNets() {
+    public CopyOnWriteArrayList<PFNet> getNets() {
         return nets;
     }
 
-    public void setNets(LinkedList<PFNet> nets) {
+    public void setNets(CopyOnWriteArrayList<PFNet> nets) {
+        firstNet = nets.get(0);
         this.nets = nets;
-        nets.addLast(ghostNet);
+        nets.add(ghostNet);
+        iterator = nets.iterator();
+        selNet = (PFNet) iterator.next();
     }
 
-    public void setDelay(int delay) {
-        this.delay = delay;
-    }
 
     public Timer getRoutingTimer() {
         return routingTimer;
     }
-    
-    
-    
+   
 }
