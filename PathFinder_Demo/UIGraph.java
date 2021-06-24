@@ -69,7 +69,7 @@ public class UIGraph extends JPanel implements MouseListener {
 
     private double maxPenalty = 1;
     private double maxHVal = 25;
-    private int iteration;
+    private int iteration = 1;
     private GradientPaint gradientP;
     private GradientPaint gradientH;
     

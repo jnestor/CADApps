@@ -62,7 +62,11 @@ public class RoutibilityPathFinder {
     });
 
     public RoutibilityPathFinder(CopyOnWriteArrayList<PFNet> nets, LinkedList<PFNode> nodes, UIGraph g) {
+        firstNet = nets.get(0);
         this.nets = nets;
+        nets.add(ghostNet);
+        iterator = nets.iterator();
+        selNet = (PFNet) iterator.next();
         this.nodes = nodes;
         graph = g;
     }
@@ -167,7 +171,6 @@ public class RoutibilityPathFinder {
 //        }
 //        //graph.repaint();
 //    }
-
     private void legalCheck() {
         iterator = nets.iterator();
 //        System.out.println(iterator.hasNext());
@@ -200,7 +203,7 @@ public class RoutibilityPathFinder {
         if (pause) {
             System.out.println("pause");
             routingTimer.stop();
-            
+
         }
         if (done) {
             System.out.println("start");
@@ -308,7 +311,6 @@ public class RoutibilityPathFinder {
 //
 //        return legal;
 //    }
-
     private void backTrace(PFNode sink, PFNode source, PFNet net) {
         //Back Trace
         PFNode backNode = sink;
@@ -569,7 +571,9 @@ public class RoutibilityPathFinder {
                     int useCount = 0;
                     for (UIWire wire : lastChannel.getWires()) {
                         if (wire.getAvailableSink() != null) {
-                            if(wire.getAvailableSink().equals(sink))tempWire = wire;
+                            if (wire.getAvailableSink().equals(sink)) {
+                                tempWire = wire;
+                            }
                             boolean inCapMatch = lastChannel.inCapacity() && wire.getAvailableSink().equals(sink) && wire.getTargetNets().isEmpty();
 //                            boolean outOfCapMatch = !lastChannel.inCapacity()
 //                                    && wire.getAvailableSink().equals(sink);
@@ -586,7 +590,9 @@ public class RoutibilityPathFinder {
                             }
                         }
                     }
-                    if(!added) tempWire.addTargetNet(net);
+                    if (!added) {
+                        tempWire.addTargetNet(net);
+                    }
                     for (UIWire wire : lastChannel.getWires()) {
                         if (wire.getTargetNets().contains(net)) {
                             useCount++;
@@ -632,7 +638,6 @@ public class RoutibilityPathFinder {
 //    public void setStep(boolean step) {
 //        this.step = step;
 //    }
-
     public void resetAll() {
         System.out.println("reset");
         legal = false;
@@ -699,9 +704,8 @@ public class RoutibilityPathFinder {
         selNet = (PFNet) iterator.next();
     }
 
-
     public Timer getRoutingTimer() {
         return routingTimer;
     }
-   
+
 }

@@ -6,7 +6,6 @@
 package pathfinder_demo;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -17,7 +16,13 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Scanner;
 import javax.swing.JFrame;
 import static pathfinder_demo.UIGraph.IP;
 import static pathfinder_demo.UIGraph.LB;
@@ -26,10 +31,13 @@ import static pathfinder_demo.UIGraph.SB;
 import static pathfinder_demo.UIGraph.SW;
 import static pathfinder_demo.UIGraph.TM;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import static pathfinder_demo.UIGraph.IP;
@@ -71,32 +79,33 @@ public class PathFinderFrame_demo extends JFrame /*implements Runnable*/ {
     private final JToggleButton stepBtn = new JToggleButton(new ImageIcon(getClass().getResource("images/step.gif")));
 //    private final JToggleButton creanetBtn = new JToggleButton("new net");
     private final JButton resizeWindowBtn = new JButton("RESIZE");
+    private final JButton openBtn = new JButton("Open");
     private JDialog resizeWindow = new JDialog(this, "Resize Option", true);
     private WarningDialog resizeWarning = new WarningDialog("Resize the Router will clear all the grids, "
             + "are you sure you want to resize");
     private WarningDialog clearWarning = new WarningDialog("This will clear all the grids, are you "
             + "sure you want to do this");
     private JSlider speedSlider = new JSlider(10, 800, 400);
+    private File configuration;
+
+    JFileChooser fc;
 
     private final JCheckBox hValBox = new JCheckBox("h(n) Heatmap");
     private final JCheckBox penaltyBox = new JCheckBox("Penalty Heatmap");
     private boolean hBoxSw = false;
     private boolean pBoxSw = true;
-    
-
 
     public PathFinderFrame_demo(int w, int h) {
         title.setFont(new Font("Bold", Font.PLAIN, 25));
         title.setBorder(new EmptyBorder(10, 10, 10, 20));
-        p = new UIPathFinder(w, h);
-        router = new RoutibilityPathFinder(nets, p.getNodes(), p.getGraph());
-        timer = router.getRoutingTimer();
-        graph = p.getGraph();
+
         setLayout(new BorderLayout());
-        getContentPane().add(p.getGraph(), "Center");
+
         getContentPane().add(title, "North");
         JPanel btnPanel = new JPanel();
 //        clearBtn.addActionListener(this::clearAction);
+        fc = new JFileChooser();
+        openBtn.addActionListener(this::openAction);
         pauseBtn.addActionListener(this::pauseAction);
 //        stopBtn.addActionListener(this::stopAction);
         stepBtn.addActionListener(this::stepAction);
@@ -123,6 +132,7 @@ public class PathFinderFrame_demo extends JFrame /*implements Runnable*/ {
 
         btnPanel.add(msgBoard);
 //        btnPanel.add(creanetBtn);
+        btnPanel.add(openBtn);
         btnPanel.add(pauseBtn);
         btnPanel.add(stepBtn);
 //        btnPanel.add(stopBtn);
@@ -136,10 +146,10 @@ public class PathFinderFrame_demo extends JFrame /*implements Runnable*/ {
 //        refreshTimer.start();
         repaint();
         stepBtn.setEnabled(true);
-        router.setPause(true);
+//        
         pauseBtn.setSelectedIcon(resume);
         pauseBtn.setSelected(true);
-        pauseBtn.setToolTipText(router.isPause() ? "Start" : "Pause");
+        pauseBtn.setToolTipText("Start");
         refreshTimer.start();
     }
 
@@ -147,12 +157,8 @@ public class PathFinderFrame_demo extends JFrame /*implements Runnable*/ {
         return p.getGraph();
     }
 
-    public static void main(String[] args) throws InterruptedException {
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                createAndShowGUI();
-            }
-        });
+    public static void main(String[] args) {
+        createAndShowGUI();
     }
 
     /**
@@ -161,75 +167,75 @@ public class PathFinderFrame_demo extends JFrame /*implements Runnable*/ {
     private static void createAndShowGUI() {
 
         PathFinderFrame_demo demo = new PathFinderFrame_demo(4, 3);
-        CopyOnWriteArrayList<PFNet> nets = new CopyOnWriteArrayList<PFNet>();
-        LinkedList<PFNode> sinks1 = new LinkedList<PFNode>();
-        sinks1.add(demo.getP().getSinks()[1][0]);
-        sinks1.add(demo.getP().getSinks()[1][1]);
-        sinks1.add(demo.getP().getSinks()[0][0]);
-        sinks1.add(demo.getP().getSinks()[2][1]);
-        sinks1.add(demo.getP().getSinks()[2][0]);
-        PFNode source1 = demo.getP().getSources()[2][0];
-        PFNet net1 = new PFNet(sinks1, source1);
-        net1.setColor(Color.yellow);
-
-        LinkedList<PFNode> sinks2 = new LinkedList<PFNode>();
-        sinks2.add(demo.getP().getSinks()[0][0]);
-        sinks2.add(demo.getP().getSinks()[0][1]);
-
-        sinks2.add(demo.getP().getSinks()[2][0]);
-        sinks2.add(demo.getP().getSinks()[2][1]);
-        PFNode source2 = demo.getP().getSources()[0][1];
-        PFNet net2 = new PFNet(sinks2, source2);
-        net2.setColor(Color.blue);
-
-        LinkedList<PFNode> sinks3 = new LinkedList<PFNode>();
-        sinks3.add(demo.getP().getSinks()[1][0]);
-        sinks3.add(demo.getP().getSinks()[0][0]);
-        sinks3.add(demo.getP().getSinks()[2][0]);
-        sinks3.add(demo.getP().getSinks()[0][1]);
-        PFNode source3 = demo.getP().getSources()[0][0];
-        PFNet net3 = new PFNet(sinks3, source3);
-        net3.setColor(Color.green);
-
-        LinkedList<PFNode> sinks4 = new LinkedList<PFNode>();
-        sinks4.add(demo.getP().getSinks()[1][0]);
-//        sinks4.add(demo.getP().getSinks()[2][1]);
-        PFNode source4 = demo.getP().getSources()[2][1];
-        PFNet net4 = new PFNet(sinks4, source4);
-        net4.setColor(Color.cyan);
-
-        LinkedList<PFNode> sinks5 = new LinkedList<PFNode>();
-        sinks5.add(demo.getP().getSinks()[1][0]);
+//        CopyOnWriteArrayList<PFNet> nets = new CopyOnWriteArrayList<PFNet>();
+//        LinkedList<PFNode> sinks1 = new LinkedList<PFNode>();
+//        sinks1.add(demo.getP().getSinks()[1][0]);
+//        sinks1.add(demo.getP().getSinks()[1][1]);
+//        sinks1.add(demo.getP().getSinks()[0][0]);
+//        sinks1.add(demo.getP().getSinks()[2][1]);
+//        sinks1.add(demo.getP().getSinks()[2][0]);
+//        PFNode source1 = demo.getP().getSources()[2][0];
+//        PFNet net1 = new PFNet(sinks1, source1);
+//        net1.setColor(Color.yellow);
+//
+//        LinkedList<PFNode> sinks2 = new LinkedList<PFNode>();
+//        sinks2.add(demo.getP().getSinks()[0][0]);
+//        sinks2.add(demo.getP().getSinks()[0][1]);
+//
+//        sinks2.add(demo.getP().getSinks()[2][0]);
+//        sinks2.add(demo.getP().getSinks()[2][1]);
+//        PFNode source2 = demo.getP().getSources()[0][1];
+//        PFNet net2 = new PFNet(sinks2, source2);
+//        net2.setColor(Color.blue);
+//
+//        LinkedList<PFNode> sinks3 = new LinkedList<PFNode>();
+//        sinks3.add(demo.getP().getSinks()[1][0]);
+//        sinks3.add(demo.getP().getSinks()[0][0]);
+//        sinks3.add(demo.getP().getSinks()[2][0]);
+//        sinks3.add(demo.getP().getSinks()[0][1]);
+//        PFNode source3 = demo.getP().getSources()[0][0];
+//        PFNet net3 = new PFNet(sinks3, source3);
+//        net3.setColor(Color.green);
+//
+//        LinkedList<PFNode> sinks4 = new LinkedList<PFNode>();
+//        sinks4.add(demo.getP().getSinks()[1][0]);
+////        sinks4.add(demo.getP().getSinks()[2][1]);
+//        PFNode source4 = demo.getP().getSources()[2][1];
+//        PFNet net4 = new PFNet(sinks4, source4);
+//        net4.setColor(Color.cyan);
+//
+//        LinkedList<PFNode> sinks5 = new LinkedList<PFNode>();
+//        sinks5.add(demo.getP().getSinks()[1][0]);
+////        sinks5.add(demo.getP().getSinks()[2][0]);
+//
 //        sinks5.add(demo.getP().getSinks()[2][0]);
-
-        sinks5.add(demo.getP().getSinks()[2][0]);
-        sinks5.add(demo.getP().getSinks()[2][1]);
 //        sinks5.add(demo.getP().getSinks()[2][1]);
-        sinks5.add(demo.getP().getSinks()[1][1]);
-        PFNode source5 = demo.getP().getSources()[1][0];
-        PFNet net5 = new PFNet(sinks5, source5);
-        net5.setColor(new Color(138, 43, 226));
-
-        LinkedList<PFNode> sinks6 = new LinkedList<PFNode>();
-        sinks6.add(demo.getP().getSinks()[1][1]);
-        sinks6.add(demo.getP().getSinks()[1][0]);
-        sinks6.add(demo.getP().getSinks()[0][0]);
-        sinks6.add(demo.getP().getSinks()[0][1]);
-
-        PFNode source6 = demo.getP().getSources()[1][1];
-        PFNet net6 = new PFNet(sinks6, source6);
-        net6.setColor(Color.magenta);
-
-        nets.add(net2);
-        nets.add(net3);
-        nets.add(net4);
-        nets.add(net6);
-        nets.add(net1);
-
-        nets.add(net5);
-
-        demo.nets = nets;
-        demo.router.setNets(nets);
+////        sinks5.add(demo.getP().getSinks()[2][1]);
+//        sinks5.add(demo.getP().getSinks()[1][1]);
+//        PFNode source5 = demo.getP().getSources()[1][0];
+//        PFNet net5 = new PFNet(sinks5, source5);
+//        net5.setColor(new Color(138, 43, 226));
+//
+//        LinkedList<PFNode> sinks6 = new LinkedList<PFNode>();
+//        sinks6.add(demo.getP().getSinks()[1][1]);
+//        sinks6.add(demo.getP().getSinks()[1][0]);
+//        sinks6.add(demo.getP().getSinks()[0][0]);
+//        sinks6.add(demo.getP().getSinks()[0][1]);
+//
+//        PFNode source6 = demo.getP().getSources()[1][1];
+//        PFNet net6 = new PFNet(sinks6, source6);
+//        net6.setColor(Color.magenta);
+//
+//        nets.add(net2);
+//        nets.add(net3);
+//        nets.add(net4);
+//        nets.add(net6);
+//        nets.add(net1);
+//
+//        nets.add(net5);
+//
+//        demo.nets = nets;
+//        demo.router.setNets(nets);
 
         JFrame f = demo;
 
@@ -237,7 +243,7 @@ public class PathFinderFrame_demo extends JFrame /*implements Runnable*/ {
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         f.setSize(1030, 1000);
         f.setMinimumSize(new Dimension(1030, 1000));
-        f.pack();
+//        f.pack();
         f.setVisible(true);
 
 //        demo.router.route();
@@ -247,39 +253,152 @@ public class PathFinderFrame_demo extends JFrame /*implements Runnable*/ {
         return p;
     }
 
+    private void openAction(ActionEvent evt) {
+        int returnVal = fc.showOpenDialog(this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            configuration = fc.getSelectedFile();
+        }
+        if (configuration != null) {
+            String name = configuration.getName();
+            int index = name.lastIndexOf(".");
+            String extension = name.substring(index + 1);
+
+            if (extension.equals("csv")) {
+                readConfig();
+            } else {
+                JOptionPane.showMessageDialog(this, "Wrong file type", "Invalid File", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+//        else JOptionPane.showMessageDialog(this, "Null File", "Invalid File", JOptionPane.ERROR_MESSAGE);
+    }
+
+    private void readConfig() {
+        ColorSequencer.reset();
+        try {
+            fc = new JFileChooser(configuration.getAbsolutePath());
+            Scanner fR = new Scanner(configuration);
+            Scanner lR = new Scanner(fR.nextLine());
+            if (!fR.hasNext()) {
+                configuration = null;
+                JOptionPane.showMessageDialog(this, "Wrong configuration file type", "Invalid File Type", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            lR = new Scanner(fR.nextLine());
+            String[] a = lR.next().split(",");
+            System.out.println(a[0]);
+            try {
+                int w = Integer.parseInt(a[0]);
+                int h = Integer.parseInt(a[1]);
+                p = new UIPathFinder(w, h);
+                graph = p.getGraph();
+                getContentPane().add(p.getGraph(), "Center");
+                setVisible(true);
+            } catch (NumberFormatException e) {
+                Toolkit.getDefaultToolkit().beep();
+                JOptionPane.showMessageDialog(
+                        this, "wrong width and height", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+                configuration = null;
+                return;
+            }
+            lR = new Scanner(fR.nextLine());
+            if (fR.hasNext()) {
+                while (fR.hasNext()) {
+                    try {
+                        lR = new Scanner(fR.nextLine());
+                        a = lR.next().split(",");
+                        ArrayList<String> netLocs = new ArrayList<String>(Arrays.asList(a));
+                        Iterator arrIterator = netLocs.iterator();
+                        arrIterator.next();
+                        int x = Integer.parseInt((String) arrIterator.next());
+                        int y = Integer.parseInt((String) arrIterator.next());
+                        try {
+                            PFNode source = p.getSources()[x][y];
+                            LinkedList<PFNode> sinks = new LinkedList<PFNode>();
+                            while (arrIterator.hasNext()) {
+                                x = Integer.parseInt((String) arrIterator.next());
+                                y = Integer.parseInt((String) arrIterator.next());
+                                sinks.add(p.getSinks()[x][y]);
+                            }
+                            if (sinks.isEmpty()) {
+                                Toolkit.getDefaultToolkit().beep();
+                                JOptionPane.showMessageDialog(
+                                        this, "no sinks", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+                                configuration = null;
+                                nets.clear();
+                                return;
+                            }
+                            PFNet net = new PFNet(sinks,source);
+                            net.setColor(ColorSequencer.next());
+                            nets.add(net);
+                        } catch (IndexOutOfBoundsException e) {
+                            Toolkit.getDefaultToolkit().beep();
+                            JOptionPane.showMessageDialog(
+                                    this, "wrong source or sink locations", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+                            configuration = null;
+                            nets.clear();
+                            return;
+                        }
+                    } catch (NumberFormatException e) {
+                        Toolkit.getDefaultToolkit().beep();
+                        JOptionPane.showMessageDialog(
+                                this, "wrong source or sink locations", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+                        configuration = null;
+                        nets.clear();
+                        return;
+                    }
+                }
+                router = new RoutibilityPathFinder(nets, p.getNodes(), p.getGraph());
+                timer = router.getRoutingTimer();
+
+                router.setPause(true);
+            } else {
+                JOptionPane.showMessageDialog(
+                        this, "No nets", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+                configuration = null;
+            }
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(PathFinderFrame_demo.class.getName()).log(Level.SEVERE, null, ex);
+        }
+       
+    }
+
     private void pauseAction(ActionEvent evt) {
 //        timer.setRepeats(false);
 //        timer.start();
-        if (graph.getState() == DONE) {
-            System.out.println("first start");
-            graph.setState(EXPANDING);
-            router.restartReset();
-            router.setPause(false);
-            timer.setDelay(delay);
-            timer.setRepeats(true);
-            timer.start();
-        } else {
-            if (router.isPause()) {
+        if (configuration != null) {
+            if (graph.getState() == DONE) {
+                System.out.println("first start");
+                graph.setState(EXPANDING);
+                router.restartReset();
+                router.setPause(false);
                 timer.setDelay(delay);
                 timer.setRepeats(true);
                 timer.start();
+            } else {
+                if (router.isPause()) {
+                    timer.setDelay(delay);
+                    timer.setRepeats(true);
+                    timer.start();
+                }
+                router.setPause(!router.isPause());
+                pauseBtn.setSelectedIcon(router.isPause() ? resume : pause);
+                pauseBtn.setToolTipText(router.isPause() ? "Start" : "Pause");
+                System.out.println(router.isPause() ? "Start" : "Pause");
             }
-            router.setPause(!router.isPause());
-            pauseBtn.setSelectedIcon(router.isPause() ? resume : pause);
-            pauseBtn.setToolTipText(router.isPause() ? "Start" : "Pause");
-            System.out.println(router.isPause() ? "Start" : "Pause");
         }
     }
 
     private void stepAction(ActionEvent evt) {
-        if (graph.getState() == DONE) {
-            System.out.println("first step");
-            graph.setState(EXPANDING);
-            router.restartReset();
-        }
-        timer.setRepeats(false);
-        timer.start();
+        if (configuration != null) {
+            if (graph.getState() == DONE) {
+                System.out.println("first step");
+                graph.setState(EXPANDING);
+                router.restartReset();
+            }
+            timer.setRepeats(false);
+            timer.start();
 //        stopBtn.setSelected(false);
+        }
     }
 
     private void stopAction(ActionEvent evt) {
@@ -306,37 +425,44 @@ public class PathFinderFrame_demo extends JFrame /*implements Runnable*/ {
     }
 
     private void hBoxAction(ItemEvent evt) {
-        hBoxSw = evt.getStateChange() == 1;
-        p.getGraph().setHSw(hBoxSw);
-        p.getGraph().repaint();
+        if (configuration != null) {
+            hBoxSw = evt.getStateChange() == 1;
+            p.getGraph().setHSw(hBoxSw);
+            p.getGraph().repaint();
+        }
     }
 
     private void pBoxAction(ItemEvent evt) {
-        pBoxSw = evt.getStateChange() == 1;
-        p.getGraph().setPSw(pBoxSw);
-        p.getGraph().repaint();
+        if (configuration != null) {
+            pBoxSw = evt.getStateChange() == 1;
+            p.getGraph().setPSw(pBoxSw);
+            p.getGraph().repaint();
+        }
     }
 
     public void speedChanged(ChangeEvent e) {
-        JSlider source = (JSlider) e.getSource();
-        if (!source.getValueIsAdjusting()) {
-            int speed = (int) source.getValue();
-            delay = speed;
-            router.getRoutingTimer().setDelay(speed);
+        if (configuration != null) {
+            JSlider source = (JSlider) e.getSource();
+            if (!source.getValueIsAdjusting()) {
+                int speed = (int) source.getValue();
+                delay = speed;
+                router.getRoutingTimer().setDelay(speed);
+            }
         }
     }
 
     Timer refreshTimer = new Timer(5, new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
-            pauseBtn.setSelectedIcon(router.isPause() ? resume : pause);
-            pauseBtn.setToolTipText(router.isPause() ? "Start" : "Pause");
-            pauseBtn.setSelected(router.isPause());
+            if (router != null) {
+                pauseBtn.setSelectedIcon(router.isPause() ? resume : pause);
+                pauseBtn.setToolTipText(router.isPause() ? "Start" : "Pause");
+                pauseBtn.setSelected(router.isPause());
 //            msgBoard.setText(myGrid.getMSG());
-            if (graph.getState() == DONE) {
-                pauseBtn.setEnabled(true);
+                if (graph.getState() == DONE) {
+                    pauseBtn.setEnabled(true);
 //                stopBtn.setEnabled(false);
-                stepBtn.setEnabled(true);
+                    stepBtn.setEnabled(true);
 //                clearBtn.setEnabled(true);
 //                routerComboBox.setEnabled(true);
 //                if (routerMode == 0) {
@@ -346,14 +472,14 @@ public class PathFinderFrame_demo extends JFrame /*implements Runnable*/ {
 //                    parallelExpandBox.setVisible(false);
 //                    parallelExpandBox.setEnabled(false);
 //                }
-            } else if (graph.getState() == EXPANDING) {
-                pauseBtn.setEnabled(true);
+                } else if (graph.getState() == EXPANDING) {
+                    pauseBtn.setEnabled(true);
 //                stopBtn.setEnabled(true);
-                stepBtn.setEnabled(router.isPause());
+                    stepBtn.setEnabled(router.isPause());
 //                clearBtn.setEnabled(false);
 //                routerComboBox.setEnabled(false);
 //                parallelExpandBox.setEnabled(false);
-            }
+                }
 //            else if (myGrid.getState() == EXPANDING) {
 //                pauseBtn.setEnabled(true);
 //                stopBtn.setEnabled(true);
@@ -369,6 +495,7 @@ public class PathFinderFrame_demo extends JFrame /*implements Runnable*/ {
 //                routerComboBox.setEnabled(false);
 //                parallelExpandBox.setEnabled(false);
 //            }
+            }
         }
     }
     );
