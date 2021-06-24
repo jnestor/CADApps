@@ -1,0 +1,9 @@
+width,height,,,,,,,,,,,
+4,3,,,,,,,,,,,
+,sourcex,sourcey,sink1x,sink1y,sink2x,sink2y,sink3x,sink3y,sink4x,sink4y,sink5x,sink5y
+net1,2,0,1,0,1,1,0,0,2,1,2,0
+net2,0,1,0,0,0,1,2,0,2,1,,
+net3,0,0,1,0,0,0,2,0,0,1,,
+net4,2,1,1,0,,,,,,,,
+net5,1,0,1,0,2,0,2,1,1,1,,
+net6,1,1,1,1,1,0,0,0,0,1,,
