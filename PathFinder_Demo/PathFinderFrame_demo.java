@@ -254,11 +254,17 @@ public class PathFinderFrame_demo extends JFrame /*implements Runnable*/ {
     }
 
     private void openAction(ActionEvent evt) {
+        if (configuration != null) {
+            timer.stop();
+            router.restartReset();
+//            nets.clear();
+            System.out.println("prereset");
+        }
         int returnVal = fc.showOpenDialog(this);
+
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             configuration = fc.getSelectedFile();
-        }
-        if (configuration != null) {
+            if (configuration != null) {
             String name = configuration.getName();
             int index = name.lastIndexOf(".");
             String extension = name.substring(index + 1);
@@ -269,17 +275,24 @@ public class PathFinderFrame_demo extends JFrame /*implements Runnable*/ {
                 JOptionPane.showMessageDialog(this, "Wrong file type", "Invalid File", JOptionPane.ERROR_MESSAGE);
             }
         }
+        }
+        
 //        else JOptionPane.showMessageDialog(this, "Null File", "Invalid File", JOptionPane.ERROR_MESSAGE);
     }
 
     private void readConfig() {
         ColorSequencer.reset();
+        UIPathFinder tempPF = null;
+        UIGraph tempGraph = null;
+        CopyOnWriteArrayList<PFNet> netsTemp = new CopyOnWriteArrayList<PFNet>();
         try {
             fc = new JFileChooser(configuration.getAbsolutePath());
             Scanner fR = new Scanner(configuration);
             Scanner lR = new Scanner(fR.nextLine());
             if (!fR.hasNext()) {
-                configuration = null;
+                if (timer == null) {
+                    configuration = null;
+                }
                 JOptionPane.showMessageDialog(this, "Wrong configuration file type", "Invalid File Type", JOptionPane.ERROR_MESSAGE);
                 return;
             }
@@ -289,19 +302,21 @@ public class PathFinderFrame_demo extends JFrame /*implements Runnable*/ {
             try {
                 int w = Integer.parseInt(a[0]);
                 int h = Integer.parseInt(a[1]);
-                p = new UIPathFinder(w, h);
-                graph = p.getGraph();
-                getContentPane().add(p.getGraph(), "Center");
-                setVisible(true);
+                tempPF = new UIPathFinder(w, h);
+                tempGraph = tempPF.getGraph();
+
             } catch (NumberFormatException e) {
                 Toolkit.getDefaultToolkit().beep();
                 JOptionPane.showMessageDialog(
                         this, "wrong width and height", "Invalid Input", JOptionPane.ERROR_MESSAGE);
-                configuration = null;
+                if (timer == null) {
+                    configuration = null;
+                }
                 return;
             }
             lR = new Scanner(fR.nextLine());
             if (fR.hasNext()) {
+
                 while (fR.hasNext()) {
                     try {
                         lR = new Scanner(fR.nextLine());
@@ -312,45 +327,49 @@ public class PathFinderFrame_demo extends JFrame /*implements Runnable*/ {
                         int x = Integer.parseInt((String) arrIterator.next());
                         int y = Integer.parseInt((String) arrIterator.next());
                         try {
-                            PFNode source = p.getSources()[x][y];
+                            PFNode source = tempPF.getSources()[x][y];
+                            source.occupy();
                             LinkedList<PFNode> sinks = new LinkedList<PFNode>();
                             while (arrIterator.hasNext()) {
                                 x = Integer.parseInt((String) arrIterator.next());
                                 y = Integer.parseInt((String) arrIterator.next());
-                                sinks.add(p.getSinks()[x][y]);
+                                PFNode sink = tempPF.getSinks()[x][y];
+                                sink.occupy();
+                                sinks.add(sink);
                             }
                             if (sinks.isEmpty()) {
                                 Toolkit.getDefaultToolkit().beep();
                                 JOptionPane.showMessageDialog(
                                         this, "no sinks", "Invalid Input", JOptionPane.ERROR_MESSAGE);
-                                configuration = null;
-                                nets.clear();
+                                if (timer == null) {
+                                    configuration = null;
+                                }
                                 return;
                             }
-                            PFNet net = new PFNet(sinks,source);
+                            PFNet net = new PFNet(sinks, source);
                             net.setColor(ColorSequencer.next());
-                            nets.add(net);
+                            netsTemp.add(net);
                         } catch (IndexOutOfBoundsException e) {
                             Toolkit.getDefaultToolkit().beep();
                             JOptionPane.showMessageDialog(
                                     this, "wrong source or sink locations", "Invalid Input", JOptionPane.ERROR_MESSAGE);
-                            configuration = null;
-                            nets.clear();
+                            if (timer == null) {
+                                configuration = null;
+                            }
                             return;
                         }
                     } catch (NumberFormatException e) {
                         Toolkit.getDefaultToolkit().beep();
                         JOptionPane.showMessageDialog(
                                 this, "wrong source or sink locations", "Invalid Input", JOptionPane.ERROR_MESSAGE);
-                        configuration = null;
-                        nets.clear();
+                        if (timer == null) {
+                            configuration = null;
+                        }
                         return;
                     }
-                }
-                router = new RoutibilityPathFinder(nets, p.getNodes(), p.getGraph());
-                timer = router.getRoutingTimer();
 
-                router.setPause(true);
+                }
+
             } else {
                 JOptionPane.showMessageDialog(
                         this, "No nets", "Invalid Input", JOptionPane.ERROR_MESSAGE);
@@ -359,7 +378,15 @@ public class PathFinderFrame_demo extends JFrame /*implements Runnable*/ {
         } catch (FileNotFoundException ex) {
             Logger.getLogger(PathFinderFrame_demo.class.getName()).log(Level.SEVERE, null, ex);
         }
-       
+        p = tempPF;
+        graph = tempGraph;
+        nets = netsTemp;
+        router = new RoutibilityPathFinder(nets, p.getNodes(), p.getGraph(),msgBoard);
+        timer = router.getRoutingTimer();
+        getContentPane().add(p.getGraph(), "Center");
+        setVisible(true);
+        router.setPause(true);
+        msgBoard.setText("Press Start or Step to start routing");
     }
 
     private void pauseAction(ActionEvent evt) {
@@ -379,7 +406,9 @@ public class PathFinderFrame_demo extends JFrame /*implements Runnable*/ {
                     timer.setDelay(delay);
                     timer.setRepeats(true);
                     timer.start();
+                    msgBoard.setText("Routing");
                 }
+                else msgBoard.setText("Paused");
                 router.setPause(!router.isPause());
                 pauseBtn.setSelectedIcon(router.isPause() ? resume : pause);
                 pauseBtn.setToolTipText(router.isPause() ? "Start" : "Pause");
@@ -395,8 +424,10 @@ public class PathFinderFrame_demo extends JFrame /*implements Runnable*/ {
                 graph.setState(EXPANDING);
                 router.restartReset();
             }
+            msgBoard.setText("Routing");
             timer.setRepeats(false);
             timer.start();
+            
 //        stopBtn.setSelected(false);
         }
     }
@@ -495,6 +526,9 @@ public class PathFinderFrame_demo extends JFrame /*implements Runnable*/ {
 //                routerComboBox.setEnabled(false);
 //                parallelExpandBox.setEnabled(false);
 //            }
+            }
+            if(configuration == null){
+                msgBoard.setText("Open a configuration file to start routing");
             }
         }
     }

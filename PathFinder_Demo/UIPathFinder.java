@@ -28,6 +28,8 @@ public class UIPathFinder {
     PFNode[][] sinks;
     PFNode[][] chanVer;
     PFNode[][] chanHori;
+    int w;
+    int h;
     protected int size = 1;
     public UIPathFinder(int w, int h){
         //Construct switchBlocks
@@ -526,6 +528,14 @@ public class UIPathFinder {
 
     public PFNode[][] getChanHori() {
         return chanHori;
+    }
+
+    public int getW() {
+        return w;
+    }
+
+    public int getH() {
+        return h;
     }
     
     

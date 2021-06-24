@@ -13,6 +13,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
@@ -51,6 +52,7 @@ public class RoutibilityPathFinder {
     private boolean stop;
     private PFNet ghostNet = new PFNet(null, null);
     private PFNet firstNet;
+    private final JLabel msgBoard;
     Iterator iterator;
 
     UIGraph graph;
@@ -61,7 +63,7 @@ public class RoutibilityPathFinder {
         }
     });
 
-    public RoutibilityPathFinder(CopyOnWriteArrayList<PFNet> nets, LinkedList<PFNode> nodes, UIGraph g) {
+    public RoutibilityPathFinder(CopyOnWriteArrayList<PFNet> nets, LinkedList<PFNode> nodes, UIGraph g, JLabel msg) {
         firstNet = nets.get(0);
         this.nets = nets;
         nets.add(ghostNet);
@@ -69,6 +71,7 @@ public class RoutibilityPathFinder {
         selNet = (PFNet) iterator.next();
         this.nodes = nodes;
         graph = g;
+        msgBoard=msg;
     }
 
     /**
@@ -193,6 +196,8 @@ public class RoutibilityPathFinder {
             pause = true;
 //            step = true;
             routingTimer.stop();
+            if(legal) msgBoard.setText("Succedded");
+            else msgBoard.setText("Failed");
         }
         pFac *= 1.5;
 //        System.out.println(pFac);
@@ -638,29 +643,6 @@ public class RoutibilityPathFinder {
 //    public void setStep(boolean step) {
 //        this.step = step;
 //    }
-    public void resetAll() {
-        System.out.println("reset");
-        legal = false;
-        stop = true;
-        routingTimer.stop();
-        resetColor(true);
-        for (PFNode n : nodes) {
-            n.clearStats(true);
-            n.resetWires();
-            n.getBlock().getDot().resetColor();
-        }
-        for (PFNet net : nets) {
-            if (!net.equals(ghostNet)) {
-                net.clearWires();
-                net.clearPath();
-            }
-        }
-
-        nets.clear();
-        iteration = 1;
-        graph.repaint();
-
-    }
 
     public void restartReset() {
         System.out.println("reset");
@@ -707,5 +689,6 @@ public class RoutibilityPathFinder {
     public Timer getRoutingTimer() {
         return routingTimer;
     }
-
+    
+    
 }

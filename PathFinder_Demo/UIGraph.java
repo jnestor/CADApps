@@ -387,5 +387,14 @@ public class UIGraph extends JPanel implements MouseListener {
         this.iteration = iteration;
     }
 
+    public boolean ishSw() {
+        return hSw;
+    }
+
+    public boolean ispSw() {
+        return pSw;
+    }
+
+    
     
 }
