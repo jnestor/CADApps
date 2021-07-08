@@ -23,6 +23,7 @@ public class PFNode implements Comparable<PFNode>{
     private PFNode prev;
     private double pathCost;
     private double hVal =1;
+    private double hPrev = 1;
     private double hValBackUp= hVal;
     private boolean visitException =false;
     public boolean inCapacity(){
@@ -51,11 +52,18 @@ public class PFNode implements Comparable<PFNode>{
         occupied++;
     }
     
+    public void setOccupied(int o){
+        occupied=o;
+    }
+    
     public void clearStats(boolean h){
         occupied = 0;
         prev=null;
         pathCost=0;
-        if(h)hVal=1;
+        if(h){
+            hVal=1;
+            hPrev=1;
+        }
     }
     
     public void resetWires(){
@@ -161,7 +169,14 @@ public class PFNode implements Comparable<PFNode>{
     public void setVisitException(boolean visitException) {
         this.visitException = visitException;
     }
-    
+
+    public double gethPrev() {
+        return hPrev;
+    }
+
+    public void sethPrev(double hPrev) {
+        this.hPrev = hPrev;
+    }
     
     
     

@@ -11,6 +11,7 @@ import java.awt.event.ActionListener;
 import static java.lang.Math.max;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.ListIterator;
 import java.util.PriorityQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.JLabel;
@@ -35,7 +36,7 @@ public class RoutibilityPathFinder {
     public static final String CH = "CH";
 
     private double maxPenalty = 1;
-    private double maxHVal = 25;
+    private double maxHVal = 4;
 
     private boolean legal = false;
     private double pFac = 0.5;//increase by 1.5 to 2 times each iteration
@@ -43,23 +44,22 @@ public class RoutibilityPathFinder {
     private double hFac = 0.5;//remain constant
     private int iteration = 1;
     private int threshold = 45;
+    private int curNetNumber = 0;
     private CopyOnWriteArrayList<PFNet> nets;
     private LinkedList<PFNode> nodes;
     private boolean pause;
 //    private boolean step;
-    private PFNet selNet;
+//    private PFNet selNet;
     private boolean done = true;
-    private boolean stop;
     private PFNet ghostNet = new PFNet(null, null);
     private PFNet firstNet;
     private final JLabel msgBoard;
-    Iterator iterator;
-
-    UIGraph graph;
-    Timer routingTimer = new Timer(400, new ActionListener() {
+//    private ListIterator<PFNet> iterator;
+    private UIGraph graph;
+    private Timer routingTimer = new Timer(400, new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
-            netIterate(selNet);
+            netIterate(nets.get(curNetNumber));
         }
     });
 
@@ -67,11 +67,12 @@ public class RoutibilityPathFinder {
         firstNet = nets.get(0);
         this.nets = nets;
         nets.add(ghostNet);
-        iterator = nets.iterator();
-        selNet = (PFNet) iterator.next();
+//        iterator = nets.listIterator();
+//        selNet = iterator.next();
         this.nodes = nodes;
         graph = g;
-        msgBoard=msg;
+        msgBoard = msg;
+        restartReset();
     }
 
     /**
@@ -96,14 +97,14 @@ public class RoutibilityPathFinder {
             hCurr = 1;
         } else {
             double curV = (n.getOccupied() - n.getCapacity()) * hFac;
-            hCurr = n.getHVal();
+            hCurr = n.gethPrev();
             hCurr = hCurr + max(0, curV);
         }
         n.setHVal(hCurr);
         return hCurr;
     }
 
-    private double heatMapVal(PFNode n) {
+    public double heatMapVal(PFNode n) {
         return n.getBaseCost() * p(n) * n.getHVal();
     }
 
@@ -126,17 +127,21 @@ public class RoutibilityPathFinder {
                 net.clearNodes(false);
                 net.resetChannels();
                 net.clearWires();
+                if (!firstNet.getPathNodes().isEmpty()) {
+                    System.out.println(firstNet.getPathNodes().get(2).getBlock().getDot().getType() + "," + firstNet.getPathNodes().get(2).getOccupied());
+                }
                 net.clearPath();
             }
         }
         for (PFNode node : nodes) {
-            node.backUpHVal();
-            node.setPathCost(0);
+//            node.sethPrev(node.getHVal());
+//            node.backUpHVal();
+//            node.setPathCost(0);
         }
         globalRoute();
         for (PFNode node : nodes) {
-            node.recoverHVal();
-            node.setPathCost(0);
+//            node.recoverHVal();
+//            node.setPathCost(0);
         }
 
         //reset nets
@@ -175,10 +180,12 @@ public class RoutibilityPathFinder {
 //        //graph.repaint();
 //    }
     private void legalCheck() {
-        iterator = nets.iterator();
-//        System.out.println(iterator.hasNext());
+        curNetNumber = 0;
+//        iterator = nets.listIterator();
+        System.out.println("legal check");
         boolean pass = true;
         for (PFNode n : nodes) {
+            n.sethPrev(n.getHVal());
             if (!n.inCapacity()) {
                 pass = false;
 //                System.out.println(n.getID() + "is illegal " + n.getType());
@@ -196,22 +203,78 @@ public class RoutibilityPathFinder {
             pause = true;
 //            step = true;
             routingTimer.stop();
-            if(legal) msgBoard.setText("Succedded");
-            else msgBoard.setText("Failed");
+            if (legal) {
+                msgBoard.setText("Succedded");
+            } else {
+                msgBoard.setText("Failed");
+            }
         }
         pFac *= 1.5;
 //        System.out.println(pFac);
     }
 
-    private void netIterate(PFNet net) {
-        System.out.println("test");
-        if (pause) {
-            System.out.println("pause");
-            routingTimer.stop();
+    public void backwardIterate() {
 
+        if (curNetNumber > 1 && !nets.get(curNetNumber - 1).equals(firstNet) && done) {
+            PFNet selNet = nets.get(curNetNumber - 1);
+            curNetNumber--;
+            for (UIWire wire : selNet.getPathWires()) {
+                boolean swOn = wire.isSwOn();
+                wire.resetColor();
+                wire.setSwOn(swOn);
+                int i = wire.getTargetNets().indexOf(selNet);
+                if (i > 0) {
+                    wire.setColor(wire.getTargetNets().get(i - 1).getColor());
+                    wire.getTargetNets().get(i - 1).paintPath();
+                }
+            }
+            for (PFNode node : selNet.getPathNodes()) {
+                if (node.getType().equals(CH)) {
+                    node.getBlock().getDot().setEdgeColor(new Color(0, 0, 0, 0));
+                    for (UIWire wire : node.getWires()) {
+                        if (wire.getTargetNets().contains(selNet)) {
+                            node.setOccupied(node.getOccupied() - 1);
+                            System.out.println("decremant");
+                        }
+                    }
+                } else {
+                    node.setOccupied(node.getOccupied() - 1);
+                }
+                if ((node.getBlock().getDot().getType().equals(IP)) || (node.getBlock().getDot().getType().equals(CH))) {
+                    if (!node.inCapacity()) {
+                        double costN = heatMapVal(node);
+                        if (costN > maxPenalty) {
+                            maxPenalty = costN + pFac * Math.pow(pFac, 0.15);
+                            graph.setMaxPenalty(maxPenalty);
+                        }
+                        node.getBlock().getDot().setEdgeColor(new Color(255, 0, 0, (int) (costN / maxPenalty * 255)));
+                    }
+                    double hVal = node.getHVal();
+                    if (hVal > maxHVal) {
+                        maxHVal = hVal + 1;
+                        if (maxHVal > 4) {
+                            maxHVal = 4;
+                        }
+                        graph.setMaxHVal(maxHVal);
+                    }
+                    if (hVal > 4) {
+                        node.getBlock().getDot().setColor(new Color(255, 153, 51, 255));
+                    } else {
+                        node.getBlock().getDot().setColor(new Color(255, 153, 51, (int) ((h(node) - 1) / (maxHVal - 1) * 255)));
+                    }
+                    graph.repaint();
+                }
+            }
+            selNet.clearPath();
+        }
+
+    }
+
+    private void netIterate(PFNet net) {
+        if (pause) {
+            routingTimer.stop();
         }
         if (done) {
-            System.out.println("start");
             done = false;
             if (net.equals(firstNet)) {
                 iterateReset();
@@ -222,6 +285,7 @@ public class RoutibilityPathFinder {
 
                     for (PFNode n : nodes) {
                         n.setPrev(null);
+
                     }
                     graph.repaint();
                     PriorityQueue<PFNode> pQueue = new PriorityQueue<PFNode>();
@@ -240,7 +304,8 @@ public class RoutibilityPathFinder {
 
                                     if (m.getPrev().getPrev().getBlock().getDot().getType().equals("OP")) {
                                         n.setPrev(null);
-//                                    System.out.println("wrong");
+                                        break;
+
                                     } else {
                                         pQueue.clear();
 //                                    System.out.println("found");
@@ -277,12 +342,20 @@ public class RoutibilityPathFinder {
                     double hVal = n.getHVal();
                     if (hVal > maxHVal) {
                         maxHVal = hVal + 1;
+                        if (maxHVal > 4) {
+                            maxHVal = 4;
+                        }
                         graph.setMaxHVal(maxHVal);
                     }
-                    n.getBlock().getDot().setColor(new Color(255, 153, 51, (int) ((n.getHVal()) / maxHVal * 255)));
+                    if (hVal > 4) {
+                        n.getBlock().getDot().setColor(new Color(255, 153, 51, 255));
+                    } else {
+                        n.getBlock().getDot().setColor(new Color(255, 153, 51, (int) ((h(n) - 1) / (maxHVal - 1) * 255)));
+                    }
                     graph.repaint();
                 }
             }
+            curNetNumber++;
             if (net.equals(ghostNet)) {
                 legalCheck();
                 if (legal) {
@@ -290,8 +363,6 @@ public class RoutibilityPathFinder {
                 }
             }
             graph.repaint();
-            System.out.println(iterator.hasNext());
-            selNet = (PFNet) iterator.next();
         }
     }
 
@@ -351,7 +422,6 @@ public class RoutibilityPathFinder {
                             //System.out.println("add");
                         }
                     }
-
                     if (!added) {
                         for (UIWire wire : nodeWires) {
                             //Check if the wire segment is not used and can be used 
@@ -382,6 +452,7 @@ public class RoutibilityPathFinder {
                         LinkedList<UIWire> edgeWires = edge.getWires();
                         if (edgeWires.size() == 1) {
                             net.addWire(edgeWires.getFirst());
+                            edgeWires.getFirst().addTargetNet(net);
                             break;
                         } //Switch block stuation
                         else {
@@ -482,11 +553,11 @@ public class RoutibilityPathFinder {
             backNode = backNode.getPrev();
         }
         net.paintPath();
-
     }
 
     //A rough routing without visualization just so that I know which wire seg in a channel will be used for which net
     private void globalRoute() {
+        System.out.println("preRouting");
         for (PFNet net : nets) {
             if (net != ghostNet) {
 //            System.out.println("Ah");
@@ -520,8 +591,10 @@ public class RoutibilityPathFinder {
                                 //System.out.println("current Prev: "+n.getPrev().getID()+"\n");
                                 if (n.equals(sink)) {
                                     if (m.getPrev().getPrev().getBlock().getDot().getType().equals("OP")) {
+//                                      if (!m.getPrev().getPrev().getBlock().getDot().getType().equals("OP")) {
 //                                    System.out.println(m.getPrev().getPrev().getBlock().getDot().getType());
                                         n.setPrev(null);
+                                        break;
                                     } else {
                                         pQueue.clear();
 //                                        System.out.println("found");
@@ -595,6 +668,10 @@ public class RoutibilityPathFinder {
                             }
                         }
                     }
+                    //Wire arrangment done
+                    if (net.getId() == 3) {
+//                        System.out.println(lastChannel.getID()+"is added: "+added);
+                    }
                     if (!added) {
                         tempWire.addTargetNet(net);
                     }
@@ -605,9 +682,9 @@ public class RoutibilityPathFinder {
                     }
                     if (useCount > 1) {
                         lastChannel.occupy();
-                        System.out.println("added extra occupancy" + lastChannel.getID());
+//                        System.out.println("added extra occupancy" + lastChannel.getID());
                     }
-                    //Wire arrangment done
+
                 }
             }
         }
@@ -622,7 +699,11 @@ public class RoutibilityPathFinder {
             for (PFNode node : net.getPathNodes()) {
                 node.getBlock().getDot().resetColor();
                 if ((node.getBlock().getDot().getType().equals(IP) || node.getBlock().getDot().getType().equals(CH)) && !resetHeatMap) {
-                    node.getBlock().getDot().setColor(new Color(255, 153, 51, (int) (node.getHVal() / maxHVal * 255)));
+                    if (node.getHVal() > 4) {
+                        node.getBlock().getDot().setColor(new Color(255, 153, 51, (int) (255)));
+                    } else {
+                        node.getBlock().getDot().setColor(new Color(255, 153, 51, (int) ((node.getHVal() - 1) / (maxHVal - 1) * 255)));
+                    }
                 }
             }
         }
@@ -643,12 +724,11 @@ public class RoutibilityPathFinder {
 //    public void setStep(boolean step) {
 //        this.step = step;
 //    }
-
     public void restartReset() {
         System.out.println("reset");
         legal = false;
-        stop = false;
         done = true;
+        curNetNumber = 0;
         resetColor(true);
         for (PFNode n : nodes) {
             n.clearStats(true);
@@ -665,13 +745,12 @@ public class RoutibilityPathFinder {
 //        nets.clear();
         pFac = 0.5;
         iteration = 1;
-        maxHVal = 25;
+        maxHVal = 4;
         maxPenalty = 1;
         graph.setIteration(1);
         graph.setMaxHVal(maxHVal);
         graph.setMaxPenalty(maxPenalty);
         graph.repaint();
-
     }
 
     public CopyOnWriteArrayList<PFNet> getNets() {
@@ -682,13 +761,11 @@ public class RoutibilityPathFinder {
         firstNet = nets.get(0);
         this.nets = nets;
         nets.add(ghostNet);
-        iterator = nets.iterator();
-        selNet = (PFNet) iterator.next();
+        curNetNumber = 0;
     }
 
     public Timer getRoutingTimer() {
         return routingTimer;
     }
-    
-    
+
 }

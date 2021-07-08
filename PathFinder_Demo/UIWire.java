@@ -26,7 +26,7 @@ public class UIWire {
     private Point locA, locB;
     private Point pA;
     private Point pB;
-    private BasicStroke stroke = new BasicStroke(5);
+    private BasicStroke stroke = new BasicStroke(3);
     private PFNode availableSink;
     private LinkedList<PFNet> targetNets = new LinkedList<PFNet>();
     private UIBlock swBlock;
@@ -191,7 +191,9 @@ public class UIWire {
 
     public void resetColor(){
         color=defColor;
+        if(!terminalA.getType().equals("SW"))
         blockA.getDot().resetColor();
+        if(!terminalB.getType().equals("SW"))
         blockB.getDot().resetColor();
         if(swBlock!=null) swBlock.getDot().resetColor();
         swOn=false;

@@ -44,6 +44,7 @@ public class UIGraph extends JPanel implements MouseListener {
     public static final String IP = "IP";
     public static final String TM = "TM";
     public static final String CH = "CH";
+    private int chanStroke = 2;
 
     private int state = DONE;
 
@@ -68,11 +69,11 @@ public class UIGraph extends JPanel implements MouseListener {
     private int hmHYC;
 
     private double maxPenalty = 1;
-    private double maxHVal = 25;
+    private double maxHVal = 4;
     private int iteration = 1;
     private GradientPaint gradientP;
     private GradientPaint gradientH;
-    
+
     
 
     public UIGraph() {
@@ -127,7 +128,7 @@ public class UIGraph extends JPanel implements MouseListener {
             }
             if (pSw) {
                 g2.setColor(d.getEdgeColor());
-                g2.setStroke(new BasicStroke(5));
+                g2.setStroke(new BasicStroke(3));
                 g.drawRoundRect​(orig_x, orig_y, width, height, 5, 5);
             }
             g.setColor(Color.black);
@@ -143,7 +144,8 @@ public class UIGraph extends JPanel implements MouseListener {
                 g.fillRect(orig_x, orig_y, width, height);
             } else if (pSw) {
                 g2.setColor(d.getEdgeColor());
-                g2.setStroke(new BasicStroke(5));
+//                g2.setColor(Color.blue);
+                g2.setStroke(new BasicStroke(3));
                 g.drawRoundRect​(orig_x, orig_y, width, height, 5, 5);
             }
         } else if (d.getType().equals(SB)) {
@@ -276,7 +278,7 @@ public class UIGraph extends JPanel implements MouseListener {
             g.fillRect(hmHXC, hmHYC, hmPW, hmPH);
             g.setColor(Color.black);
             g.drawString("1", hmHXC + (int) (hmPW * 1.5), hmHYC + hmPH);
-            g.drawString(Double.toString(maxHVal).substring(0, Math.min(5, Double.toString(maxHVal).length())), hmHXC + (int) (hmPW * 1.5), hmHYC + hmPW / 4);
+            g.drawString(Double.toString(maxHVal).substring(0, Math.min(5, Double.toString(maxHVal).length()))+"+", hmHXC + (int) (hmPW * 1.5), hmHYC + hmPW / 4);
             g.drawString("h(n)", hmHXC, hmHYC - hmPW / 4);
         }
         
