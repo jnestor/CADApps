@@ -31,6 +31,7 @@ class ColorSequencer {
             } else {
                 sat = 1;
                 brit -= 0.5;
+                if(brit<0.4) brit = 1;
             }
             hue = 0;
         }
