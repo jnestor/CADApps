@@ -39,34 +39,34 @@ public class VCacheAnimation extends Updater {
 	private Image getImage(String path) {
 		if (VCache.getInstance().getMode() == VCache.APPLICATION)
 			return Toolkit.getDefaultToolkit().getImage(path);
-		else if (VCache.getInstance().getMode() == VCache.APPLET) {
-			VCacheApplet applet = VCacheApplet.getInstance();
-			return applet.getImage(applet.getCodeBase(), path);
-//			return null;
-		}
+//		else if (VCache.getInstance().getMode() == VCache.APPLET) {
+//			VCacheApplet applet = VCacheApplet.getInstance();
+//			return applet.getImage(applet.getCodeBase(), path);
+////			return null;
+//		}
 		return null;
 	}
 	
 	public void setControlStatus(int status) {
 		if (status == PLAY) {
-			playButton.setIcon(new ImageIcon(getImage("images/start_inv.gif")));
+			playButton.setIcon(new ImageIcon(getClass().getResource("images/start_inv.gif")));
 			playButton.setBackground(Color.BLACK);
 		} else {
-			playButton.setIcon(new ImageIcon(getImage("images/start.gif")));
+			playButton.setIcon(new ImageIcon(getClass().getResource("images/start.gif")));
 			playButton.setBackground(Color.WHITE);
 		}
 		if (status == PAUSE) {
-			pauseButton.setIcon(new ImageIcon(getImage("images/pause_inv.gif")));
+			pauseButton.setIcon(new ImageIcon(getClass().getResource("images/pause_inv.gif")));
 			pauseButton.setBackground(Color.BLACK);
 		} else {
-			pauseButton.setIcon(new ImageIcon(getImage("images/pause.gif")));
+			pauseButton.setIcon(new ImageIcon(getClass().getResource("images/pause.gif")));
 			pauseButton.setBackground(Color.WHITE);
 		}
 		if (status == NEXT_STEP) {
-			nextStepButton.setIcon(new ImageIcon(getImage("images/step_inv.gif")));
+			nextStepButton.setIcon(new ImageIcon(getClass().getResource("images/step_inv.gif")));
 			nextStepButton.setBackground(Color.BLACK);
 		} else {
-			nextStepButton.setIcon(new ImageIcon(getImage("images/step.gif")));
+			nextStepButton.setIcon(new ImageIcon(getClass().getResource("images/step.gif")));
 			nextStepButton.setBackground(Color.WHITE);
 		}
 		super.setControlStatus(status);

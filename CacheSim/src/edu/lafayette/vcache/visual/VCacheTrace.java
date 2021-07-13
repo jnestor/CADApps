@@ -82,18 +82,18 @@ public class VCacheTrace extends VPanel<Updater> implements ActionListener, List
 			System.out.println("VCacheTrace update");
 		if (list.getSelectedIndex() == -1)
 			list.setSelectedIndex(trace.getCurrentIndex());
-		if ((cache.getCurrentAccess() != null && (updater.getAccessStatus() == CacheAccess.COMPLETE_HIT || updater.getAccessStatus() == CacheAccess.COMPLETE_MISS)
-				&& updater.getStatus() == 1) || cache.getCurrentAccess() == null) {
+		if ((cache.getCurrentAccess() != null && (((Updater)updater).getAccessStatus() == CacheAccess.COMPLETE_HIT || ((Updater)updater).getAccessStatus() == CacheAccess.COMPLETE_MISS)
+				&& ((Updater)updater).getStatus() == 1) || cache.getCurrentAccess() == null) {
 			if (!trace.hasMoreAccess()) {
 				list.clearSelection();
-				updater.setControlStatus(VCacheAnimation.PAUSE);
+				((Updater)updater).setControlStatus(VCacheAnimation.PAUSE);
 			}
 			else if (!windowClosed)
 				list.setSelectedIndex(trace.getCurrentIndex() + 1);
-			if (updater.getControlStatus() != VCacheAnimation.PAUSE && trace.hasMoreAccess()) {
+			if (((Updater)updater).getControlStatus() != VCacheAnimation.PAUSE && trace.hasMoreAccess()) {
 				//trace.nextAccess();
-				if (updater.getControlStatus() == VCacheAnimation.NEXT_STEP) 
-					updater.setControlStatus(VCacheAnimation.PAUSE);
+				if (((Updater)updater).getControlStatus() == VCacheAnimation.NEXT_STEP) 
+					((Updater)updater).setControlStatus(VCacheAnimation.PAUSE);
 				
 				if (!windowClosed) {
 					if (trace.isTraceModified()) {
@@ -143,15 +143,16 @@ public class VCacheTrace extends VPanel<Updater> implements ActionListener, List
 			    if (returnVal == JFileChooser.APPROVE_OPTION) {
 			       setFile(fileChooser.getSelectedFile());
 			    }
-			} else {
-				try {
-					URL traceURL = new URL(VCacheApplet.getInstance().getCodeBase(), "trace_files/cc1.din");
-					trace.setTrace(traceURL.openStream());
-					list.setListData(trace.getTrace());
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
-			}
+			} 
+//                        else {
+//				try {
+//					URL traceURL = new URL(VCacheApplet.getInstance().getCodeBase(), "trace_files/cc1.din");
+//					trace.setTrace(traceURL.openStream());
+//					list.setListData(trace.getTrace());
+//				} catch (Exception ex) {
+//					ex.printStackTrace();
+//				}
+//			}
 		}
 	}
 	
@@ -187,7 +188,7 @@ public class VCacheTrace extends VPanel<Updater> implements ActionListener, List
 	}
 
 	public synchronized void valueChanged(ListSelectionEvent e) {
-		if (updater.getControlStatus() == VCacheAnimation.PAUSE) {
+		if (((Updater)updater).getControlStatus() == VCacheAnimation.PAUSE) {
 			if (Debug.debug)
 				System.out.println("VCacheTrace valueChange value setting " + list.getSelectedIndex());
 			trace.setNextAccessIndex(list.getSelectedIndex());
