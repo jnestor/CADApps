@@ -85,8 +85,8 @@ public class VCache extends VPanel<VCacheAnimation> implements SettingsSupporter
 		animationIntervalMap.put(Updater.HIGHER_LEVEL_READ, new Updater.AnimationInterval(3, 1));
 		animationIntervalMap.put(Updater.HIGHER_LEVEL_WRITE, new Updater.AnimationInterval(3, 1));
 		updater = new VCacheAnimation(c, 2000, animationIntervalMap);
-		VCacheTrace trace = new VCacheTrace(cache, updater);
-		updater.setTrace(trace.getTrace());
+		VCacheTrace trace = new VCacheTrace(cache, (Updater)updater);
+		((Updater)updater).setTrace(trace.getTrace());
 //		VPanel.setVCache(this);
 		
 		
@@ -124,7 +124,7 @@ public class VCache extends VPanel<VCacheAnimation> implements SettingsSupporter
 		
 		diagramFrame = new JInternalFrame("Cache Diagram");
 		dPane.add(diagramFrame);
-		diagram = oldVCache == null ? new VCacheDiagram(cache, updater, diagramFrame) : new VCacheDiagram(cache, updater, diagramFrame, oldVCache.diagram);
+		diagram = oldVCache == null ? new VCacheDiagram(cache, (Updater)updater, diagramFrame) : new VCacheDiagram(cache, (Updater)updater, diagramFrame, oldVCache.diagram);
 		JPanel temp = diagram.getSettingsEnabledPanel();
 		diagramFrame.add(new JScrollPane(temp));
 //		temp.setSize(temp.getPreferredSize());
@@ -156,7 +156,7 @@ public class VCache extends VPanel<VCacheAnimation> implements SettingsSupporter
 		
 		controlFrame = new JInternalFrame("Control");
 		dPane.add(controlFrame);
-		VCacheControl control = new VCacheControl(cache, updater);
+		VCacheControl control = new VCacheControl(cache, (VCacheAnimation)updater);
 		controlFrame.add(control.getSettingsEnabledPanel());
 		controlFrame.setClosable(true);
 		controlFrame.pack();
@@ -170,7 +170,7 @@ public class VCache extends VPanel<VCacheAnimation> implements SettingsSupporter
 		
 		statFrame = new JInternalFrame("Graph");
 		dPane.add(statFrame);
-		VCacheStatistics stat = new VCacheStatistics(cache, updater);
+		VCacheStatistics stat = new VCacheStatistics(cache, (Updater)updater);
 		statFrame.add(stat.getSettingsEnabledPanel());
 		statFrame.setClosable(true);
 		statFrame.setResizable(true);
@@ -308,8 +308,8 @@ public class VCache extends VPanel<VCacheAnimation> implements SettingsSupporter
 	private EntryPoint getEntryPoint() {
 		if (mode == APPLICATION)
 			return VCacheApplication.getInstance();
-		else if (mode == APPLET)
-			return VCacheApplet.getInstance();
+//		else if (mode == APPLET)
+//			return VCacheApplet.getInstance();
 		return null;
 	}
 
@@ -343,12 +343,12 @@ public class VCache extends VPanel<VCacheAnimation> implements SettingsSupporter
 
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource().equals(clearCacheMenuItem)) {
-			updater.stopTimer();
+			((Updater)updater).stopTimer();
 			hideAllSettingsFrames();
 			if (mode == APPLICATION)
 				VCacheApplication.getInstance().buildGUI(cache.clone(), this);
-			else if (mode == APPLET)
-				VCacheApplet.getInstance().buildGUI(cache.clone(), this);
+//			else if (mode == APPLET)
+//				VCacheApplet.getInstance().buildGUI(cache.clone(), this);
 		}
 	}
 }
