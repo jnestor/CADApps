@@ -93,7 +93,7 @@ public class PathFinderFrame_demo extends JFrame /*implements Runnable*/ {
     private JSlider speedSlider = new JSlider(10, 800, 400);
     private File configuration;
 
-    JFileChooser fc;
+    private JFileChooser fc;
 
     private final JCheckBox hValBox = new JCheckBox("h(n) Heatmap");
     private final JCheckBox penaltyBox = new JCheckBox("Penalty Heatmap");
