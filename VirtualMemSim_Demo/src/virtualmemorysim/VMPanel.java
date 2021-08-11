@@ -147,18 +147,18 @@ public class VMPanel extends JLayeredPane {
         fsm();
         fsm();
         fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
 //        fsm();
 //        fsm();
 //        fsm();
@@ -318,28 +318,6 @@ public class VMPanel extends JLayeredPane {
                 state = 7;
             }
         } else if (state == 4) {
-//            boolean found = false;
-            String corrVPNRaw = (String) ramTable.getValueAt(clockHand, 1);
-            int corrVPN = Integer.parseInt(corrVPNRaw.substring(2, corrVPNRaw.length() - 1), 16);
-            int ref = (Integer) pageTable.getValueAt(corrVPN, 2);
-            topLayer.setPTLine(corrVPN);
-            topLayer.setRAMLine(clockHand);
-            if (ref == 1) {
-                pageTable.setModify(true);
-                pageTable.setValueAt(0, corrVPN, 2);
-                pageTable.setModify(false);
-                clockHand++;
-                state = 13;
-                msgPane.setText("look for a PTE to replace");
-            } else {
-                swapVPN = corrVPN;
-                swapPPN = clockHand;
-                clockHand++;
-                state = 12;
-                msgPane.setText("PTE to replace found");
-            }
-        } else if (state == 13) {
-            
             String corrVPNRaw = (String) ramTable.getValueAt(clockHand, 1);
             int corrVPN = Integer.parseInt(corrVPNRaw.substring(2, corrVPNRaw.length() - 1), 16);
             int ref = (Integer) pageTable.getValueAt(corrVPN, 2);
@@ -351,7 +329,10 @@ public class VMPanel extends JLayeredPane {
                 state = 12;
                 msgPane.setText("PTE to replace found");
             } else {
-                state = 13;
+                pageTable.setModify(true);
+                pageTable.setValueAt(0, corrVPN, 2);
+                pageTable.setModify(false);
+                state = 4;
                 msgPane.setText("look for a new PTE to replace");
             }
             clockHand++;
