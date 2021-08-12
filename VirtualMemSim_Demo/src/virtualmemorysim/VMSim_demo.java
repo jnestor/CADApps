@@ -6,6 +6,7 @@
 package virtualmemorysim;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -22,6 +23,7 @@ import java.util.Scanner;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -38,6 +40,7 @@ import javax.swing.SwingConstants;
 import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -48,7 +51,11 @@ public class VMSim_demo extends JFrame {
     JScrollPane vmPane;
     JPanel bottonPane;
     JScrollPane instruPane;
+    JPanel rightPane;
     private final JButton openBtn = new JButton("Open");
+    private final JButton addBtn = new JButton("Add");
+//    private int instruSize;
+    private JTable inputTable = new JTable(1, 2);
     private VMJTable instruTable;
     private final JLabel msgBoard = new JLabel();
     private final JLabel title = new JLabel("Virtual Memory Simulation", SwingConstants.CENTER);
@@ -69,6 +76,17 @@ public class VMSim_demo extends JFrame {
     private Timer timer = new Timer(delay, new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
+            if (vmSim.isDone()) {
+                msgBoard.setText("paused");
+                timer.stop();
+                timer.setRepeats(false);
+                stepBtn.setEnabled(true);
+                openBtn.setEnabled(true);
+                running = false;
+                pauseBtn.setSelectedIcon(running ? pause : resume);
+                pauseBtn.setToolTipText(running ? "pause" : "start");
+                timer.stop();
+            }
             vmSim.fsm();
             vmSim.repaint();
             instruPane.repaint();
@@ -86,6 +104,7 @@ public class VMSim_demo extends JFrame {
         pauseBtn.addActionListener(this::pauseAction);
         stepBtn.addActionListener(this::stepAction);
         speedSlider.addChangeListener(this::speedChanged);
+        addBtn.addActionListener(this::addAction);
         btnPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         msgBoard.setPreferredSize(new Dimension(290, 25));
         pauseBtn.setPreferredSize(new Dimension(25, 25));
@@ -104,6 +123,7 @@ public class VMSim_demo extends JFrame {
         pauseBtn.setToolTipText("Start");
         pauseBtn.setSelectedIcon(resume);
         speedSlider.setEnabled(false);
+        addBtn.setEnabled(false);
         getContentPane().add(btnPanel, "South");
     }
 
@@ -117,7 +137,7 @@ public class VMSim_demo extends JFrame {
 
     private void pauseAction(ActionEvent evt) {
         if (configuration != null) {
-            if (!running) {
+            if (!running && !vmSim.isDone()) {
                 msgBoard.setText("running");
                 timer.setRepeats(true);
                 timer.setDelay(delay);
@@ -133,8 +153,8 @@ public class VMSim_demo extends JFrame {
                 openBtn.setEnabled(true);
                 running = false;
             }
-            pauseBtn.setSelectedIcon(running ? resume : pause);
-            pauseBtn.setToolTipText(running ? "Start" : "Pause");
+            pauseBtn.setSelectedIcon(running ? pause : resume);
+            pauseBtn.setToolTipText(running ? "pause" : "start");
         }
     }
 
@@ -173,6 +193,32 @@ public class VMSim_demo extends JFrame {
             }
         }
 //        else JOptionPane.showMessageDialog(this, "Null File", "Invalid File", JOptionPane.ERROR_MESSAGE);
+    }
+
+    private void addAction(ActionEvent evt) {
+        if (inputTable.getValueAt(0, 0) == null || inputTable.getValueAt(0, 1) == null) {
+            JOptionPane.showMessageDialog(this, "Null Input", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        int instru;
+        int addr;
+        try {
+            instru = Integer.parseInt((String) inputTable.getValueAt(0, 0), 16);
+            addr = Integer.parseInt((String) inputTable.getValueAt(0, 1), 16);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Non-hexadecimal input", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        if (instru > 1 || instru < 0 || addr < 0) {
+            JOptionPane.showMessageDialog(this, "Negative input", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        vmSim.setDone(false);
+        instruTable.addLine();
+        ((DefaultTableModel) instruTable.getModel()).addRow(
+                new Object[]{inputTable.getValueAt(0, 0), inputTable.getValueAt(0, 1)});
+        vmSim.getInstructions().add(new Pair<Integer, Integer>(instru, addr));
+        System.out.println(vmSim.getInstructions().size());
     }
 
     private void readConfig() {
@@ -235,10 +281,10 @@ public class VMSim_demo extends JFrame {
                         ArrayList<String> netLocs = new ArrayList<String>(Arrays.asList(a));
                         int instru = Integer.parseInt(a[0]);
                         int addr = Integer.parseInt(a[1], 16);
-                        Pair<Integer,Integer> pair = new Pair<Integer,Integer>(instru, addr);
+                        Pair<Integer, Integer> pair = new Pair<Integer, Integer>(instru, addr);
                         vpnList.add(a[1]);
                         instructions.add(pair);
-                    } catch (NumberFormatException|NullPointerException e) {
+                    } catch (NumberFormatException | NullPointerException e) {
                         Toolkit.getDefaultToolkit().beep();
                         JOptionPane.showMessageDialog(
                                 this, "wrong instruction or address", "Invalid Input", JOptionPane.ERROR_MESSAGE);
@@ -258,7 +304,7 @@ public class VMSim_demo extends JFrame {
             Logger.getLogger(VMSim_demo.class.getName()).log(Level.SEVERE, null, ex);
         }
         vmSim = vmTemp;
-        vmPane=new JScrollPane(vmSim);
+        vmPane = new JScrollPane(vmSim);
         if (vmSim != null) {
             getContentPane().remove(vmPane);
         }
@@ -269,22 +315,42 @@ public class VMSim_demo extends JFrame {
         speedSlider.setEnabled(true);
         pauseBtn.setEnabled(true);
         stepBtn.setEnabled(true);
-        vmSim.getInstruTable().getColumnModel().getColumn(0).setPreferredWidth(31);
-        vmSim.getInstruTable().getColumnModel().getColumn(1).setPreferredWidth(95);
-        vmSim.getInstruTable().getColumnModel().getColumn(0).setHeaderValue("r/w");
-        vmSim.getInstruTable().getColumnModel().getColumn(1).setHeaderValue("Virtual Address");
-        if(instruTable!=null){
-            getContentPane().remove(instruPane);
+
+        if (instruTable != null) {
+            getContentPane().remove(rightPane);
         }
+
+        inputTable.getColumnModel().getColumn(0).setHeaderValue("r/w");
+        inputTable.getColumnModel().getColumn(1).setHeaderValue("Virtual Address");
+        inputTable.getColumnModel().getColumn(0).setPreferredWidth(31);
+        inputTable.getColumnModel().getColumn(1).setPreferredWidth(95);
+        inputTable.getTableHeader().setReorderingAllowed(false);
+        inputTable.setPreferredSize(new Dimension(31 + 95, 16));
+
+        JPanel inputPane = new JPanel();
+        JScrollPane inputTP = new JScrollPane(inputTable);
+        inputPane.setLayout(new BoxLayout(inputPane, BoxLayout.Y_AXIS));
+        inputPane.setPreferredSize(new Dimension(31 + 95, 52 + 25));
+        inputPane.add(inputTP);
+        inputPane.add(addBtn);
+
         instruTable = vmSim.getInstruTable();
-        instruPane=new JScrollPane(instruTable);
-        instruPane.setPreferredSize(new Dimension(31+95, vmPane.getHeight()));
-        for(int i =0; i<instructions.size();i++){
+        instruPane = new JScrollPane(instruTable);
+        instruPane.setPreferredSize(new Dimension(31 + 95, vmPane.getHeight() - inputPane.getHeight()));
+        for (int i = 0; i < instructions.size(); i++) {
             instruTable.setValueAt(instructions.get(i).getK(), i, 0);
             instruTable.setValueAt(vpnList.get(i), i, 1);
         }
-        getContentPane().add(instruPane, "East");
+
+        rightPane = new JPanel();
+        rightPane.setLayout(new BoxLayout(rightPane, BoxLayout.Y_AXIS));
+        rightPane.setPreferredSize(new Dimension(31 + 95, vmPane.getHeight()));
+        rightPane.add(instruPane);
+        rightPane.add(inputPane);
+        getContentPane().add(rightPane, "East");
+//        instruSize = instructions.size();
 //        System.out.println(p.getChanVer()[0][0].getID());
+        addBtn.setEnabled(true);
     }
 
     private static void createAndShowGUI() {

@@ -40,7 +40,7 @@ import javax.swing.table.TableModel;
  * @author 15002
  */
 public class VMPanel extends JLayeredPane {
-
+    
     private final int PAGETABLE = 0;
     private final int TLB = 1;
 
@@ -78,6 +78,7 @@ public class VMPanel extends JLayeredPane {
     private int clockHand;
     private boolean clockTick;
     
+    private boolean done = false;
     private int instruCount = 0;
 
     public VMPanel(int tlbSize, int ramPageNum, int diskPageNum, int offsetSize, int ramSegNum, int diskSegNum) {
@@ -87,103 +88,7 @@ public class VMPanel extends JLayeredPane {
         diskCap = diskSegNum;
         uiSetUp(tlbSize, ramPageNum, diskPageNum, ramSegNum, diskSegNum);
         tableReset(tlbSize, ramPageNum, diskPageNum, offsetSize);
-        
-//        instructions.add(new Pair<Integer, Integer>(0, 15));
-//        instructions.add(new Pair<Integer, Integer>(1, 15 + 16 * 3));
-//        instructions.add(new Pair<Integer, Integer>(1, 15 + 16 * 2));
-//        instructions.add(new Pair<Integer, Integer>(0, 15 + 16));
-//        instructions.add(new Pair<Integer, Integer>(0, 15));
-//        instructions.add(new Pair<Integer, Integer>(0, 15 + 16 * 3));
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//
-//        instructions.add(new Pair<Integer, Integer>(1, 16 * 5));
-//        instructions.add(new Pair<Integer, Integer>(0, 16 * 1));
-//        instructions.add(new Pair<Integer, Integer>(1, 16 * 4));
-//        instructions.add(new Pair<Integer, Integer>(0, 16 * 2));
-//        instructions.add(new Pair<Integer, Integer>(0, 16 * 26));
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
-//        fsm();
+//        test();
     }
 
     /**
@@ -227,6 +132,7 @@ public class VMPanel extends JLayeredPane {
                         msgPane.setText("Invalid virtual address\n");
                         state = 0;
                         instruTable.setColor(instruCount, Color.green);
+                        instruCount++;
                         return;
                     }
                     vmAddrLine.getModel().setValueAt(addr.substring(addr.length() - offsetBits), 0, 1);
@@ -237,6 +143,7 @@ public class VMPanel extends JLayeredPane {
 
             } else {
                 msgPane.setText("No more instruction\n");
+                done = true;
             }
         } else if (state == 1) {
             topLayer.setLeftRect(true);
@@ -675,12 +582,124 @@ public class VMPanel extends JLayeredPane {
         this.instructions = instructions;
         instruTable = new VMJTable(instructions.size(), 2, 2, instructions.size());
         instruTable.setEnabled(false);
+        instruTable.getColumnModel().getColumn(0).setPreferredWidth(31);
+        instruTable.getColumnModel().getColumn(1).setPreferredWidth(95);
+        instruTable.getColumnModel().getColumn(0).setHeaderValue("r/w");
+        instruTable.getColumnModel().getColumn(1).setHeaderValue("Virtual Address");
+        instruTable.getTableHeader().setReorderingAllowed(false);
     }
 
     public VMJTable getInstruTable() {
         return instruTable;
     }
+
+    public boolean isDone() {
+        return done;
+    }
+
+    public void setDone(boolean done) {
+        this.done = done;
+    }
     
     
+    
+    private void test(){          
+        instructions.add(new Pair<Integer, Integer>(0, 15));
+        instructions.add(new Pair<Integer, Integer>(1, 15 + 16 * 3));
+        instructions.add(new Pair<Integer, Integer>(1, 15 + 16 * 2));
+        instructions.add(new Pair<Integer, Integer>(0, 15 + 16));
+        instructions.add(new Pair<Integer, Integer>(0, 15));
+        instructions.add(new Pair<Integer, Integer>(0, 15 + 16 * 3));
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+
+        instructions.add(new Pair<Integer, Integer>(1, 16 * 5));
+        instructions.add(new Pair<Integer, Integer>(0, 16 * 1));
+        instructions.add(new Pair<Integer, Integer>(1, 16 * 4));
+        instructions.add(new Pair<Integer, Integer>(0, 16 * 2));
+        instructions.add(new Pair<Integer, Integer>(0, 16 * 26));
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+        fsm();
+    }
     
 }

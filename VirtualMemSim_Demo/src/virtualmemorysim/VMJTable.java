@@ -16,7 +16,7 @@ import javax.swing.table.TableCellRenderer;
  * @author 15002
  */
 public class VMJTable extends JTable {
-    
+
     private final int PAGETABLE = 0;
     private final int TLB = 1;
     private final int MEMTABLE = 2;
@@ -26,12 +26,12 @@ public class VMJTable extends JTable {
     private static boolean TLBEnabled;
     private int accessibleSpace;
     private ArrayList<Color> colorTable = new ArrayList<Color>();
-    
+
     public VMJTable(int r, int c, int m) {
         super(r, c);
         mode = m;
     }
-    
+
     public VMJTable(int r, int c, int m, int a) {
         super(r, c);
         mode = m;
@@ -44,7 +44,7 @@ public class VMJTable extends JTable {
             colorTable.add(null);
         }
     }
-    
+
     @Override
     public Component prepareRenderer(TableCellRenderer renderer, int row, int col) {
         Component comp = super.prepareRenderer(renderer, row, col);
@@ -78,21 +78,25 @@ public class VMJTable extends JTable {
                 comp.setBackground(Color.gray);
             }
         }
-        
+
         return comp;
     }
-    
+
     public boolean isModify() {
         return modify;
     }
-    
+
     public void setModify(boolean modify) {
         this.modify = modify;
-        
+
     }
-    
+
     public void setColor(int i, Color c) {
         colorTable.set(i, c);
+
     }
-    
+
+    public void addLine() {
+        colorTable.add(colorTable.size(), Color.white);
+    }
 }
