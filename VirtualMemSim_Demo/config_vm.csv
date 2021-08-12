@@ -1,0 +1,14 @@
+# of page in ram,# of page in disk,# of page in ram seg,# of page in disk seg,offset size (in bits) (power of 2)
+15,30,4,15,16
+instru,addr (in hex),,,
+0,E,,,
+1,3F,,,
+1,2F,,,
+0,1F,,,
+0,F,,,
+0,3F,,,
+1,50,,,
+0,10,,,
+1,40,,,
+0,20,,,
+0,260,,,
