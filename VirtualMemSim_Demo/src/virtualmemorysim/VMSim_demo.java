@@ -11,6 +11,7 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -34,7 +35,9 @@ import javax.swing.JSlider;
 import javax.swing.JTable;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
+import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ChangeEvent;
 
 /**
  *
@@ -46,21 +49,31 @@ public class VMSim_demo extends JFrame {
     JPanel bottonPane;
     JScrollPane instruPane;
     private final JButton openBtn = new JButton("Open");
-    private JTable instruTable;
+    private VMJTable instruTable;
     private final JLabel msgBoard = new JLabel();
     private final JLabel title = new JLabel("Virtual Memory Simulation", SwingConstants.CENTER);
     private final ImageIcon pause = new ImageIcon(getClass().getResource("images/pause.gif"));
     private final ImageIcon resume = new ImageIcon(getClass().getResource("images/start.gif"));
 //    private final JToggleButton clearBtn = new JToggleButton(new ImageIcon(getClass().getResource("images/clear.png")));
-    private final JToggleButton pauseBtn = new JToggleButton(pause);
+    private final JToggleButton pauseBtn = new JToggleButton(resume);
 //    private final JToggleButton stopBtn = new JToggleButton(new ImageIcon(getClass().getResource("images/stop.gif")));
     private final JToggleButton stepBtn = new JToggleButton(new ImageIcon(getClass().getResource("images/step.gif")));
     private final JCheckBox tlbBox = new JCheckBox("TLB");
     VMPanel vmSim;
+    private int delay = 400;
     private JSlider speedSlider = new JSlider(10, 800, 400);
     private File configuration;
     private JFileChooser fc;
     private boolean running = false;
+
+    private Timer timer = new Timer(delay, new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            vmSim.fsm();
+            vmSim.repaint();
+            instruPane.repaint();
+        }
+    });
 
     public VMSim_demo() {
         title.setFont(new Font("Bold", Font.PLAIN, 25));
@@ -70,9 +83,9 @@ public class VMSim_demo extends JFrame {
         JPanel btnPanel = new JPanel();
         fc = new JFileChooser();
         openBtn.addActionListener(this::openAction);
-//        pauseBtn.addActionListener(this::pauseAction);
-//        stepBtn.addActionListener(this::stepAction);
-//        speedSlider.addChangeListener(this::speedChanged);
+        pauseBtn.addActionListener(this::pauseAction);
+        stepBtn.addActionListener(this::stepAction);
+        speedSlider.addChangeListener(this::speedChanged);
         btnPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         msgBoard.setPreferredSize(new Dimension(290, 25));
         pauseBtn.setPreferredSize(new Dimension(25, 25));
@@ -87,10 +100,55 @@ public class VMSim_demo extends JFrame {
         btnPanel.add(stepBtn);
         btnPanel.add(speedSlider);
         stepBtn.setEnabled(false);
+        pauseBtn.setEnabled(false);
         pauseBtn.setToolTipText("Start");
+        pauseBtn.setSelectedIcon(resume);
         speedSlider.setEnabled(false);
+        getContentPane().add(btnPanel, "South");
     }
-    
+
+    private void stepAction(ActionEvent evt) {
+        if (configuration != null) {
+            vmSim.fsm();
+            vmSim.repaint();
+            instruPane.repaint();
+        }
+    }
+
+    private void pauseAction(ActionEvent evt) {
+        if (configuration != null) {
+            if (!running) {
+                msgBoard.setText("running");
+                timer.setRepeats(true);
+                timer.setDelay(delay);
+                timer.start();
+                stepBtn.setEnabled(false);
+                openBtn.setEnabled(false);
+                running = true;
+            } else {
+                msgBoard.setText("paused");
+                timer.stop();
+                timer.setRepeats(false);
+                stepBtn.setEnabled(true);
+                openBtn.setEnabled(true);
+                running = false;
+            }
+            pauseBtn.setSelectedIcon(running ? resume : pause);
+            pauseBtn.setToolTipText(running ? "Start" : "Pause");
+        }
+    }
+
+    public void speedChanged(ChangeEvent e) {
+        if (configuration != null) {
+            JSlider source = (JSlider) e.getSource();
+            if (!source.getValueIsAdjusting()) {
+                int speed = (int) source.getValue();
+                delay = 800 - speed;
+                timer.setDelay(delay);
+            }
+        }
+    }
+
     private void openAction(ActionEvent evt) {
         if (configuration != null) {
 //            timer.stop();
@@ -108,7 +166,7 @@ public class VMSim_demo extends JFrame {
                 String extension = name.substring(index + 1);
 
                 if (extension.equals("csv")) {
-//                    readConfig();
+                    readConfig();
                 } else {
                     JOptionPane.showMessageDialog(this, "Wrong file type", "Invalid File", JOptionPane.ERROR_MESSAGE);
                 }
@@ -116,128 +174,129 @@ public class VMSim_demo extends JFrame {
         }
 //        else JOptionPane.showMessageDialog(this, "Null File", "Invalid File", JOptionPane.ERROR_MESSAGE);
     }
-    
-//    private void readConfig() {
-//        ColorSequencer.reset();
-//        UIPathFinder tempPF = null;
-//        UIGraph tempGraph = null;
-//        CopyOnWriteArrayList<PFNet> netsTemp = new CopyOnWriteArrayList<PFNet>();
-//        try {
-//            fc = new JFileChooser(configuration.getAbsolutePath());
-//            Scanner fR = new Scanner(configuration);
-//            Scanner lR = new Scanner(fR.nextLine());
-//            if (!fR.hasNext()) {
-//                if (timer == null) {
-//                    configuration = null;
-//                }
-//                JOptionPane.showMessageDialog(this, "Wrong configuration file type", "Invalid File Type", JOptionPane.ERROR_MESSAGE);
-//                return;
-//            }
-//            lR = new Scanner(fR.nextLine());
-//            String[] a = lR.next().split(",");
-////            System.out.println(a[0]);
-//            try {
-//                int w = Integer.parseInt(a[0]);
-//                int h = Integer.parseInt(a[1]);
-//                tempPF = new UIPathFinder(w, h);
-//                tempGraph = tempPF.getGraph();
-//
-//            } catch (NumberFormatException e) {
-//                Toolkit.getDefaultToolkit().beep();
-//                JOptionPane.showMessageDialog(
-//                        this, "wrong width and height", "Invalid Input", JOptionPane.ERROR_MESSAGE);
-//                if (timer == null) {
-//                    configuration = null;
-//                }
-//                return;
-//            }
-//            lR = new Scanner(fR.nextLine());
-//            if (fR.hasNext()) {
-//
-//                while (fR.hasNext()) {
-//                    try {
-//                        lR = new Scanner(fR.nextLine());
-//                        a = lR.next().split(",");
-//                        ArrayList<String> netLocs = new ArrayList<String>(Arrays.asList(a));
-//                        Iterator arrIterator = netLocs.iterator();
-//                        arrIterator.next();
-//                        int x = Integer.parseInt((String) arrIterator.next());
-//                        int y = Integer.parseInt((String) arrIterator.next());
-//                        try {
-//                            PFNode source = tempPF.getSources()[x][y];
-//                            source.occupy();
-//                            LinkedList<PFNode> sinks = new LinkedList<PFNode>();
-//                            while (arrIterator.hasNext()) {
-//                                x = Integer.parseInt((String) arrIterator.next());
-//                                y = Integer.parseInt((String) arrIterator.next());
-//                                PFNode sink = tempPF.getSinks()[x][y];
-//                                sink.occupy();
-//                                sinks.add(sink);
-//                            }
-//                            if (sinks.isEmpty()) {
-//                                Toolkit.getDefaultToolkit().beep();
-//                                JOptionPane.showMessageDialog(
-//                                        this, "no sinks", "Invalid Input", JOptionPane.ERROR_MESSAGE);
-//                                if (timer == null) {
-//                                    configuration = null;
-//                                }
-//                                return;
-//                            }
-//                            PFNet net = new PFNet(sinks, source);
-//                            net.setColor(ColorSequencer.next());
-//                            netsTemp.add(net);
-//                        } catch (IndexOutOfBoundsException e) {
-//                            Toolkit.getDefaultToolkit().beep();
-//                            JOptionPane.showMessageDialog(
-//                                    this, "wrong source or sink locations", "Invalid Input", JOptionPane.ERROR_MESSAGE);
-//                            if (timer == null) {
-//                                configuration = null;
-//                            }
-//                            return;
-//                        }
-//                    } catch (NumberFormatException e) {
-//                        Toolkit.getDefaultToolkit().beep();
-//                        JOptionPane.showMessageDialog(
-//                                this, "wrong source or sink locations", "Invalid Input", JOptionPane.ERROR_MESSAGE);
-//                        if (timer == null) {
-//                            configuration = null;
-//                        }
-//                        return;
-//                    }
-//
-//                }
-//
-//            } else {
-//                JOptionPane.showMessageDialog(
-//                        this, "No nets", "Invalid Input", JOptionPane.ERROR_MESSAGE);
-//                configuration = null;
-//            }
-//        } catch (FileNotFoundException ex) {
-//            Logger.getLogger(PathFinderFrame_demo.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//        upf = tempPF;
-//        if (graph != null) {
-//            getContentPane().remove(graph);
-//        }
-//        graph = tempGraph;
-//        nets = netsTemp;
-//        router = new RoutibilityPathFinder(nets, upf.getNodes(), upf.getGraph(), msgBoard);
-//        timer = router.getRoutingTimer();
-//        getContentPane().add(upf.getGraph(), "Center");
-//        setVisible(true);
-//        router.setPause(true);
-//        msgBoard.setText("Press Start or Step to start routing");
-//        speedSlider.setEnabled(true);
-//        hValBox.setEnabled(true);
-//        hValBox.setSelected(false);
-//        pauseBtn.setEnabled(true);
-//        penaltyBox.setEnabled(true);
-//        penaltyBox.setSelected(false);
-//        stopBtn.setEnabled(true);
-//        tooltipBox.setSelected(false);
-//        tooltipBox.setEnabled(true);
-////        System.out.println(p.getChanVer()[0][0].getID());
-//    }
-    
 
+    private void readConfig() {
+        LinkedList<Pair<Integer, Integer>> instructions = new LinkedList<Pair<Integer, Integer>>();
+        VMPanel vmTemp = null;
+        ArrayList<String> vpnList = new ArrayList<String>();
+        try {
+            fc = new JFileChooser(configuration.getAbsolutePath());
+            Scanner fR = new Scanner(configuration);
+            Scanner lR = new Scanner(fR.nextLine());
+            if (!fR.hasNext()) {
+                if (vmSim == null) {
+                    configuration = null;
+                }
+                JOptionPane.showMessageDialog(this, "Wrong configuration file type", "Invalid File Type", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            lR = new Scanner(fR.nextLine());
+            String[] a = lR.next().split(",");
+            if (a.length < 5) {
+                if (vmSim == null) {
+                    configuration = null;
+                }
+                JOptionPane.showMessageDialog(this, "Incomplete configuration file", "Invalid File", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+//            System.out.println(a[0]);
+            try {
+                int pmSize = Integer.parseInt(a[0]);
+                int vmSize = Integer.parseInt(a[1]);
+                int pmCap = Integer.parseInt(a[2]);
+                int vmCap = Integer.parseInt(a[3]);
+                int offset = Integer.parseInt(a[4]);
+                if (pmSize < pmCap || vmSize < vmCap) {
+                    if (vmSim == null) {
+                        configuration = null;
+                    }
+                    JOptionPane.showMessageDialog(this, "Segment size is larger than memory size", "Invalid Configuration", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                if (pmSize > vmSize) {
+                    JOptionPane.showMessageDialog(this, "Why would you need virtual memory?", "Small Virtual Memory Size", JOptionPane.QUESTION_MESSAGE);
+                }
+                vmTemp = new VMPanel(10, pmSize, vmSize, offset, pmCap, vmCap);
+            } catch (NumberFormatException e) {
+                Toolkit.getDefaultToolkit().beep();
+                JOptionPane.showMessageDialog(
+                        this, "Wrong memory size, please use decimal number", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+                if (vmSim == null) {
+                    configuration = null;
+                }
+                return;
+            }
+            lR = new Scanner(fR.nextLine());
+            if (fR.hasNext()) {
+                while (fR.hasNext()) {
+                    try {
+                        lR = new Scanner(fR.nextLine());
+                        a = lR.next().split(",");
+                        ArrayList<String> netLocs = new ArrayList<String>(Arrays.asList(a));
+                        int instru = Integer.parseInt(a[0]);
+                        int addr = Integer.parseInt(a[1], 16);
+                        Pair<Integer,Integer> pair = new Pair<Integer,Integer>(instru, addr);
+                        vpnList.add(a[1]);
+                        instructions.add(pair);
+                    } catch (NumberFormatException|NullPointerException e) {
+                        Toolkit.getDefaultToolkit().beep();
+                        JOptionPane.showMessageDialog(
+                                this, "wrong instruction or address", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+                        if (timer == null) {
+                            configuration = null;
+                        }
+                        return;
+                    }
+
+                }
+            } else {
+                JOptionPane.showMessageDialog(
+                        this, "No instructions", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+                configuration = null;
+            }
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(VMSim_demo.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        vmSim = vmTemp;
+        vmPane=new JScrollPane(vmSim);
+        if (vmSim != null) {
+            getContentPane().remove(vmPane);
+        }
+        vmSim.setInstructions(instructions);
+        getContentPane().add(vmPane, "Center");
+        setVisible(true);
+        msgBoard.setText("Press Start or Step to start");
+        speedSlider.setEnabled(true);
+        pauseBtn.setEnabled(true);
+        stepBtn.setEnabled(true);
+        vmSim.getInstruTable().getColumnModel().getColumn(0).setPreferredWidth(31);
+        vmSim.getInstruTable().getColumnModel().getColumn(1).setPreferredWidth(95);
+        vmSim.getInstruTable().getColumnModel().getColumn(0).setHeaderValue("r/w");
+        vmSim.getInstruTable().getColumnModel().getColumn(1).setHeaderValue("Virtual Address");
+        if(instruTable!=null){
+            getContentPane().remove(instruPane);
+        }
+        instruTable = vmSim.getInstruTable();
+        instruPane=new JScrollPane(instruTable);
+        instruPane.setPreferredSize(new Dimension(31+95, vmPane.getHeight()));
+        for(int i =0; i<instructions.size();i++){
+            instruTable.setValueAt(instructions.get(i).getK(), i, 0);
+            instruTable.setValueAt(vpnList.get(i), i, 1);
+        }
+        getContentPane().add(instruPane, "East");
+//        System.out.println(p.getChanVer()[0][0].getID());
+    }
+
+    private static void createAndShowGUI() {
+        VMSim_demo demo = new VMSim_demo();
+        JFrame f = demo;
+        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        f.setSize(1030, 1000);
+        f.setMinimumSize(new Dimension(1150, 500));
+        f.setVisible(true);
+    }
+
+    public static void main(String[] args) {
+        createAndShowGUI();
+    }
 }

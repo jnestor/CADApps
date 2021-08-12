@@ -54,6 +54,7 @@ public class VMPanel extends JLayeredPane {
     private JTextArea msgPane;
     private ImagePanel hwPane;
     private ImagePanel osPane;
+    private VMJTable instruTable;
     private LinePainter topLayer;
 
     private String offset;
@@ -76,6 +77,8 @@ public class VMPanel extends JLayeredPane {
     private boolean pagefault = false;
     private int clockHand;
     private boolean clockTick;
+    
+    private int instruCount = 0;
 
     public VMPanel(int tlbSize, int ramPageNum, int diskPageNum, int offsetSize, int ramSegNum, int diskSegNum) {
         super();
@@ -84,69 +87,70 @@ public class VMPanel extends JLayeredPane {
         diskCap = diskSegNum;
         uiSetUp(tlbSize, ramPageNum, diskPageNum, ramSegNum, diskSegNum);
         tableReset(tlbSize, ramPageNum, diskPageNum, offsetSize);
-        instructions.add(new Pair<Integer, Integer>(0, 15));
-        instructions.add(new Pair<Integer, Integer>(1, 15 + 16 * 3));
-        instructions.add(new Pair<Integer, Integer>(1, 15 + 16 * 2));
-        instructions.add(new Pair<Integer, Integer>(0, 15 + 16));
-        instructions.add(new Pair<Integer, Integer>(0, 15));
-        instructions.add(new Pair<Integer, Integer>(0, 15 + 16 * 3));
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
+        
+//        instructions.add(new Pair<Integer, Integer>(0, 15));
+//        instructions.add(new Pair<Integer, Integer>(1, 15 + 16 * 3));
+//        instructions.add(new Pair<Integer, Integer>(1, 15 + 16 * 2));
+//        instructions.add(new Pair<Integer, Integer>(0, 15 + 16));
+//        instructions.add(new Pair<Integer, Integer>(0, 15));
+//        instructions.add(new Pair<Integer, Integer>(0, 15 + 16 * 3));
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
 //
-        instructions.add(new Pair<Integer, Integer>(1, 16 * 5));
-        instructions.add(new Pair<Integer, Integer>(0, 16 * 1));
-        instructions.add(new Pair<Integer, Integer>(1, 16 * 4));
-        instructions.add(new Pair<Integer, Integer>(0, 16 * 2));
-        instructions.add(new Pair<Integer, Integer>(0, 16 * 26));
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
-        fsm();
+//        instructions.add(new Pair<Integer, Integer>(1, 16 * 5));
+//        instructions.add(new Pair<Integer, Integer>(0, 16 * 1));
+//        instructions.add(new Pair<Integer, Integer>(1, 16 * 4));
+//        instructions.add(new Pair<Integer, Integer>(0, 16 * 2));
+//        instructions.add(new Pair<Integer, Integer>(0, 16 * 26));
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
+//        fsm();
 //        fsm();
 //        fsm();
 //        fsm();
@@ -216,16 +220,18 @@ public class VMPanel extends JLayeredPane {
                 if (instruPair.getV() < pageSize) {
                     currVPN = 0;
                     vmAddrLine.getModel().setValueAt(addr, 0, 1);
-
+                    
                 } else {
                     currVPN = Integer.parseInt(addr.substring(0, addr.length() - offsetBits), 2);
                     if (currVPN >= diskCap) {
                         msgPane.setText("Invalid virtual address\n");
                         state = 0;
+                        instruTable.setColor(instruCount, Color.green);
                         return;
                     }
                     vmAddrLine.getModel().setValueAt(addr.substring(addr.length() - offsetBits), 0, 1);
                 }
+                instruTable.setColor(instruCount, Color.yellow);
                 state = 1;
                 vmAddrLine.getModel().setValueAt(Integer.toBinaryString(currVPN), 0, 0);
 
@@ -301,6 +307,8 @@ public class VMPanel extends JLayeredPane {
             }
             pageTable.setModify(false);
             state = 0;
+            instruTable.setColor(instruCount, Color.green);
+            instruCount++;
         } else if (state == 3) {
             pagefault = true;
             msgPane.setText("Page not found,\nraise page fault exception,\nOS is in charge");
@@ -658,4 +666,21 @@ public class VMPanel extends JLayeredPane {
             g.drawImage(image, 25, 25, this);
         }
     }
+
+    public LinkedList<Pair<Integer, Integer>> getInstructions() {
+        return instructions;
+    }
+
+    public void setInstructions(LinkedList<Pair<Integer, Integer>> instructions) {
+        this.instructions = instructions;
+        instruTable = new VMJTable(instructions.size(), 2, 2, instructions.size());
+        instruTable.setEnabled(false);
+    }
+
+    public VMJTable getInstruTable() {
+        return instruTable;
+    }
+    
+    
+    
 }
