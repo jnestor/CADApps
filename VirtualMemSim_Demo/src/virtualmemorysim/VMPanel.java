@@ -321,6 +321,9 @@ public class VMPanel extends JLayeredPane {
             swapPPN++;
             if(clockTick) {
                 clockHand++;
+                if (clockHand >= ramCap) {
+                clockHand = 0;
+            }
                 topLayer.setClockLine(clockHand);
             }
             
