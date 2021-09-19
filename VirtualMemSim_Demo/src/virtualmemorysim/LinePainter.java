@@ -24,9 +24,11 @@ public class LinePainter extends JPanel {
     ArrayList<int[]> yLineDots = new ArrayList<int[]>();
     ArrayList<Integer> nums = new ArrayList<Integer>();
     boolean leftRect = true;
-    int tbLine = -1;
+    int ptLine = -1;
     int ramLine = -1;
-    int clockLine = 0;
+    int tlbLine = -1;
+    int clockLine_PT = 0;
+    int clockLine_TLB = -1;
 
     @Override
     public void paintComponent(Graphics g) {
@@ -49,16 +51,24 @@ public class LinePainter extends JPanel {
         Graphics2D g2 = (Graphics2D) g;
         g2.setColor(Color.red);
         int arrowX = 1105;
-        int arrowY = 410 + clockLine * 16;
-        g.fillPolygon(new int[]{arrowX, arrowX + 10, arrowX +10}, new int[]{arrowY, arrowY - 5, arrowY + 5}, 3);
+        int arrowY = 410 + clockLine_PT * 16;
+        g.fillPolygon(new int[]{arrowX, arrowX + 10, arrowX + 10}, new int[]{arrowY, arrowY - 5, arrowY + 5}, 3);
         g2.setStroke(new BasicStroke(3));
-        g2.drawLine(1110, 410 + clockLine * 16, 1125, 410 + clockLine * 16);
-        
-        
+        g2.drawLine(arrowX + 5, arrowY, arrowX + 20, arrowY);
+        if (clockLine_TLB != -1) {
+            arrowX = 368;
+            arrowY = 136 + clockLine_TLB * 16;
+            g.fillPolygon(new int[]{arrowX, arrowX + 10, arrowX + 10}, new int[]{arrowY, arrowY - 5, arrowY + 5}, 3);
+            g2.drawLine(arrowX + 5, arrowY, arrowX + 20, arrowY);
+        }
+
         g2.setStroke(new BasicStroke(5));
         g2.setColor(Color.CYAN);
-        if (tbLine != -1) {
-            g2.drawRect(69, 401 + tbLine * 16, 295, 17);
+        if (ptLine != -1) {
+            g2.drawRect(69, 401 + ptLine * 16, 295, 17);
+        }
+        if (tlbLine != -1) {
+            g2.drawRect(69, 126 + tlbLine * 16, 295, 17);
         }
         g2.setColor(Color.red);
         if (ramLine != -1) {
@@ -88,15 +98,22 @@ public class LinePainter extends JPanel {
     }
 
     public void setPTLine(int circleLine) {
-        this.tbLine = circleLine;
+        this.ptLine = circleLine;
     }
 
     public void setRAMLine(int circleLine) {
         ramLine = circleLine;
     }
 
-    public void setClockLine(int line) {
-        clockLine = line;
+    public void setTLBLine(int circleLine) {
+        tlbLine = circleLine;
     }
 
+    public void setRAMClockLine(int line) {
+        clockLine_PT = line;
+    }
+
+    public void setTLBClockLine(int line) {
+        clockLine_TLB = line;
+    }
 }

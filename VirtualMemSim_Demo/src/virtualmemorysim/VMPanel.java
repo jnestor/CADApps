@@ -40,7 +40,36 @@ import javax.swing.table.TableModel;
  * @author 15002
  */
 public class VMPanel extends JLayeredPane {
-    
+
+    private final int PULL = 0;
+    private final int PTECHECK = 1;
+    private final int PTADDRF = 2;
+    private final int PAGEFAULT = 3;
+    private final int PTRCHECK = 4;
+    private final int PTEVICT = 5;
+    private final int RAMWRITEB = 6;
+    private final int PTUPDATE_PF = 7;
+    private final int DISKWB = 8;
+    private final int RAMACCESS = 9;
+    private final int RAMWRITE = 10;
+    private final int PTUPDATE_NOTLB = 11;
+    private final int PTREPLACEC = 12;
+
+    private final int PULL_TLB = 0;
+    private final int TLBCHECK = 11;
+    private final int TLBADDRF = 13;
+    private final int TLB_RAMWRITE = 10;
+    private final int TLB_RAMACCESS = 9;
+    private final int TLBUPDATE = 14;
+    private final int TLBMISS = 1;
+    private final int VPFOUND = 17;
+    private final int TLBRCHECK = 15;
+    private final int TLBREPLACEC = 20;
+    private final int PTWB = 19;
+    private final int TLBEVICT = 16;
+    private final int TLBUPDATE_TLBMISS = 21;
+    private final int TLBSYNC = 18;
+
     private final int PAGETABLE = 0;
     private final int TLB = 1;
 
@@ -70,22 +99,33 @@ public class VMPanel extends JLayeredPane {
     private int currPPN;
     private int instru;
     private int currRamUse;
+    private int currTLBUse;
     private int swapVPN;
     private int swapPPN;
+    private int currTLB;
+    private int swapTLB;
     private int ramCap;
     private int diskCap;
+    private int tlbCap = 10;
     private boolean pagefault = false;
-    private int clockHand;
-    private boolean clockTick;
-    
+    private boolean tlbMiss = false;
+    private int clockHand_PT;
+    private int clockHand_TLB = 0;
+    private boolean ptClockTick;
+    private boolean tlbClockTick;
+
     private boolean done = false;
     private int instruCount = 0;
 
-    public VMPanel(int tlbSize, int ramPageNum, int diskPageNum, int offsetSize, int ramSegNum, int diskSegNum) {
+    private boolean tlbEnabled;
+
+    public VMPanel(int tlbSize, int ramPageNum, int diskPageNum, int offsetSize, int ramSegNum, int diskSegNum, boolean tlbEn) {
         super();
+        tlbCap=tlbSize;
         pageSize = offsetSize;
         ramCap = ramSegNum;
         diskCap = diskSegNum;
+        tlbEnabled = tlbEn;
         uiSetUp(tlbSize, ramPageNum, diskPageNum, ramSegNum, diskSegNum);
         tableReset(tlbSize, ramPageNum, diskPageNum, offsetSize);
 //        test();
@@ -96,7 +136,7 @@ public class VMPanel extends JLayeredPane {
      */
     public static void main(String[] args) {
         // TODO code application logic here
-        VMPanel demo = new VMPanel(10, 17, 30, 16, 4, 15);
+        VMPanel demo = new VMPanel(10, 17, 30, 16, 4, 15, false);
         JScrollPane a = new JScrollPane(demo);
         JFrame frame = new JFrame("AbsoluteLayoutDemo");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -106,229 +146,680 @@ public class VMPanel extends JLayeredPane {
     }
 
     public void fsm() {
+        if (tlbEnabled) {
+            fsm_TLB();
+        } else {
+            fsm_NOTLB();
+        }
+    }
+
+    public void fsm_TLB() {
         topLayer.clearLines();
         topLayer.setPTLine(-1);
         topLayer.setRAMLine(-1);
-        if (clockHand >= ramCap) {
-                clockHand = 0;
-            }
-        topLayer.setClockLine(clockHand);
-        if (state == 0) {
-            pagefault = false;
-            msgPane.setText("Poll out an instruction\n");
-            topLayer.setLeftRect(true);
-            output.setText("Output: ");
-            if (!instructions.isEmpty()) {
-                Pair<Integer, Integer> instruPair = instructions.poll();
-                instru = instruPair.getK();
-                String addr = Integer.toBinaryString(instruPair.getV());
-                if (instruPair.getV() < pageSize) {
-                    currVPN = 0;
-                    vmAddrLine.getModel().setValueAt(addr, 0, 1);
-                    
-                } else {
-                    currVPN = Integer.parseInt(addr.substring(0, addr.length() - offsetBits), 2);
-                    if (currVPN >= diskCap) {
-                        msgPane.setText("Invalid virtual address\n");
-                        state = 0;
-                        instruTable.setColor(instruCount, Color.green);
-                        instruCount++;
-                        return;
+        topLayer.setTLBLine(-1);
+       
+        if (clockHand_PT >= ramCap) {
+            clockHand_PT = 0;
+        }
+        if (clockHand_TLB >= tlbCap) {
+            clockHand_TLB = 0;
+        }
+        topLayer.setTLBClockLine(clockHand_TLB);
+        topLayer.setRAMClockLine(clockHand_PT);
+        switch (state) {
+            case PULL_TLB: {
+                pagefault = false;
+                tlbMiss = false;
+                msgPane.setText("Poll out an instruction\n");
+                topLayer.setLeftRect(true);
+                output.setText("Output: ");
+                if (!instructions.isEmpty()) {
+                    Pair<Integer, Integer> instruPair = instructions.poll();
+                    instru = instruPair.getK();
+                    String addr = Integer.toBinaryString(instruPair.getV());
+                    if (instruPair.getV() < pageSize) {
+                        currVPN = 0;
+                        vmAddrLine.getModel().setValueAt(addr, 0, 1);
+
+                    } else {
+                        currVPN = Integer.parseInt(addr.substring(0, addr.length() - offsetBits), 2);
+                        if (currVPN >= diskCap) {
+                            msgPane.setText("Invalid virtual address\n");
+                            state = 0;
+                            instruTable.setColor(instruCount, Color.green);
+                            instruCount++;
+                            return;
+                        }
+                        vmAddrLine.getModel().setValueAt(addr.substring(addr.length() - offsetBits), 0, 1);
                     }
-                    vmAddrLine.getModel().setValueAt(addr.substring(addr.length() - offsetBits), 0, 1);
+                    instruTable.setColor(instruCount, Color.yellow);
+                    state = TLBCHECK;
+                    vmAddrLine.getModel().setValueAt(Integer.toBinaryString(currVPN), 0, 0);
+
+                } else {
+                    msgPane.setText("No more instruction\n");
+                    done = true;
                 }
-                instruTable.setColor(instruCount, Color.yellow);
-                state = 1;
-                vmAddrLine.getModel().setValueAt(Integer.toBinaryString(currVPN), 0, 0);
+                break;
+            }
+            case TLBCHECK: {
+                topLayer.setLeftRect(true);
+                if (instru == 0) {
+                    msgPane.setText("Read from ram,\ncheck if the virtual page is in\nphysical memory using TLB");
+                } else if (instru == 1) {
+                    msgPane.setText("Write to ram,\ncheck if the virtual page is in\nphysical memory using TLB");
+                }
 
-            } else {
-                msgPane.setText("No more instruction\n");
-                done = true;
-            }
-        } else if (state == 1) {
-            topLayer.setLeftRect(true);
-            if (instru == 0) {
-                msgPane.setText("Read from ram,\ncheck if the virtual page is in\nphysical memory");
-            } else if (instru == 1) {
-                msgPane.setText("Write to ram,\ncheck if the virtual page is in\nphysical memory");
-            }
-            int[] xs = {35, 35, 70};
-            int[] ys = {53, 410 + currVPN * 16, 410 + currVPN * 16};
+                boolean pageFound = false;
+                state = TLBMISS;
+                for (int i = 0; i < tlbCap; i++) {
+                    if (tlbTable.getValueAt(i, 1).equals(1)) {
+                        int tlbCurVPN = Integer.parseInt((String) tlbTable.getValueAt(i, 0), 16);
+                        if (currVPN == tlbCurVPN) {
+                            pageFound = true;
+                            state = TLBADDRF;
+                            currTLB = i;
+                            break;
+                        }
+                    }
+                }
 
-            topLayer.addLine(xs, ys, 3);
-            if (pageTable.getModel().getValueAt(currVPN, 1).equals(0)) {
-                state = 3; //Page fault
-            } else {
-                state = 2; //Page hit
+                int[] xs = {27, 27, 70};
+                int[] ys = {55, 136 + 16 * (tlbCap - 1), 136 + 16 * (tlbCap - 1)};
+                topLayer.addLine(xs, ys, 3);
+                for (int i = 0; i < tlbCap - 1; i++) {
+                    int[] xs1 = {27, 70};
+                    int[] ys1 = {136 + 16 * i, 136 + 16 * i};
+                    topLayer.addLine(xs1, ys1, 2);
+                }
+
+                break;
             }
-        } else if (state == 2) {
-            msgPane.setText("Page found in page table,\nform physical memory address");
-            int[] xs = {35, 35, 70};
-            int[] ys = {53, 410 + currVPN * 16, 410 + currVPN * 16};
-            topLayer.addLine(xs, ys, 3);
-            int[] xs1 = {363, 420, 420, 455};
-            int[] ys1 = {410 + currVPN * 16, 410 + currVPN * 16, 290, 290};
-            topLayer.addLine(xs1, ys1, 4);
-            int[] xs2 = {186, 680, 680, 663};
-            int[] ys2 = {45, 45, 290, 290};
-            topLayer.addLine(xs2, ys2, 4);
-            currPPN = Integer.parseInt((String) pageTable.getModel().getValueAt(currVPN, 4), 16);
-            pmAddrLine.getModel().setValueAt(pageTable.getModel().getValueAt(currVPN, 4), 0, 0);
-            pmAddrLine.getModel().setValueAt(
-                    String.format("%X", Integer.parseInt((String) vmAddrLine.getModel().getValueAt(0, 1), 2)),
-                    0, 1);
-            if (instru == 0) {
-                state = 9;
-            } else {
-                state = 10;
+            case TLBADDRF: {
+                msgPane.setText("Page found in TLB,\nform physical memory address");
+                int[] xs = {27, 27, 70};
+                int[] ys = {55, 136 + 16 * (tlbCap - 1), 136 + 16 * (tlbCap - 1)};
+                topLayer.addLine(xs, ys, 3);
+                for (int i = 0; i < tlbCap - 1; i++) {
+                    int[] xs1 = {27, 70};
+                    int[] ys1 = {136 + 16 * i, 136 + 16 * i};
+                    topLayer.addLine(xs1, ys1, 2);
+                }
+                int[] xs2 = {186, 680, 680, 663};
+                int[] ys2 = {45, 45, 290, 290};
+                topLayer.addLine(xs2, ys2, 4);
+                int[] xs3 = {363, 420, 420, 455};
+                int[] ys3 = {136 + currTLB * 16, 136 + currTLB * 16, 290, 290};
+                topLayer.addLine(xs3, ys3, 4);
+
+                currPPN = Integer.parseInt((String) tlbTable.getModel().getValueAt(currTLB, 4), 16);
+                pmAddrLine.getModel().setValueAt(tlbTable.getModel().getValueAt(currTLB, 4), 0, 0);
+                pmAddrLine.getModel().setValueAt(
+                        String.format("%X", Integer.parseInt((String) vmAddrLine.getModel().getValueAt(0, 1), 2)),
+                        0, 1);
+                if (instru == 0) {
+                    state = TLB_RAMACCESS;
+                } else {
+                    state = TLB_RAMWRITE;
+                }
+                break;
             }
-        } else if (state == 9) {
-            msgPane.setText("Access memory");
-            int[] xs = {453, 430, 430, 455};
-            int[] ys = {307, 307, 410 + currPPN * 16, 410 + currPPN * 16};
-            topLayer.addLine(xs, ys, 4);
-            state = 11;
-        } else if (state == 10) {
-            msgPane.setText("Write to memory");
-            int[] xs = {453, 430, 430, 455};
-            int[] ys = {307, 307, 410 + currPPN * 16, 410 + currPPN * 16};
-            ramTable.setColor(currPPN, Color.pink);
-            topLayer.addLine(xs, ys, 4);
-            ramTable.getModel().setValueAt("M[" + pageTable.getModel().getValueAt(currVPN, 0) + "]", currPPN, 1);
-            output.setText("Output:");
-            state = 11;
-        } else if (state == 11) {
-            msgPane.setText("Update page table");
-            pageTable.setModify(true);
-            if (!pagefault) {
-                pageTable.getModel().setValueAt(1, currVPN, 2);
-            } else {
-                pageTable.getModel().setValueAt(0, currVPN, 2);
+            case RAMACCESS: {
+                msgPane.setText("Access memory");
+                int[] xs = {453, 430, 430, 455};
+                int[] ys = {307, 307, 410 + currPPN * 16, 410 + currPPN * 16};
+                topLayer.addLine(xs, ys, 4);
+                state = 14;
+                break;
             }
-            ramTable.setColor(currPPN, Color.cyan);
-            if (instru == 1) {
-                pageTable.getModel().setValueAt(1, currVPN, 3);
-                diskTable.setColor(currVPN, Color.orange);
-            } else {
-                output.setText("Output: " + ramTable.getValueAt(currPPN, 1));
+            case RAMWRITE: {
+                msgPane.setText("Write to memory");
+                int[] xs = {453, 430, 430, 455};
+                int[] ys = {307, 307, 410 + currPPN * 16, 410 + currPPN * 16};
+                ramTable.setColor(currPPN, Color.pink);
+                topLayer.addLine(xs, ys, 4);
+                ramTable.getModel().setValueAt("M[" + pageTable.getModel().getValueAt(currVPN, 0) + "]", currPPN, 1);
+                output.setText("Output:");
+                state = 14;
+                break;
             }
-            pageTable.setModify(false);
-            state = 0;
-            instruTable.setColor(instruCount, Color.green);
-            instruCount++;
-        } else if (state == 3) {
-            pagefault = true;
-            msgPane.setText("Page not found,\nraise page fault exception,\nOS is in charge");
-            topLayer.setLeftRect(false);
-            int[] xs = {35, 35, 70};
-            int[] ys = {53, 410 + currVPN * 16, 410 + currVPN * 16};
-            topLayer.addLine(xs, ys, 3);
-            clockTick = true;
-            if (currRamUse == ramCap) {
-                state = 4;
-                clockTick = false;
-            } else if (instru == 0) {
-                state = 6;
-            } else if (instru == 1) {
-                state = 7;
+            case TLBUPDATE: {
+                msgPane.setText("Update TLB");
+                tlbTable.setModify(true);
+                if (!tlbMiss) {
+                    tlbTable.getModel().setValueAt(1, currTLB, 2);
+                } else {
+                    tlbTable.getModel().setValueAt(0, currTLB, 2);
+                }
+                ramTable.setColor(currPPN, Color.cyan);
+                if (instru == 1) {
+                    tlbTable.getModel().setValueAt(1, currTLB, 3);
+                    diskTable.setColor(currVPN, Color.orange);
+                } else {
+                    output.setText("Output: " + ramTable.getValueAt(currPPN, 1));
+                }
+                tlbTable.setModify(false);
+                state = 0;
+                instruTable.setColor(instruCount, Color.green);
+                instruCount++;
+                break;
             }
-        } else if (state == 4) {
-            String corrVPNRaw = (String) ramTable.getValueAt(clockHand, 1);
-            int corrVPN = Integer.parseInt(corrVPNRaw.substring(2, corrVPNRaw.length() - 1), 16);
-            int ref = (Integer) pageTable.getValueAt(corrVPN, 2);
-            topLayer.setPTLine(corrVPN);
-            topLayer.setRAMLine(clockHand);
-            if (ref == 0) {
-                swapVPN = corrVPN;
-                swapPPN = clockHand;
-                state = 12;
-                msgPane.setText("PTE to replace found");
-            } else {
+            case TLBMISS: {
+                tlbMiss = true;
+                topLayer.setLeftRect(true);
+                msgPane.setText("TLB Miss, check if the virtual\npage is in physical memory");
+                int[] xs = {35, 35, 70};
+                int[] ys = {53, 410 + currVPN * 16, 410 + currVPN * 16};
+                topLayer.addLine(xs, ys, 3);
+                if (pageTable.getModel().getValueAt(currVPN, 1).equals(0)) {
+                    state = PAGEFAULT; //Page fault
+                } else {
+                    state = VPFOUND; //Page hit
+                }
+                break;
+            }
+            case VPFOUND: {
+                msgPane.setText("Page found in memory,\ncheck if TLB is full");
+                tlbClockTick = true;
+                if (currTLBUse == tlbCap) {
+                    state = TLBRCHECK;
+                    tlbClockTick = false;
+                } else {
+                    state = TLBUPDATE_TLBMISS;
+                }
+                break;
+            }
+            case TLBRCHECK: {
+                int corrVPN = Integer.parseInt((String) tlbTable.getValueAt(clockHand_TLB, 0), 16);
+                int ref = (Integer) tlbTable.getValueAt(clockHand_TLB, 2);
+                topLayer.setTLBLine(clockHand_TLB);
+                if (ref == 0) {
+                    swapVPN = corrVPN;
+                    swapTLB = clockHand_TLB;
+                    state = TLBREPLACEC;
+                    msgPane.setText("TLBE to replace found");
+                } else {
+                    tlbTable.setModify(true);
+                    tlbTable.setValueAt(0, clockHand_TLB, 2);
+                    tlbTable.setModify(false);
+                    state = TLBRCHECK;
+                    msgPane.setText("look for a new TLBE to replace");
+                }
+                clockHand_TLB++;
+                break;
+            }
+            case TLBREPLACEC: {
+                topLayer.setTLBLine(swapTLB);
+                topLayer.setPTLine(swapVPN);
+                msgPane.setText("Replace TLB Entry containing\nvirtual page" + tlbTable.getValueAt(swapTLB, 0));
+                if ((Integer) tlbTable.getValueAt(swapTLB, 3) == 1) {
+                    state = PTWB;
+                } else {
+                    state = TLBEVICT;
+                }
+                break;
+            }
+            case PTWB: {
+                msgPane.setText("Write TLB Entry #" + swapTLB
+                        + "\nto Page Table Entry " + pageTable.getValueAt(swapVPN, 0));
+                int[] xs = {70, 35, 35, 70};
+                int[] ys = {136 + swapTLB * 16, 136 + swapTLB * 16, 410 + swapVPN * 16, 410 + swapVPN * 16};
+                topLayer.addLine(xs, ys, 4);
+                topLayer.setPTLine(swapVPN);
+                topLayer.setTLBLine(swapTLB);
+
+                if ((Integer) tlbTable.getValueAt(swapTLB, 2) == 1) {
+                    pageTable.setModify(true);
+                    pageTable.setValueAt(1, swapVPN, 2);
+                    pageTable.setModify(false);
+                }
+                state = TLBEVICT;
+                break;
+            }
+            case TLBEVICT: {
+                msgPane.setText("Invalidate TLB Entry #" + swapTLB);
+                topLayer.setPTLine(swapVPN);
+                topLayer.setTLBLine(swapTLB);
+                tlbTable.setModify(true);
+                tlbTable.setValueAt(0, swapTLB, 1);
+                tlbTable.setModify(false);
+                currTLBUse--;
+                state = TLBUPDATE_TLBMISS;
+                break;
+            }
+            case TLBUPDATE_TLBMISS: {
+                int[] xs = {70, 35, 35, 70};
+                int[] ys = {410 + currVPN * 16, 410 + currVPN * 16,136 + swapTLB * 16, 136 + swapTLB * 16};
+                topLayer.addLine(xs, ys, 4);
+                tlbTable.setModify(true);
+                tlbTable.setValueAt(pageTable.getValueAt(currVPN, 0), swapTLB, 0);
+                tlbTable.setValueAt(pageTable.getValueAt(currVPN, 4), swapTLB, 4);
+                tlbTable.setValueAt(pageTable.getValueAt(currVPN, 3), swapTLB, 3);
+                tlbTable.setValueAt(0, swapTLB, 2);
+                tlbTable.setValueAt(1, swapTLB, 1);
+                tlbTable.setModify(false);
+                currTLBUse++;
+                swapTLB++;
                 pageTable.setModify(true);
-                pageTable.setValueAt(0, corrVPN, 2);
+                if (!pagefault) {
+                    pageTable.setValueAt(1, currVPN, 2);
+                } else {
+                    pageTable.setValueAt(0, currVPN, 2);
+                }
                 pageTable.setModify(false);
-                state = 4;
-                msgPane.setText("look for a new PTE to replace");
+                if (tlbClockTick) {
+                    clockHand_TLB++;
+                    if (clockHand_TLB >= tlbCap) {
+                        clockHand_TLB = 0;
+                    }
+                    topLayer.setTLBClockLine(clockHand_TLB);
+                }
+                msgPane.setText("Update TLB Entry #" + swapTLB + " and\npage table, retry access.");
+                state = TLBCHECK;
+                break;
             }
-            clockHand++;
-        } else if (state == 12) {
-            topLayer.setPTLine(swapVPN);
-            topLayer.setRAMLine(swapPPN);
-            msgPane.setText("Replace data from virtual page\n" + pageTable.getValueAt(swapVPN, 4));
-            if ((Integer) pageTable.getValueAt(swapVPN, 3) == 1) {
-                state = 8;
-            } else {
+            case PAGEFAULT: {
+                pagefault = true;
+                msgPane.setText("Page not found,\nraise page fault exception,\nOS is in charge");
+                topLayer.setLeftRect(false);
+                ptClockTick = true;
+                if (currRamUse == ramCap) {
+                    state = TLBSYNC;
+                    ptClockTick = false;
+                } else if (instru == 0) {
+                    state = RAMWRITEB;
+                } else if (instru == 1) {
+                    state = PTUPDATE_PF;
+                }
+                break;
+            }
+            case TLBSYNC: {
+                msgPane.setText("Syncronize TLB and Page Table");
+                for (int i = 0; i < tlbCap; i++) {
+                    if (tlbTable.getValueAt(i, 1).equals(1)) {
+                        int vpnTemp = Integer.parseInt((String) tlbTable.getValueAt(i, 0), 16);
+                        int dirtyTemp = (Integer) tlbTable.getValueAt(i, 3);
+                        int refTemp = (Integer) tlbTable.getValueAt(i, 2);
+                        pageTable.setModify(true);
+                        pageTable.setValueAt(dirtyTemp, vpnTemp, 3);
+                        if (refTemp == 1) {
+                            pageTable.setValueAt(refTemp, vpnTemp, 2);
+                        }
+                        pageTable.setModify(false);
+                    }
+                }
+                state = PTRCHECK;
+                break;
+            }
+            case PTRCHECK:
+                String corrVPNRaw = (String) ramTable.getValueAt(clockHand_PT, 1);
+                int corrVPN = Integer.parseInt(corrVPNRaw.substring(2, corrVPNRaw.length() - 1), 16);
+                int ref = (Integer) pageTable.getValueAt(corrVPN, 2);
+                topLayer.setPTLine(corrVPN);
+                topLayer.setRAMLine(clockHand_PT);
+                if (ref == 0) {
+                    swapVPN = corrVPN;
+                    swapPPN = clockHand_PT;
+                    state = 12;
+                    msgPane.setText("PTE to replace found");
+                } else {
+                    pageTable.setModify(true);
+                    pageTable.setValueAt(0, corrVPN, 2);
+                    pageTable.setModify(false);
+                    state = 4;
+                    msgPane.setText("look for a new PTE to replace");
+                }
+                clockHand_PT++;
+                break;
+            case PTREPLACEC:
+                topLayer.setPTLine(swapVPN);
+                topLayer.setRAMLine(swapPPN);
+                msgPane.setText("Replace data from virtual page\n" + pageTable.getValueAt(swapVPN, 0));
+                if ((Integer) pageTable.getValueAt(swapVPN, 3) == 1) {
+                    state = 8;
+                } else {
+                    state = 5;
+                }
+                break;
+            case DISKWB: {
+                msgPane.setText("Write data " + ramTable.getValueAt(swapPPN, 1)
+                        + "\nto virtual page " + pageTable.getValueAt(swapVPN, 0));
+                int[] xs = {673, 700, 700, 752};
+                int[] ys = {410 + swapPPN * 16, 410 + swapPPN * 16, 372, 372};
+                topLayer.addLine(xs, ys, 4);
+                topLayer.setPTLine(swapVPN);
+                topLayer.setRAMLine(swapPPN);
                 state = 5;
+                break;
             }
-        } else if (state == 8) {
-            msgPane.setText("Write data " + ramTable.getValueAt(swapPPN, 1)
-                    + "\nto virtual page " + pageTable.getValueAt(swapVPN, 0));
-            int[] xs = {673, 700, 700, 752};
-            int[] ys = {410 + swapPPN * 16, 410 + swapPPN * 16, 372, 372};
-            topLayer.addLine(xs, ys, 4);
-            topLayer.setPTLine(swapVPN);
-            topLayer.setRAMLine(swapPPN);
-            state = 5;
-        } else if (state == 5) {
-            msgPane.setText("Invalidate data at " + ramTable.getValueAt(swapPPN, 1));
-            ramTable.setColor(swapPPN, Color.white);
-            diskTable.setColor(swapVPN, Color.white);
-            topLayer.setPTLine(swapVPN);
-            topLayer.setRAMLine(swapPPN);
-            pageTable.setModify(true);
-            pageTable.setValueAt(0, swapVPN, 1);
-            pageTable.setModify(false);
-            clockTable.setColor(swapPPN, Color.white);
-            currRamUse--;
-            if (instru == 0) {
-                state = 6;
-            } else {
+            case PTEVICT:
+                msgPane.setText("Invalidate data " + ramTable.getValueAt(swapPPN, 1));
+                ramTable.setColor(swapPPN, Color.white);
+                diskTable.setColor(swapVPN, Color.white);
+                topLayer.setPTLine(swapVPN);
+                topLayer.setRAMLine(swapPPN);
+                pageTable.setModify(true);
+                pageTable.setValueAt(0, swapVPN, 1);
+                pageTable.setModify(false);
+                clockTable.setColor(swapPPN, Color.white);
+                currRamUse--;
+                for(int i = 0;i<tlbCap;i++){
+                    int vpnTemp = Integer.parseInt((String)tlbTable.getValueAt(i, 0),16);
+                    if(vpnTemp==swapVPN){
+                        tlbTable.setValueAt(0, i, 1);
+                        swapTLB=i;
+                        currTLBUse--;
+                        msgPane.setText("Invalidate data at " + ramTable.getValueAt(swapPPN, 1)+
+                                "\nand TLB Entry with virtual page\n"+tlbTable.getValueAt(swapTLB, 0));
+                    }
+                }
+                if (instru == 0) {
+                    state = 6;
+                } else {
+                    state = 7;
+                }
+                break;
+            case RAMWRITEB: {
+                msgPane.setText("Write data from virtual page\n"
+                        + pageTable.getValueAt(swapVPN, 0)
+                        + "\ninto physical page\n"
+                        + ((String) ramTable.getValueAt(swapPPN, 0)).
+                                substring(0, ((String) ramTable.getValueAt(swapPPN, 0)).length() - 1));
+                ramTable.setColor(swapPPN, Color.pink);
+                int[] xs = {752, 700, 700, 673};
+                int[] ys = {372, 372, 410 + swapPPN * 16, 410 + swapPPN * 16};
+                topLayer.addLine(xs, ys, 4);
+                ramTable.getModel().setValueAt("M[" + pageTable.getModel().getValueAt(currVPN, 0) + "]", swapPPN, 1);
                 state = 7;
+                break;
             }
-        } else if (state == 6) {
-            msgPane.setText("Write data from virtual page\n"
-                    + pageTable.getValueAt(swapVPN, 0)
-                    + "\ninto physical page\n"
-                    + ((String) ramTable.getValueAt(swapPPN, 0)).
-                            substring(0, ((String) ramTable.getValueAt(swapPPN, 0)).length() - 1));
-            ramTable.setColor(swapPPN, Color.pink);
-            int[] xs = {752, 700, 700, 673};
-            int[] ys = {372, 372, 410 + swapPPN * 16, 410 + swapPPN * 16};
-            topLayer.addLine(xs, ys, 4);
-            ramTable.getModel().setValueAt("M[" + pageTable.getModel().getValueAt(currVPN, 0) + "]", swapPPN, 1);
-            state = 7;
-            
-        } else if (state == 7) {
-            pageTable.setModify(true);
-            String ppAddr = (String) ramTable.getValueAt(swapPPN, 0);
-            pageTable.getModel().setValueAt(ppAddr.substring(0, ppAddr.length() - 1), currVPN, 4);
-            pageTable.getModel().setValueAt(1, currVPN, 1);
-            pageTable.getModel().setValueAt(0, currVPN, 2);
-            clockTable.setValueAt(pageTable.getValueAt(currVPN, 0), swapPPN, 0);
-            clockTable.setColor(swapPPN, Color.green);
-            if (instru == 1) {
-                pageTable.getModel().setValueAt(1, currVPN, 3);
-                ramTable.setColor(swapPPN, Color.orange);
-                diskTable.setColor(currVPN, Color.orange);
-            } else {
-                pageTable.getModel().setValueAt(0, currVPN, 3);
-                ramTable.setColor(swapPPN, Color.cyan);
-                diskTable.setColor(currVPN, Color.green);
+            case PTUPDATE_PF:
+                pageTable.setModify(true);
+                String ppAddr = (String) ramTable.getValueAt(swapPPN, 0);
+                pageTable.getModel().setValueAt(ppAddr.substring(0, ppAddr.length() - 1), currVPN, 4);
+                pageTable.getModel().setValueAt(1, currVPN, 1);
+                pageTable.getModel().setValueAt(0, currVPN, 2);
+                clockTable.setValueAt(pageTable.getValueAt(currVPN, 0), swapPPN, 0);
+                clockTable.setColor(swapPPN, Color.green);
+                if (instru == 1) {
+                    pageTable.getModel().setValueAt(1, currVPN, 3);
+                    ramTable.setColor(swapPPN, Color.orange);
+                    diskTable.setColor(currVPN, Color.orange);
+                } else {
+                    pageTable.getModel().setValueAt(0, currVPN, 3);
+                    ramTable.setColor(swapPPN, Color.cyan);
+                    diskTable.setColor(currVPN, Color.green);
+                }
+                pageTable.setModify(false);
+                state = TLBMISS;
+                currRamUse++;
+                swapPPN++;
+                if (ptClockTick) {
+                    clockHand_PT++;
+                    if (clockHand_PT >= ramCap) {
+                        clockHand_PT = 0;
+                    }
+                    topLayer.setRAMClockLine(clockHand_PT);
+                }
+                msgPane.setText("Update physical page number\nat virtual page " + pageTable.getValueAt(currVPN, 0)
+                        + "\nin page table, retry access.");
+                break;
+            default:
+                System.out.println("Something is wrong");
+                break;
+        }
+        System.out.println(state);
+        System.out.println(clockHand_PT);
+    }
+
+    public void fsm_NOTLB() {
+        topLayer.clearLines();
+        topLayer.setPTLine(-1);
+        topLayer.setRAMLine(-1);
+        topLayer.setTLBLine(-1);
+        if (clockHand_PT >= ramCap) {
+            clockHand_PT = 0;
+        }
+        topLayer.setRAMClockLine(clockHand_PT);
+        switch (state) {
+            case PULL: {
+                pagefault = false;
+                msgPane.setText("Poll out an instruction\n");
+                topLayer.setLeftRect(true);
+                output.setText("Output: ");
+                if (!instructions.isEmpty()) {
+                    Pair<Integer, Integer> instruPair = instructions.poll();
+                    instru = instruPair.getK();
+                    String addr = Integer.toBinaryString(instruPair.getV());
+                    if (instruPair.getV() < pageSize) {
+                        currVPN = 0;
+                        vmAddrLine.getModel().setValueAt(addr, 0, 1);
+
+                    } else {
+                        currVPN = Integer.parseInt(addr.substring(0, addr.length() - offsetBits), 2);
+                        if (currVPN >= diskCap) {
+                            msgPane.setText("Invalid virtual address\n");
+                            state = 0;
+                            instruTable.setColor(instruCount, Color.green);
+                            instruCount++;
+                            return;
+                        }
+                        vmAddrLine.getModel().setValueAt(addr.substring(addr.length() - offsetBits), 0, 1);
+                    }
+                    instruTable.setColor(instruCount, Color.yellow);
+                    state = 1;
+                    vmAddrLine.getModel().setValueAt(Integer.toBinaryString(currVPN), 0, 0);
+
+                } else {
+                    msgPane.setText("No more instruction\n");
+                    done = true;
+                }
+                break;
             }
-            pageTable.setModify(false);
-            state = 1;
-            currRamUse++;
-            swapPPN++;
-            if(clockTick) {
-                clockHand++;
-                if (clockHand >= ramCap) {
-                clockHand = 0;
+            case PTECHECK: {
+                topLayer.setLeftRect(true);
+                if (instru == 0) {
+                    msgPane.setText("Read from ram,\ncheck if the virtual page is in\nphysical memory");
+                } else if (instru == 1) {
+                    msgPane.setText("Write to ram,\ncheck if the virtual page is in\nphysical memory");
+                }
+                int[] xs = {35, 35, 70};
+                int[] ys = {53, 410 + currVPN * 16, 410 + currVPN * 16};
+                topLayer.addLine(xs, ys, 3);
+                if (pageTable.getModel().getValueAt(currVPN, 1).equals(0)) {
+                    state = 3; //Page fault
+                } else {
+                    state = 2; //Page hit
+                }
+                break;
             }
-                topLayer.setClockLine(clockHand);
+            case PTADDRF: {
+                msgPane.setText("Page found in page table,\nform physical memory address");
+                int[] xs = {35, 35, 70};
+                int[] ys = {53, 410 + currVPN * 16, 410 + currVPN * 16};
+                topLayer.addLine(xs, ys, 3);
+                int[] xs1 = {363, 420, 420, 455};
+                int[] ys1 = {410 + currVPN * 16, 410 + currVPN * 16, 290, 290};
+                topLayer.addLine(xs1, ys1, 4);
+                int[] xs2 = {186, 680, 680, 663};
+                int[] ys2 = {45, 45, 290, 290};
+                topLayer.addLine(xs2, ys2, 4);
+                currPPN = Integer.parseInt((String) pageTable.getModel().getValueAt(currVPN, 4), 16);
+                pmAddrLine.getModel().setValueAt(pageTable.getModel().getValueAt(currVPN, 4), 0, 0);
+                pmAddrLine.getModel().setValueAt(
+                        String.format("%X", Integer.parseInt((String) vmAddrLine.getModel().getValueAt(0, 1), 2)),
+                        0, 1);
+                if (instru == 0) {
+                    state = 9;
+                } else {
+                    state = 10;
+                }
+                break;
             }
-            
-            msgPane.setText("Update physical page number\nat virtual page " + pageTable.getValueAt(currVPN, 4)
-                    + "\nin page table, retry access.");
+            case RAMACCESS: {
+                msgPane.setText("Access memory");
+                int[] xs = {453, 430, 430, 455};
+                int[] ys = {307, 307, 410 + currPPN * 16, 410 + currPPN * 16};
+                topLayer.addLine(xs, ys, 4);
+                state = 11;
+                break;
+            }
+            case RAMWRITE: {
+                msgPane.setText("Write to memory");
+                int[] xs = {453, 430, 430, 455};
+                int[] ys = {307, 307, 410 + currPPN * 16, 410 + currPPN * 16};
+                ramTable.setColor(currPPN, Color.pink);
+                topLayer.addLine(xs, ys, 4);
+                ramTable.getModel().setValueAt("M[" + pageTable.getModel().getValueAt(currVPN, 0) + "]", currPPN, 1);
+                output.setText("Output:");
+                state = 11;
+                break;
+            }
+            case PTUPDATE_NOTLB:
+                msgPane.setText("Update page table");
+                pageTable.setModify(true);
+                if (!pagefault) {
+                    pageTable.getModel().setValueAt(1, currVPN, 2);
+                } else {
+                    pageTable.getModel().setValueAt(0, currVPN, 2);
+                }
+                ramTable.setColor(currPPN, Color.cyan);
+                if (instru == 1) {
+                    pageTable.getModel().setValueAt(1, currVPN, 3);
+                    diskTable.setColor(currVPN, Color.orange);
+                } else {
+                    output.setText("Output: " + ramTable.getValueAt(currPPN, 1));
+                }
+                pageTable.setModify(false);
+                state = 0;
+                instruTable.setColor(instruCount, Color.green);
+                instruCount++;
+                break;
+            case PAGEFAULT: {
+                pagefault = true;
+                msgPane.setText("Page not found,\nraise page fault exception,\nOS is in charge");
+                topLayer.setLeftRect(false);
+                int[] xs = {35, 35, 70};
+                int[] ys = {53, 410 + currVPN * 16, 410 + currVPN * 16};
+                topLayer.addLine(xs, ys, 3);
+                ptClockTick = true;
+                if (currRamUse == ramCap) {
+                    state = 4;
+                    ptClockTick = false;
+                } else if (instru == 0) {
+                    state = 6;
+                } else if (instru == 1) {
+                    state = 7;
+                }
+                break;
+            }
+            case PTRCHECK:
+                String corrVPNRaw = (String) ramTable.getValueAt(clockHand_PT, 1);
+                int corrVPN = Integer.parseInt(corrVPNRaw.substring(2, corrVPNRaw.length() - 1), 16);
+                int ref = (Integer) pageTable.getValueAt(corrVPN, 2);
+                topLayer.setPTLine(corrVPN);
+                topLayer.setRAMLine(clockHand_PT);
+                if (ref == 0) {
+                    swapVPN = corrVPN;
+                    swapPPN = clockHand_PT;
+                    state = 12;
+                    msgPane.setText("PTE to replace found");
+                } else {
+                    pageTable.setModify(true);
+                    pageTable.setValueAt(0, corrVPN, 2);
+                    pageTable.setModify(false);
+                    state = 4;
+                    msgPane.setText("look for a new PTE to replace");
+                }
+                clockHand_PT++;
+                break;
+            case PTREPLACEC:
+                topLayer.setPTLine(swapVPN);
+                topLayer.setRAMLine(swapPPN);
+                msgPane.setText("Replace data from virtual page\n" + pageTable.getValueAt(swapVPN, 0));
+                if ((Integer) pageTable.getValueAt(swapVPN, 3) == 1) {
+                    state = 8;
+                } else {
+                    state = 5;
+                }
+                break;
+            case DISKWB: {
+                msgPane.setText("Write data " + ramTable.getValueAt(swapPPN, 1)
+                        + "\nto virtual page " + pageTable.getValueAt(swapVPN, 0));
+                int[] xs = {673, 700, 700, 752};
+                int[] ys = {410 + swapPPN * 16, 410 + swapPPN * 16, 372, 372};
+                topLayer.addLine(xs, ys, 4);
+                topLayer.setPTLine(swapVPN);
+                topLayer.setRAMLine(swapPPN);
+                state = 5;
+                break;
+            }
+            case PTEVICT:
+                msgPane.setText("Invalidate data " + ramTable.getValueAt(swapPPN, 1));
+                ramTable.setColor(swapPPN, Color.white);
+                diskTable.setColor(swapVPN, Color.white);
+                topLayer.setPTLine(swapVPN);
+                topLayer.setRAMLine(swapPPN);
+                pageTable.setModify(true);
+                pageTable.setValueAt(0, swapVPN, 1);
+                pageTable.setModify(false);
+                clockTable.setColor(swapPPN, Color.white);
+                currRamUse--;
+                if (instru == 0) {
+                    state = 6;
+                } else {
+                    state = 7;
+                }
+                break;
+            case RAMWRITEB: {
+                msgPane.setText("Write data from virtual page\n"
+                        + pageTable.getValueAt(swapVPN, 0)
+                        + "\ninto physical page\n"
+                        + ((String) ramTable.getValueAt(swapPPN, 0)).
+                                substring(0, ((String) ramTable.getValueAt(swapPPN, 0)).length() - 1));
+                ramTable.setColor(swapPPN, Color.pink);
+                int[] xs = {752, 700, 700, 673};
+                int[] ys = {372, 372, 410 + swapPPN * 16, 410 + swapPPN * 16};
+                topLayer.addLine(xs, ys, 4);
+                ramTable.getModel().setValueAt("M[" + pageTable.getModel().getValueAt(currVPN, 0) + "]", swapPPN, 1);
+                state = 7;
+                break;
+            }
+            case PTUPDATE_PF:
+                pageTable.setModify(true);
+                String ppAddr = (String) ramTable.getValueAt(swapPPN, 0);
+                pageTable.getModel().setValueAt(ppAddr.substring(0, ppAddr.length() - 1), currVPN, 4);
+                pageTable.getModel().setValueAt(1, currVPN, 1);
+                pageTable.getModel().setValueAt(0, currVPN, 2);
+                clockTable.setValueAt(pageTable.getValueAt(currVPN, 0), swapPPN, 0);
+                clockTable.setColor(swapPPN, Color.green);
+                if (instru == 1) {
+                    pageTable.getModel().setValueAt(1, currVPN, 3);
+                    ramTable.setColor(swapPPN, Color.orange);
+                    diskTable.setColor(currVPN, Color.orange);
+                } else {
+                    pageTable.getModel().setValueAt(0, currVPN, 3);
+                    ramTable.setColor(swapPPN, Color.cyan);
+                    diskTable.setColor(currVPN, Color.green);
+                }
+                pageTable.setModify(false);
+                state = 1;
+                currRamUse++;
+                swapPPN++;
+                if (ptClockTick) {
+                    clockHand_PT++;
+                    if (clockHand_PT >= ramCap) {
+                        clockHand_PT = 0;
+                    }
+                    topLayer.setRAMClockLine(clockHand_PT);
+                }
+                msgPane.setText("Update physical page number\nat virtual page " + pageTable.getValueAt(currVPN, 0)
+                        + "\nin page table, retry access.");
+                break;
+            default:
+                System.out.println("Something is wrong");
+                break;
         }
         System.out.println(state);
     }
@@ -350,8 +841,11 @@ public class VMPanel extends JLayeredPane {
         tlbTable.setMinimumSize(new Dimension(31 * 2 + 23 + 85 * 2, tlbSize * 16));
         tlbTable.setPreferredSize(new Dimension(31 * 2 + 23 + 85 * 2, tlbSize * 16));
         JScrollPane tlbPane = new JScrollPane(tlbTable);
-        tlbTable.setBackground(Color.GRAY);
+        if (!tlbEnabled) {
+            tlbTable.setBackground(Color.GRAY);
+        }
         tlbTable.setEnabled(false);
+        VMJTable.setTLBEnabled(true);
         tlbPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(),
                 "Translation Lookaside Buffer (Disabled)", TitledBorder.CENTER, TitledBorder.TOP));
 
@@ -425,17 +919,16 @@ public class VMPanel extends JLayeredPane {
         vmAddrLine.setEnabled(false);
         vmlPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(),
                 "Virtual Memory Address", TitledBorder.CENTER, TitledBorder.TOP));
-        
-        clockTable = new VMJTable (ramSegNum,1,2,ramSegNum);
+
+        clockTable = new VMJTable(ramSegNum, 1, 2, ramSegNum);
         clockTable.getTableHeader().setReorderingAllowed(false);
         clockTable.getColumnModel().getColumn(0).setPreferredWidth(85);
         clockTable.getColumnModel().getColumn(0).setHeaderValue("Virtual Page#");
-        clockTable.setMinimumSize(new Dimension(85, 16*ramSegNum));
+        clockTable.setMinimumSize(new Dimension(85, 16 * ramSegNum));
         JScrollPane clockPane = new JScrollPane(clockTable);
         clockTable.setEnabled(false);
         clockPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(),
                 "Clock Table", TitledBorder.CENTER, TitledBorder.TOP));
-        
 
 //        hhdPane = new ImagePanel("images/hardDisk.png");
 //        hhdPane.setPreferredSize(new Dimension(300, 200));
@@ -473,7 +966,7 @@ public class VMPanel extends JLayeredPane {
         add(topLayer, JLayeredPane.PALETTE_LAYER);
         add(output, JLayeredPane.DEFAULT_LAYER);
         add(msgPane, JLayeredPane.DEFAULT_LAYER);
-        add(clockPane, JLayeredPane.DEFAULT_LAYER); 
+        add(clockPane, JLayeredPane.DEFAULT_LAYER);
 
         Insets insets = getInsets();
 
@@ -500,7 +993,7 @@ public class VMPanel extends JLayeredPane {
         size = diskTable.getPreferredSize();
         diskPane.setBounds(750 + insets.left, 365 + insets.top,
                 size.width + 50, size.height + 45);
-        
+
         size = clockTable.getPreferredSize();
         clockPane.setBounds(1000 + insets.left, 365 + insets.top,
                 size.width + 50, size.height + 45);
@@ -543,8 +1036,12 @@ public class VMPanel extends JLayeredPane {
         }
         pageTable.setModify(false);
 
-        for (int i = 0; i < tlbSize; i++) {
-            tlbTable.getModel().setValueAt(0, i, 1);
+        if (tlbEnabled) {
+            tlbTable.setModify(true);
+            for (int i = 0; i < tlbSize; i++) {
+                tlbTable.getModel().setValueAt(0, i, 1);
+            }
+            tlbTable.setModify(false);
         }
 
         for (int i = 0; i < ramPageNum; i++) {
@@ -603,10 +1100,8 @@ public class VMPanel extends JLayeredPane {
     public void setDone(boolean done) {
         this.done = done;
     }
-    
-    
-    
-    private void test(){          
+
+    private void test() {
         instructions.add(new Pair<Integer, Integer>(0, 15));
         instructions.add(new Pair<Integer, Integer>(1, 15 + 16 * 3));
         instructions.add(new Pair<Integer, Integer>(1, 15 + 16 * 2));
@@ -704,5 +1199,5 @@ public class VMPanel extends JLayeredPane {
         fsm();
         fsm();
     }
-    
+
 }

@@ -145,6 +145,8 @@ public class VMSim_demo extends JFrame {
                 stepBtn.setEnabled(false);
                 openBtn.setEnabled(false);
                 running = true;
+                pauseBtn.setSelectedIcon(pause);
+                pauseBtn.setToolTipText("pause");
             } else {
                 msgBoard.setText("paused");
                 timer.stop();
@@ -152,9 +154,11 @@ public class VMSim_demo extends JFrame {
                 stepBtn.setEnabled(true);
                 openBtn.setEnabled(true);
                 running = false;
+                pauseBtn.setSelectedIcon(resume);
+                pauseBtn.setToolTipText("start");
             }
-            pauseBtn.setSelectedIcon(running ? pause : resume);
-            pauseBtn.setToolTipText(running ? "pause" : "start");
+            
+            
         }
     }
 
@@ -238,7 +242,7 @@ public class VMSim_demo extends JFrame {
             }
             lR = new Scanner(fR.nextLine());
             String[] a = lR.next().split(",");
-            if (a.length < 5) {
+            if (a.length < 7) {
                 if (vmSim == null) {
                     configuration = null;
                 }
@@ -252,6 +256,8 @@ public class VMSim_demo extends JFrame {
                 int pmCap = Integer.parseInt(a[2]);
                 int vmCap = Integer.parseInt(a[3]);
                 int offset = Integer.parseInt(a[4]);
+                boolean tlbEn = Boolean.parseBoolean(a[5]);
+                int tlbSize = Integer.parseInt(a[6]);
                 if (pmSize < pmCap || vmSize < vmCap) {
                     if (vmSim == null) {
                         configuration = null;
@@ -262,7 +268,7 @@ public class VMSim_demo extends JFrame {
                 if (pmSize > vmSize) {
                     JOptionPane.showMessageDialog(this, "Why would you need virtual memory?", "Small Virtual Memory Size", JOptionPane.QUESTION_MESSAGE);
                 }
-                vmTemp = new VMPanel(10, pmSize, vmSize, offset, pmCap, vmCap);
+                vmTemp = new VMPanel(tlbSize, pmSize, vmSize, offset, pmCap, vmCap, tlbEn);
             } catch (NumberFormatException e) {
                 Toolkit.getDefaultToolkit().beep();
                 JOptionPane.showMessageDialog(
@@ -303,11 +309,13 @@ public class VMSim_demo extends JFrame {
         } catch (FileNotFoundException ex) {
             Logger.getLogger(VMSim_demo.class.getName()).log(Level.SEVERE, null, ex);
         }
-        vmSim = vmTemp;
-        vmPane = new JScrollPane(vmSim);
+        
         if (vmSim != null) {
+            vmSim.removeAll();
             getContentPane().remove(vmPane);
         }
+        vmSim = vmTemp;
+        vmPane = new JScrollPane(vmSim);
         vmSim.setInstructions(instructions);
         getContentPane().add(vmPane, "Center");
         setVisible(true);
@@ -348,16 +356,18 @@ public class VMSim_demo extends JFrame {
         rightPane.add(instruPane);
         rightPane.add(inputPane);
         getContentPane().add(rightPane, "East");
+        setVisible(true);
 //        instruSize = instructions.size();
 //        System.out.println(p.getChanVer()[0][0].getID());
         addBtn.setEnabled(true);
+        vmSim.setDone(false);
     }
 
     private static void createAndShowGUI() {
         VMSim_demo demo = new VMSim_demo();
         JFrame f = demo;
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        f.setSize(1030, 1000);
+        f.setSize(1330, 1000);
         f.setMinimumSize(new Dimension(1150, 500));
         f.setVisible(true);
     }

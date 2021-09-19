@@ -20,10 +20,10 @@ public class VMJTable extends JTable {
     private final int PAGETABLE = 0;
     private final int TLB = 1;
     private final int MEMTABLE = 2;
-    private int mode;
+    public int mode;
     private int size;
     private boolean modify = true;
-    private static boolean TLBEnabled;
+    private static boolean TLBEnabled = true;
     private int accessibleSpace;
     private ArrayList<Color> colorTable = new ArrayList<Color>();
 
@@ -50,7 +50,7 @@ public class VMJTable extends JTable {
         Component comp = super.prepareRenderer(renderer, row, col);
         if (!modify) {
             if (mode == PAGETABLE) {
-                if (getModel().getValueAt(row, 4) == null || getModel().getValueAt(row, 1).equals(0)) {
+                if (getModel().getValueAt(row, 1).equals(0)) {
                     comp.setBackground(Color.red);
                 } else if (getModel().getValueAt(row, 3).equals(1)) {
                     comp.setBackground(Color.orange);
@@ -59,17 +59,19 @@ public class VMJTable extends JTable {
                 } else {
                     comp.setBackground(new Color(0, 204, 0));
                 }
-            } else if (mode == TLB && TLBEnabled) {
-                if (getModel().getValueAt(row, 0).equals(0)) {
+            }
+            else if (mode == TLB) {
+                if (getModel().getValueAt(row, 1).equals(0)) {
                     comp.setBackground(Color.red);
-                } else if (getModel().getValueAt(row, 1).equals(1)) {
+                } else if (getModel().getValueAt(row, 3).equals(1)) {
+                    comp.setBackground(Color.orange);
+                } else if (getModel().getValueAt(row, 2).equals(0)) {
                     comp.setBackground(Color.yellow);
-                } else if (getModel().getValueAt(row, 4) == null) {
-                    comp.setBackground(Color.white);
                 } else {
-                    comp.setBackground(Color.green);
+                    comp.setBackground(new Color(0, 204, 0));
                 }
             }
+            
         }
         if (mode == MEMTABLE) {
             if (colorTable.get(row) != null) {
@@ -99,4 +101,14 @@ public class VMJTable extends JTable {
     public void addLine() {
         colorTable.add(colorTable.size(), Color.white);
     }
+
+    public static boolean isTLBEnabled() {
+        return TLBEnabled;
+    }
+
+    public static void setTLBEnabled(boolean TLBEnabled) {
+        VMJTable.TLBEnabled = TLBEnabled;
+    }
+    
+    
 }
