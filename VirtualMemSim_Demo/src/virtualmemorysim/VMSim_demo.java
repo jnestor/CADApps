@@ -61,8 +61,10 @@ public class VMSim_demo extends JFrame {
     private final JLabel title = new JLabel("Virtual Memory Simulation", SwingConstants.CENTER);
     private final ImageIcon pause = new ImageIcon(getClass().getResource("images/pause.gif"));
     private final ImageIcon resume = new ImageIcon(getClass().getResource("images/start.gif"));
+    private final ImageIcon restart = new ImageIcon(getClass().getResource("images/restart.png"));
 //    private final JToggleButton clearBtn = new JToggleButton(new ImageIcon(getClass().getResource("images/clear.png")));
     private final JToggleButton pauseBtn = new JToggleButton(resume);
+    private final JToggleButton restartBtn = new JToggleButton(restart);
 //    private final JToggleButton stopBtn = new JToggleButton(new ImageIcon(getClass().getResource("images/stop.gif")));
     private final JToggleButton stepBtn = new JToggleButton(new ImageIcon(getClass().getResource("images/step.gif")));
     private final JCheckBox tlbBox = new JCheckBox("TLB");
@@ -88,6 +90,7 @@ public class VMSim_demo extends JFrame {
                 timer.stop();
             }
             vmSim.fsm();
+            running = true;
             vmSim.repaint();
             instruPane.repaint();
         }
@@ -105,10 +108,12 @@ public class VMSim_demo extends JFrame {
         stepBtn.addActionListener(this::stepAction);
         speedSlider.addChangeListener(this::speedChanged);
         addBtn.addActionListener(this::addAction);
+        restartBtn.addActionListener(this::restartAction);
         btnPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         msgBoard.setPreferredSize(new Dimension(290, 25));
         pauseBtn.setPreferredSize(new Dimension(25, 25));
         stepBtn.setPreferredSize(new Dimension(25, 25));
+        restartBtn.setPreferredSize(new Dimension(25, 25));
         speedSlider.setPreferredSize(new Dimension(160, 25));
         speedSlider.setToolTipText("Change the speed of the expansion");
         pauseBtn.setToolTipText("Pause");
@@ -117,13 +122,16 @@ public class VMSim_demo extends JFrame {
         btnPanel.add(openBtn);
         btnPanel.add(pauseBtn);
         btnPanel.add(stepBtn);
+        btnPanel.add(restartBtn);
         btnPanel.add(speedSlider);
+
         stepBtn.setEnabled(false);
         pauseBtn.setEnabled(false);
         pauseBtn.setToolTipText("Start");
         pauseBtn.setSelectedIcon(resume);
         speedSlider.setEnabled(false);
         addBtn.setEnabled(false);
+        restartBtn.setEnabled(false);
         getContentPane().add(btnPanel, "South");
     }
 
@@ -157,8 +165,13 @@ public class VMSim_demo extends JFrame {
                 pauseBtn.setSelectedIcon(resume);
                 pauseBtn.setToolTipText("start");
             }
-            
-            
+
+        }
+    }
+
+    public void restartAction(ActionEvent e) {
+        if (configuration != null) {
+            vmSim.recoverState();
         }
     }
 
@@ -174,12 +187,12 @@ public class VMSim_demo extends JFrame {
     }
 
     private void openAction(ActionEvent evt) {
-        if (configuration != null) {
+//        if (configuration != null) {
 //            timer.stop();
 //            router.restartReset();
 //            nets.clear();
-            System.out.println("prereset");
-        }
+//            System.out.println("prereset");
+//        }
         int returnVal = fc.showOpenDialog(this);
 
         if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -204,25 +217,41 @@ public class VMSim_demo extends JFrame {
             JOptionPane.showMessageDialog(this, "Null Input", "Invalid Input", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        int instru;
+        String instruString = (String) inputTable.getValueAt(0, 0);
         int addr;
         try {
-            instru = Integer.parseInt((String) inputTable.getValueAt(0, 0), 16);
+//            instru = Integer.parseInt((String) inputTable.getValueAt(0, 0), 16);
             addr = Integer.parseInt((String) inputTable.getValueAt(0, 1), 16);
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this, "Non-hexadecimal input", "Invalid Input", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        if (instru > 1 || instru < 0 || addr < 0) {
-            JOptionPane.showMessageDialog(this, "Negative input", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+        if (!(instruString.equals("w") || instruString.equals("r")) || addr < 0) {
+            JOptionPane.showMessageDialog(this, "Invalid Instruction or address", "Invalid Input",
+                    JOptionPane.ERROR_MESSAGE);
             return;
         }
         vmSim.setDone(false);
         instruTable.addLine();
+        String modiAddr = (String) inputTable.getValueAt(0, 1);
+        String modiBit = modiAddr;
+        String modiVPN;
+        int modiVPNDec = 0;
+        if (modiAddr.length() > 1) {
+            modiBit = modiAddr.substring(modiAddr.length() - 1);
+            modiVPN = modiAddr.substring(0, modiAddr.length() - 1);
+            modiVPNDec = Integer.parseInt(modiVPN, 16);
+        }
+        int instru = -1;
+        if (instruString.equals("r")) {
+            instru = 0;
+        } else if (instruString.equals("w")) {
+            instru = 1;
+        }
         ((DefaultTableModel) instruTable.getModel()).addRow(
-                new Object[]{inputTable.getValueAt(0, 0), inputTable.getValueAt(0, 1)});
+                new Object[]{instruString, String.format("%0" + vmSim.getDiskNumLength() + "X", modiVPNDec) + modiBit});
         vmSim.getInstructions().add(new Pair<Integer, Integer>(instru, addr));
-        System.out.println(vmSim.getInstructions().size());
+//        System.out.println(vmSim.getInstructions().size());
     }
 
     private void readConfig() {
@@ -266,9 +295,27 @@ public class VMSim_demo extends JFrame {
                     return;
                 }
                 if (pmSize > vmSize) {
-                    JOptionPane.showMessageDialog(this, "Why would you need virtual memory?", "Small Virtual Memory Size", JOptionPane.QUESTION_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Why would you need virtual memory in this kind of situation?",
+                            "Small Virtual Memory Size", JOptionPane.QUESTION_MESSAGE);
+                }
+                if (!((int) (Math.ceil((Math.log(offset) / Math.log(2))))
+                        == (int) (Math.floor(((Math.log(offset) / Math.log(2))))))) {
+                    Toolkit.getDefaultToolkit().beep();
+                    JOptionPane.showMessageDialog(
+                            this, "offset must be to the power of two", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+                    if (vmSim == null) {
+                        configuration = null;
+                    }
+                    return;
+                }
+                if (!((int) (Math.ceil((Math.log(offset) / Math.log(16))))
+                        == (int) (Math.floor(((Math.log(offset) / Math.log(16))))))) {
+                    Toolkit.getDefaultToolkit().beep();
+                    JOptionPane.showMessageDialog(this, "A offset to the power of 16 is recommended",
+                            "Inappropriate offset size", JOptionPane.WARNING_MESSAGE);
                 }
                 vmTemp = new VMPanel(tlbSize, pmSize, vmSize, offset, pmCap, vmCap, tlbEn);
+
             } catch (NumberFormatException e) {
                 Toolkit.getDefaultToolkit().beep();
                 JOptionPane.showMessageDialog(
@@ -285,7 +332,15 @@ public class VMSim_demo extends JFrame {
                         lR = new Scanner(fR.nextLine());
                         a = lR.next().split(",");
                         ArrayList<String> netLocs = new ArrayList<String>(Arrays.asList(a));
-                        int instru = Integer.parseInt(a[0]);
+                        int instru = -1;
+                        if (a[0].equals("r")) {
+                            instru = 0;
+                        } else if (a[0].equals("w")) {
+                            instru = 1;
+                        }
+                        if (instru == -1) {
+                            throw new NumberFormatException();
+                        }
                         int addr = Integer.parseInt(a[1], 16);
                         Pair<Integer, Integer> pair = new Pair<Integer, Integer>(instru, addr);
                         vpnList.add(a[1]);
@@ -309,7 +364,7 @@ public class VMSim_demo extends JFrame {
         } catch (FileNotFoundException ex) {
             Logger.getLogger(VMSim_demo.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         if (vmSim != null) {
             vmSim.removeAll();
             getContentPane().remove(vmPane);
@@ -323,6 +378,7 @@ public class VMSim_demo extends JFrame {
         speedSlider.setEnabled(true);
         pauseBtn.setEnabled(true);
         stepBtn.setEnabled(true);
+        restartBtn.setEnabled(true);
 
         if (instruTable != null) {
             getContentPane().remove(rightPane);
@@ -346,8 +402,17 @@ public class VMSim_demo extends JFrame {
         instruPane = new JScrollPane(instruTable);
         instruPane.setPreferredSize(new Dimension(31 + 95, vmPane.getHeight() - inputPane.getHeight()));
         for (int i = 0; i < instructions.size(); i++) {
-            instruTable.setValueAt(instructions.get(i).getK(), i, 0);
-            instruTable.setValueAt(vpnList.get(i), i, 1);
+            String modiAddr = vpnList.get(i);
+            String modiBit = modiAddr;
+            String modiVPN;
+            int modiVPNDec = 0;
+            if (modiAddr.length() > 1) {
+                modiBit = modiAddr.substring(modiAddr.length() - 1);
+                modiVPN = modiAddr.substring(0, modiAddr.length() - 1);
+                modiVPNDec = Integer.parseInt(modiVPN, 16);
+            }
+            instruTable.setValueAt((instructions.get(i).getK() == 0) ? "r" : "w", i, 0);
+            instruTable.setValueAt(String.format("%0" + vmSim.getDiskNumLength() + "X", modiVPNDec) + modiBit, i, 1);
         }
 
         rightPane = new JPanel();
