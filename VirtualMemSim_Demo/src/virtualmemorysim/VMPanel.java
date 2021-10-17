@@ -615,6 +615,9 @@ public class VMPanel extends JLayeredPane {
         topLayer.setPTLine(-1);
         topLayer.setRAMLine(-1);
         topLayer.setTLBLine(-1);
+        int[] xsOffset = {186, 680, 680, 663};
+        int[] ysOffset = {45, 45, 290, 290};
+        topLayer.addLine(xsOffset, ysOffset, 4);
         pmAddrLine.setBackground(Color.LIGHT_GRAY);
         if (clockHand_PT >= ramCap) {
             clockHand_PT = 0;
@@ -653,7 +656,8 @@ public class VMPanel extends JLayeredPane {
                     state = PTECHECK;
                     vmAddrLine.getModel().setValueAt(String.format("%X", currVPN, 16), 0, 0);
                     vmAddrLine.getModel().setValueAt(Integer.toBinaryString(currVPN), 1, 0);
-
+                    pmAddrLine.getModel().setValueAt(String.format("%X",
+                            Integer.parseInt((String) vmAddrLine.getModel().getValueAt(0, 1), 16)), 0, 1);
                 } else {
                     msgPane.setText("No more instruction\n");
                     done = true;
