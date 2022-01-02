@@ -1257,6 +1257,12 @@ public class VMPanel extends JLayeredPane {
         return diskNumLength;
     }
 
+    public int getInstruCount() {
+        return instruCount;
+    }
+
+    
+    
     private void test() {
         instructions.add(new Pair<Integer, Integer>(0, 15));
         instructions.add(new Pair<Integer, Integer>(1, 15 + 16 * 3));

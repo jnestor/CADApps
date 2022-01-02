@@ -255,6 +255,8 @@ public class VMSim_demo extends JFrame {
     }
 
     private void readConfig() {
+        int excecution = 0;
+        boolean stop = false;
         LinkedList<Pair<Integer, Integer>> instructions = new LinkedList<Pair<Integer, Integer>>();
         VMPanel vmTemp = null;
         ArrayList<String> vpnList = new ArrayList<String>();
@@ -345,6 +347,11 @@ public class VMSim_demo extends JFrame {
                         Pair<Integer, Integer> pair = new Pair<Integer, Integer>(instru, addr);
                         vpnList.add(a[1]);
                         instructions.add(pair);
+                        if (a.length == 2 && !stop) {
+                            excecution++;
+                        } else {
+                            stop = true;
+                        }
                     } catch (NumberFormatException | NullPointerException e) {
                         Toolkit.getDefaultToolkit().beep();
                         JOptionPane.showMessageDialog(
@@ -354,7 +361,6 @@ public class VMSim_demo extends JFrame {
                         }
                         return;
                     }
-
                 }
             } else {
                 JOptionPane.showMessageDialog(
@@ -426,6 +432,11 @@ public class VMSim_demo extends JFrame {
 //        System.out.println(p.getChanVer()[0][0].getID());
         addBtn.setEnabled(true);
         vmSim.setDone(false);
+        if (stop) {
+            while (vmSim.getInstruCount() < excecution) {
+                vmSim.fsm();
+            }
+        }
     }
 
     private static void createAndShowGUI() {
