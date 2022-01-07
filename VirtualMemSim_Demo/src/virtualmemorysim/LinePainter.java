@@ -40,10 +40,18 @@ public class LinePainter extends JPanel {
                     int arrowX = xLineDots.get(i)[xLineDots.get(i).length - 1] + 1;
                     int arrowY = yLineDots.get(i)[yLineDots.get(i).length - 1];
                     g.fillPolygon(new int[]{arrowX, arrowX - 10, arrowX - 10}, new int[]{arrowY, arrowY - 5, arrowY + 5}, 3);
-                } else {
+                } else if(xLineDots.get(i)[xLineDots.get(i).length - 2] > xLineDots.get(i)[xLineDots.get(i).length - 1]) {
                     int arrowX = xLineDots.get(i)[xLineDots.get(i).length - 1] - 1;
                     int arrowY = yLineDots.get(i)[xLineDots.get(i).length - 1];
                     g.fillPolygon(new int[]{arrowX, arrowX + 10, arrowX + 10}, new int[]{arrowY, arrowY - 5, arrowY + 5}, 3);
+                } else if(yLineDots.get(i)[xLineDots.get(i).length - 2] < yLineDots.get(i)[xLineDots.get(i).length - 1]) {
+                    int arrowX = xLineDots.get(i)[xLineDots.get(i).length - 1] ;
+                    int arrowY = yLineDots.get(i)[xLineDots.get(i).length - 1]+1;
+                    g.fillPolygon(new int[]{arrowX, arrowX + 5, arrowX - 5}, new int[]{arrowY, arrowY - 10, arrowY - 10}, 3);
+                }else if(yLineDots.get(i)[xLineDots.get(i).length - 2] > yLineDots.get(i)[xLineDots.get(i).length - 1]) {
+                    int arrowX = xLineDots.get(i)[xLineDots.get(i).length - 1];
+                    int arrowY = yLineDots.get(i)[xLineDots.get(i).length - 1]-1;
+                    g.fillPolygon(new int[]{arrowX, arrowX + 5, arrowX - 5}, new int[]{arrowY, arrowY + 10, arrowY + 10}, 3);
                 }
             }
         }

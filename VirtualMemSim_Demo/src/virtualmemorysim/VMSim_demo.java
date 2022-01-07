@@ -13,6 +13,7 @@ import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -23,6 +24,7 @@ import java.util.Scanner;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -39,6 +41,7 @@ import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.table.DefaultTableModel;
 
@@ -51,7 +54,7 @@ public class VMSim_demo extends JFrame {
     JScrollPane vmPane;
     JPanel bottonPane;
     JScrollPane instruPane;
-    JPanel rightPane;
+    JPanel leftPane;
     private final JButton openBtn = new JButton("Open");
     private final JButton addBtn = new JButton("Add");
 //    private int instruSize;
@@ -59,6 +62,7 @@ public class VMSim_demo extends JFrame {
     private VMJTable instruTable;
     private final JLabel msgBoard = new JLabel();
     private final JLabel title = new JLabel("Virtual Memory Simulation", SwingConstants.CENTER);
+//    private final JLabel mTitle = new JLabel("Memory Reference", SwingConstants.CENTER);
     private final ImageIcon pause = new ImageIcon(getClass().getResource("images/pause.gif"));
     private final ImageIcon resume = new ImageIcon(getClass().getResource("images/start.gif"));
     private final ImageIcon restart = new ImageIcon(getClass().getResource("images/restart.png"));
@@ -67,7 +71,8 @@ public class VMSim_demo extends JFrame {
     private final JToggleButton restartBtn = new JToggleButton(restart);
 //    private final JToggleButton stopBtn = new JToggleButton(new ImageIcon(getClass().getResource("images/stop.gif")));
     private final JToggleButton stepBtn = new JToggleButton(new ImageIcon(getClass().getResource("images/step.gif")));
-    private final JCheckBox tlbBox = new JCheckBox("TLB");
+//    private final JCheckBox tlbBox = new JCheckBox("TLB");
+    private final JCheckBox clockTableBox = new JCheckBox("clockTable");
     VMPanel vmSim;
     private int delay = 400;
     private JSlider speedSlider = new JSlider(10, 800, 400);
@@ -118,12 +123,15 @@ public class VMSim_demo extends JFrame {
         speedSlider.setToolTipText("Change the speed of the expansion");
         pauseBtn.setToolTipText("Pause");
         stepBtn.setToolTipText("Step");
+        clockTableBox.addItemListener(this::clockTableAction);
         btnPanel.add(msgBoard);
         btnPanel.add(openBtn);
         btnPanel.add(pauseBtn);
         btnPanel.add(stepBtn);
         btnPanel.add(restartBtn);
+        btnPanel.add(clockTableBox);
         btnPanel.add(speedSlider);
+        
 
         stepBtn.setEnabled(false);
         pauseBtn.setEnabled(false);
@@ -131,10 +139,15 @@ public class VMSim_demo extends JFrame {
         pauseBtn.setSelectedIcon(resume);
         speedSlider.setEnabled(false);
         addBtn.setEnabled(false);
+        clockTableBox.setEnabled(false);
         restartBtn.setEnabled(false);
         getContentPane().add(btnPanel, "South");
     }
 
+    private void clockTableAction(ItemEvent  evt){
+        vmSim.setCTVisible(evt.getStateChange() != 1);
+    }
+    
     private void stepAction(ActionEvent evt) {
         if (configuration != null) {
             vmSim.fsm();
@@ -385,9 +398,10 @@ public class VMSim_demo extends JFrame {
         pauseBtn.setEnabled(true);
         stepBtn.setEnabled(true);
         restartBtn.setEnabled(true);
-
+        clockTableBox.setEnabled(true);
+        clockTableBox.setSelected(true);
         if (instruTable != null) {
-            getContentPane().remove(rightPane);
+            getContentPane().remove(leftPane);
         }
 
         inputTable.getColumnModel().getColumn(0).setHeaderValue("r/w");
@@ -406,7 +420,7 @@ public class VMSim_demo extends JFrame {
 
         instruTable = vmSim.getInstruTable();
         instruPane = new JScrollPane(instruTable);
-        instruPane.setPreferredSize(new Dimension(31 + 95, vmPane.getHeight() - inputPane.getHeight()));
+        instruPane.setPreferredSize(new Dimension(31 + 115, vmPane.getHeight() - inputPane.getHeight()));
         for (int i = 0; i < instructions.size(); i++) {
             String modiAddr = vpnList.get(i);
             String modiBit = modiAddr;
@@ -421,12 +435,14 @@ public class VMSim_demo extends JFrame {
             instruTable.setValueAt(String.format("%0" + vmSim.getDiskNumLength() + "X", modiVPNDec) + modiBit, i, 1);
         }
 
-        rightPane = new JPanel();
-        rightPane.setLayout(new BoxLayout(rightPane, BoxLayout.Y_AXIS));
-        rightPane.setPreferredSize(new Dimension(31 + 95, vmPane.getHeight()));
-        rightPane.add(instruPane);
-        rightPane.add(inputPane);
-        getContentPane().add(rightPane, "East");
+        leftPane = new JPanel();
+        leftPane.setLayout(new BoxLayout(leftPane, BoxLayout.Y_AXIS));
+        leftPane.setPreferredSize(new Dimension(31 + 115, vmPane.getHeight()));
+        leftPane.add(instruPane);
+        leftPane.add(inputPane);
+        leftPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(),
+                "Memory Reference", TitledBorder.CENTER, TitledBorder.TOP));
+        getContentPane().add(leftPane, "West");
         setVisible(true);
 //        instruSize = instructions.size();
 //        System.out.println(p.getChanVer()[0][0].getID());
