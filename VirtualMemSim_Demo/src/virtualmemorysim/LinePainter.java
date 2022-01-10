@@ -29,6 +29,8 @@ public class LinePainter extends JPanel {
     int tlbLine = -1;
     int clockLine_PT = 0;
     int clockLine_TLB = -1;
+    int tableY;
+    int tlbY;
 
     @Override
     public void paintComponent(Graphics g) {
@@ -40,17 +42,17 @@ public class LinePainter extends JPanel {
                     int arrowX = xLineDots.get(i)[xLineDots.get(i).length - 1] + 1;
                     int arrowY = yLineDots.get(i)[yLineDots.get(i).length - 1];
                     g.fillPolygon(new int[]{arrowX, arrowX - 10, arrowX - 10}, new int[]{arrowY, arrowY - 5, arrowY + 5}, 3);
-                } else if(xLineDots.get(i)[xLineDots.get(i).length - 2] > xLineDots.get(i)[xLineDots.get(i).length - 1]) {
+                } else if (xLineDots.get(i)[xLineDots.get(i).length - 2] > xLineDots.get(i)[xLineDots.get(i).length - 1]) {
                     int arrowX = xLineDots.get(i)[xLineDots.get(i).length - 1] - 1;
                     int arrowY = yLineDots.get(i)[xLineDots.get(i).length - 1];
                     g.fillPolygon(new int[]{arrowX, arrowX + 10, arrowX + 10}, new int[]{arrowY, arrowY - 5, arrowY + 5}, 3);
-                } else if(yLineDots.get(i)[xLineDots.get(i).length - 2] < yLineDots.get(i)[xLineDots.get(i).length - 1]) {
-                    int arrowX = xLineDots.get(i)[xLineDots.get(i).length - 1] ;
-                    int arrowY = yLineDots.get(i)[xLineDots.get(i).length - 1]+1;
-                    g.fillPolygon(new int[]{arrowX, arrowX + 5, arrowX - 5}, new int[]{arrowY, arrowY - 10, arrowY - 10}, 3);
-                }else if(yLineDots.get(i)[xLineDots.get(i).length - 2] > yLineDots.get(i)[xLineDots.get(i).length - 1]) {
+                } else if (yLineDots.get(i)[xLineDots.get(i).length - 2] < yLineDots.get(i)[xLineDots.get(i).length - 1]) {
                     int arrowX = xLineDots.get(i)[xLineDots.get(i).length - 1];
-                    int arrowY = yLineDots.get(i)[xLineDots.get(i).length - 1]-1;
+                    int arrowY = yLineDots.get(i)[xLineDots.get(i).length - 1] + 1;
+                    g.fillPolygon(new int[]{arrowX, arrowX + 5, arrowX - 5}, new int[]{arrowY, arrowY - 10, arrowY - 10}, 3);
+                } else if (yLineDots.get(i)[xLineDots.get(i).length - 2] > yLineDots.get(i)[xLineDots.get(i).length - 1]) {
+                    int arrowX = xLineDots.get(i)[xLineDots.get(i).length - 1];
+                    int arrowY = yLineDots.get(i)[xLineDots.get(i).length - 1] - 1;
                     g.fillPolygon(new int[]{arrowX, arrowX + 5, arrowX - 5}, new int[]{arrowY, arrowY + 10, arrowY + 10}, 3);
                 }
             }
@@ -59,13 +61,13 @@ public class LinePainter extends JPanel {
         Graphics2D g2 = (Graphics2D) g;
         g2.setColor(Color.red);
         int arrowX = 1105;
-        int arrowY = 410 + clockLine_PT * 16;
+        int arrowY = tableY + 45-37 + clockLine_PT * 16;
         g.fillPolygon(new int[]{arrowX, arrowX + 10, arrowX + 10}, new int[]{arrowY, arrowY - 5, arrowY + 5}, 3);
         g2.setStroke(new BasicStroke(3));
         g2.drawLine(arrowX + 5, arrowY, arrowX + 20, arrowY);
         if (clockLine_TLB != -1) {
             arrowX = 368;
-            arrowY = 136 + clockLine_TLB * 16;
+            arrowY = tlbY + 45 + clockLine_TLB * 16;
             g.fillPolygon(new int[]{arrowX, arrowX + 10, arrowX + 10}, new int[]{arrowY, arrowY - 5, arrowY + 5}, 3);
             g2.drawLine(arrowX + 5, arrowY, arrowX + 20, arrowY);
         }
@@ -73,14 +75,17 @@ public class LinePainter extends JPanel {
         g2.setStroke(new BasicStroke(5));
         g2.setColor(Color.CYAN);
         if (ptLine != -1) {
-            g2.drawRect(69, 401 + ptLine * 16, 295, 17);
+            g2.drawRect(69, tableY + ptLine * 16, 295, 17);
+//            System.out.println("ptLine" + ptLine);
         }
         if (tlbLine != -1) {
-            g2.drawRect(69, 126 + tlbLine * 16, 295, 17);
+            g2.drawRect(69, tlbY + 37 + tlbLine * 16, 295, 17);
+//            System.out.println("tlbLine" + tlbLine);
         }
         g2.setColor(Color.red);
         if (ramLine != -1) {
-            g2.drawRect(453, 401 + ramLine * 16, 220, 17);
+            g2.drawRect(453, tableY + ramLine * 16, 220, 17);
+//            System.out.println("ramLine" + ramLine);
         }
         if (leftRect) {
             g2.drawRoundRect(745, 10, 80, 80, 10, 10);
@@ -124,4 +129,13 @@ public class LinePainter extends JPanel {
     public void setTLBClockLine(int line) {
         clockLine_TLB = line;
     }
+
+    public void setTableY(int tableY) {
+        this.tableY = tableY;
+    }
+
+    public void setTlbY(int tlbY) {
+        this.tlbY = tlbY;
+    }
+
 }

@@ -309,9 +309,21 @@ public class VMSim_demo extends JFrame {
                     JOptionPane.showMessageDialog(this, "Segment size is larger than memory size", "Invalid Configuration", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-                if (pmSize > vmSize) {
+                if (pmSize > vmSize||pmCap > vmCap) {
                     JOptionPane.showMessageDialog(this, "Why would you need virtual memory in this kind of situation?",
                             "Small Virtual Memory Size", JOptionPane.QUESTION_MESSAGE);
+                    if (vmSim == null) {
+                        configuration = null;
+                    }
+                    return;
+                }
+                if(tlbSize>pmCap||tlbSize>pmSize){
+                    JOptionPane.showMessageDialog(this, "Why would you need a TLB larger than your RAM?",
+                            "Small Physical Memory Size", JOptionPane.QUESTION_MESSAGE);
+                    if (vmSim == null) {
+                        configuration = null;
+                    }
+                    return;
                 }
                 if (!((int) (Math.ceil((Math.log(offset) / Math.log(2))))
                         == (int) (Math.floor(((Math.log(offset) / Math.log(2))))))) {
@@ -323,11 +335,10 @@ public class VMSim_demo extends JFrame {
                     }
                     return;
                 }
-                if (!((int) (Math.ceil((Math.log(offset) / Math.log(16))))
-                        == (int) (Math.floor(((Math.log(offset) / Math.log(16))))))) {
+                if (offset<16) {
                     Toolkit.getDefaultToolkit().beep();
-                    JOptionPane.showMessageDialog(this, "A offset to the power of 16 is recommended",
-                            "Inappropriate offset size", JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Offset size should be greater than 1 byte",
+                            "Inappropriate offset size", JOptionPane.INFORMATION_MESSAGE);
                 }
                 vmTemp = new VMPanel(tlbSize, pmSize, vmSize, offset, pmCap, vmCap, tlbEn);
 
@@ -340,6 +351,7 @@ public class VMSim_demo extends JFrame {
                 }
                 return;
             }
+            
             lR = new Scanner(fR.nextLine());
             if (fR.hasNext()) {
                 while (fR.hasNext()) {
