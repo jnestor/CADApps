@@ -1,13 +1,14 @@
 ram size  pages,virtual address size in pages,# of page in ram seg,# of page in disk seg,page size in bytes,tlb,tlb Size
-17,40,16,33,16,FALSE,5
+8,16,8,16,4096,TRUE,5
 instru,addr (in hex),SkipTil,,,,
-r,E,,,,,
-w,3F,,,,,
-w,2F,,,,,
-r,1F,,,,,
-r,F,,,,,
+r,000E,,,,,
+r,1004,,,,,
+w,3008,,,,,
+w,102C,,,,,
+r,2020,,,,,
+r,1008,,,,,
 r,3F,,,,,
-w,50,HERE,,,,
+w,50,,,,,
 r,10,,,,,
 w,40,,,,,
 r,20,,,,,
