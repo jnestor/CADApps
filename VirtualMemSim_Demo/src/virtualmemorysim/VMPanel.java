@@ -1097,7 +1097,7 @@ public class VMPanel extends JLayeredPane {
         osPane.setPreferredSize(new Dimension(80, 80));
 
         colorPane = new ImagePanel("images/colorGuide.png");
-        colorPane.setPreferredSize(new Dimension(160, 120));
+        colorPane.setPreferredSize(new Dimension(170, 120));
 
         topLayer = new LinePainter();
         topLayer.setPreferredSize(new Dimension(1150, 365 + (diskPageNum + 4) * 16));
