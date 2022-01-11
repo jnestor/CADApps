@@ -1085,13 +1085,15 @@ public class VMPanel extends JLayeredPane {
         clockTable.getColumnModel().getColumn(0).setHeaderValue("Virtual Page#");
         clockTable.setMinimumSize(new Dimension(85, 16 * ramSegNum));
         JScrollPane clockPane = new JScrollPane(clockTable);
+        clockPane.setPreferredSize(new Dimension(85, 16 * ramSegNum+28));
         coverPane = new JPanel();
         coverPane.setPreferredSize(clockPane.getPreferredSize());
         coverPane.setBackground(this.getBackground());
 
         clockTable.setEnabled(true);
         clockPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(),
-                "Clock Table", TitledBorder.CENTER, TitledBorder.TOP));
+                "<html><center>Page Replacement"
+                + "<br> (Clock Table) </html>", TitledBorder.CENTER, TitledBorder.TOP));
 
 //        hhdPane = new ImagePanel("images/hardDisk.png");
 //        hhdPane.setPreferredSize(new Dimension(300, 200));
@@ -1104,7 +1106,10 @@ public class VMPanel extends JLayeredPane {
         osPane.setPreferredSize(new Dimension(80, 80));
 
         colorPane = new ImagePanel("images/colorGuide.png");
-        colorPane.setPreferredSize(new Dimension(170, 120));
+        colorPane.setPreferredSize(new Dimension(205, 120));
+        colorPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(),
+                "Page Table Legend", TitledBorder.CENTER, TitledBorder.TOP));
+
 
         topLayer = new LinePainter();
         topLayer.setPreferredSize(new Dimension(1150, 365 + (diskPageNum + 4) * 16));
@@ -1185,7 +1190,7 @@ public class VMPanel extends JLayeredPane {
 
         size = clockTable.getPreferredSize();
         clockPane.setBounds(1000 + insets.left, tableY + insets.top,
-                size.width + 50, size.height + 45);
+                size.width + 50, size.height + 62);
         coverPane.setBounds(1000 + insets.left, tableY + insets.top,
                 size.width + 50, size.height + 45);
         coverPane.setVisible(false);
@@ -1199,7 +1204,7 @@ public class VMPanel extends JLayeredPane {
                 size.width + 30, size.height + 30);
 
         size = colorPane.getPreferredSize();
-        colorPane.setBounds(45 + insets.left, tableY + insets.top + pagePane.getHeight() + 10,
+        colorPane.setBounds(65 + insets.left, tableY + insets.top + pagePane.getHeight() + 10,
                 size.width + 30, size.height + 30);
 
         size = topLayer.getPreferredSize();
@@ -1248,9 +1253,9 @@ public class VMPanel extends JLayeredPane {
         );
         
         //These are for the images
-        osPane.setToolTipText("change from line 1210 of VMPanel.java");
-        hwPane.setToolTipText("change from line 1210 of VMPanel.java");
-        colorPane.setToolTipText("change from line 1210 of VMPanel.java");
+//        osPane.setToolTipText("change from line 1210 of VMPanel.java");
+//        hwPane.setToolTipText("change from line 1210 of VMPanel.java");
+//        colorPane.setToolTipText("change from line 1210 of VMPanel.java");
     }
 
     private void tableReset(int tlbSize, int ramPageNum, int diskPageNum, int pageSize) {

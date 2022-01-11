@@ -16,6 +16,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -108,6 +109,8 @@ public class VMSim_demo extends JFrame {
         getContentPane().add(title, "North");
         JPanel btnPanel = new JPanel();
         fc = new JFileChooser();
+        String currentPath = Paths.get(".").toAbsolutePath().normalize().toString();
+        fc.setCurrentDirectory(new File(currentPath));
         openBtn.addActionListener(this::openAction);
         pauseBtn.addActionListener(this::pauseAction);
         stepBtn.addActionListener(this::stepAction);
@@ -131,7 +134,6 @@ public class VMSim_demo extends JFrame {
         btnPanel.add(restartBtn);
         btnPanel.add(clockTableBox);
         btnPanel.add(speedSlider);
-        
 
         stepBtn.setEnabled(false);
         pauseBtn.setEnabled(false);
@@ -145,10 +147,10 @@ public class VMSim_demo extends JFrame {
         openBtn.setToolTipText("Open a configuration file for a new visualization");
     }
 
-    private void clockTableAction(ItemEvent  evt){
+    private void clockTableAction(ItemEvent evt) {
         vmSim.setCTVisible(evt.getStateChange() != 1);
     }
-    
+
     private void stepAction(ActionEvent evt) {
         if (configuration != null) {
             vmSim.fsm();
@@ -310,7 +312,7 @@ public class VMSim_demo extends JFrame {
                     JOptionPane.showMessageDialog(this, "Segment size is larger than memory size", "Invalid Configuration", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-                if (pmSize > vmSize||pmCap > vmCap) {
+                if (pmSize > vmSize || pmCap > vmCap) {
                     JOptionPane.showMessageDialog(this, "Why would you need virtual memory in this kind of situation?",
                             "Small Virtual Memory Size", JOptionPane.QUESTION_MESSAGE);
                     if (vmSim == null) {
@@ -318,7 +320,7 @@ public class VMSim_demo extends JFrame {
                     }
                     return;
                 }
-                if(tlbSize>pmCap||tlbSize>pmSize){
+                if (tlbSize > pmCap || tlbSize > pmSize) {
                     JOptionPane.showMessageDialog(this, "Why would you need a TLB larger than your RAM?",
                             "Small Physical Memory Size", JOptionPane.QUESTION_MESSAGE);
                     if (vmSim == null) {
@@ -336,7 +338,7 @@ public class VMSim_demo extends JFrame {
                     }
                     return;
                 }
-                if (offset<16) {
+                if (offset < 16) {
                     Toolkit.getDefaultToolkit().beep();
                     JOptionPane.showMessageDialog(this, "Offset size should be greater than 1 byte",
                             "Inappropriate offset size", JOptionPane.INFORMATION_MESSAGE);
@@ -352,7 +354,7 @@ public class VMSim_demo extends JFrame {
                 }
                 return;
             }
-            
+
             lR = new Scanner(fR.nextLine());
             if (fR.hasNext()) {
                 while (fR.hasNext()) {

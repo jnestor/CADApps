@@ -61,7 +61,7 @@ public class LinePainter extends JPanel {
         Graphics2D g2 = (Graphics2D) g;
         g2.setColor(Color.red);
         int arrowX = 1105;
-        int arrowY = tableY + 45-37 + clockLine_PT * 16;
+        int arrowY = tableY + 24 + clockLine_PT * 16;
         g.fillPolygon(new int[]{arrowX, arrowX + 10, arrowX + 10}, new int[]{arrowY, arrowY - 5, arrowY + 5}, 3);
         g2.setStroke(new BasicStroke(3));
         g2.drawLine(arrowX + 5, arrowY, arrowX + 20, arrowY);
