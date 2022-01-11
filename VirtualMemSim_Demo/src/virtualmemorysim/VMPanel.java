@@ -1206,13 +1206,39 @@ public class VMPanel extends JLayeredPane {
         setPreferredSize(new Dimension(1150, tableY + (diskPageNum + 4) * 16 + 20 + colorPane.getHeight()));
         
         //add tooltip
-        vmAddrLine.setToolTipText("change from line 1210 of VMPanel.java");
-        pmAddrLine.setToolTipText("change from line 1210 of VMPanel.java");
-        tlbTable.setToolTipText("change from line 1210 of VMPanel.java");
-        ramTable.setToolTipText("change from line 1210 of VMPanel.java");
-        pageTable.setToolTipText("change from line 1210 of VMPanel.java");
-        diskTable.setToolTipText("change from line 1210 of VMPanel.java");
-        clockTable.setToolTipText("change from line 1210 of VMPanel.java");
+        vmAddrLine.setToolTipText(
+                "<html>This field displays the current virtual address by"
+                + "<br>virtual page number and offset</html>"
+        );
+        pmAddrLine.setToolTipText(
+                "<html>This field displays the current physical address by"
+                + "<br>physical page number and offset</html>"
+        );
+        tlbTable.setToolTipText(
+                "<html>The <b>Translation Lookaside Buffer (TLB)</b> acts as a cache"
+                + "<br>for page table entries.  When a virtual page reference is found"
+                + "<br>in the TLB it eliminates the need to access the page table in physical memory.</html>"
+        );
+        ramTable.setToolTipText(
+                "This table displays the current contents of physical memory");
+        pageTable.setToolTipText(
+                "<html>The <b>Page Table<b> resides in physical memory and"
+                + "<br>maps Virtual Page numbers to Physical Page numbers</html>");
+        diskTable.setToolTipText("This table displays the virtual pages stored on disk");
+        clockTable.setToolTipText(
+                "<html>The clock table is used by the operating system"
+                + "<br>to select a page for replacement when a page fault occurs."
+                + "<br>It maintains a list of the physical pages currently in use."
+                + "<br>The red arrow indicates an index used to scan this table"
+                + "<br>which initially points to the next empty page."
+                + "<br>When all physical memory pages are in use, it scan>"
+                + "<br>through the list starting at the current index and wrapping"
+                + "<br>searching for the first page where <b>R=0</b> to identify"
+                + "<br>a victim page for replacment. while clearing the R bit"
+                + "<br>for each page that it skips over."
+                + "<br>This is known as the <i>Clock Algorithm<i></html>"
+        );
+        
         //These are for the images
         osPane.setToolTipText("change from line 1210 of VMPanel.java");
         hwPane.setToolTipText("change from line 1210 of VMPanel.java");
