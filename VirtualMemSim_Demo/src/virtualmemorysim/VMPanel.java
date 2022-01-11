@@ -245,7 +245,11 @@ public class VMPanel extends JLayeredPane {
                     vmAddrLine.getModel().setValueAt(Integer.toBinaryString(currVPN), 1, 0);
                     pmAddrLine.getModel().setValueAt((String) vmAddrLine.getModel().getValueAt(0, 1), 0, 1);
                 } else {
-                    msgPane.setText("No more instruction\n");
+                    msgPane.setText(
+                            "No more memory references\n"
+                            + "Use the ADD button to create more\n"
+                            + "or the OPEN button to load a new configuration"
+                    );
                     done = true;
                 }
                 break;
@@ -665,7 +669,11 @@ public class VMPanel extends JLayeredPane {
                     vmAddrLine.getModel().setValueAt(Integer.toBinaryString(currVPN), 1, 0);
                     pmAddrLine.getModel().setValueAt((String) vmAddrLine.getModel().getValueAt(0, 1), 0, 1);
                 } else {
-                    msgPane.setText("No more instruction\n");
+                    msgPane.setText(
+                            "No more memory references\n"
+                            + "Use the ADD button to create more\n"
+                            + "or the OPEN button to load a new configuration"
+                    );
                     done = true;
                 }
                 break;

@@ -142,7 +142,7 @@ public class VMSim_demo extends JFrame {
         clockTableBox.setEnabled(false);
         restartBtn.setEnabled(false);
         getContentPane().add(btnPanel, "South");
-        openBtn.setToolTipText("change from line 145 of VMSim_demo.java");
+        openBtn.setToolTipText("Open a configuration file for a new visualization");
     }
 
     private void clockTableAction(ItemEvent  evt){
@@ -456,6 +456,12 @@ public class VMSim_demo extends JFrame {
         leftPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(),
                 "Memory Reference", TitledBorder.CENTER, TitledBorder.TOP));
         getContentPane().add(leftPane, "West");
+        instruTable.setToolTipText(
+                "<html>This table contains a sequence of memory accesses"
+                + "<br>that were specified in the configuration file."
+                + "<br>You can create additional memory references using"
+                + "<br>the fields and <b>Add</b> button below.</html>"
+        );
         setVisible(true);
 //        instruSize = instructions.size();
 //        System.out.println(p.getChanVer()[0][0].getID());
