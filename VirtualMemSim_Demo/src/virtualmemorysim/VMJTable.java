@@ -110,5 +110,10 @@ public class VMJTable extends JTable {
         VMJTable.TLBEnabled = TLBEnabled;
     }
     
+    @Override
+    public boolean isCellEditable(int row, int column) {
+       //all cells false
+       return false;
+    }
     
 }

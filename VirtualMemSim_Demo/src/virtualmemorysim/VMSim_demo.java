@@ -142,6 +142,7 @@ public class VMSim_demo extends JFrame {
         clockTableBox.setEnabled(false);
         restartBtn.setEnabled(false);
         getContentPane().add(btnPanel, "South");
+        openBtn.setToolTipText("change from line 145 of VMSim_demo.java");
     }
 
     private void clockTableAction(ItemEvent  evt){

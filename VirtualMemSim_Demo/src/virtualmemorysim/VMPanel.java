@@ -990,7 +990,7 @@ public class VMPanel extends JLayeredPane {
         if (!tlbEnabled) {
             tlbTable.setBackground(Color.GRAY);
         }
-        tlbTable.setEnabled(false);
+        tlbTable.setEnabled(true);
         VMJTable.setTLBEnabled(true);
         if (!tlbEnabled) {
             tlbPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(),
@@ -1014,7 +1014,7 @@ public class VMPanel extends JLayeredPane {
         pageTable.setMinimumSize(new Dimension(31 * 2 + 23 + 85 * 2, diskPageNum * 16));
         pageTable.setPreferredSize(new Dimension(31 * 2 + 23 + 85 * 2, diskPageNum * 16));
         JScrollPane pagePane = new JScrollPane(pageTable);
-        pageTable.setEnabled(false);
+        pageTable.setEnabled(true);
         pagePane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(),
                 "Page Table", TitledBorder.CENTER, TitledBorder.TOP));
 
@@ -1027,7 +1027,7 @@ public class VMPanel extends JLayeredPane {
         ramTable.setMinimumSize(new Dimension(85 + 95, ramPageNum * 16));
         ramTable.setPreferredSize(new Dimension(85 + 95, ramPageNum * 16));
         JScrollPane ramPane = new JScrollPane(ramTable);
-        ramTable.setEnabled(false);
+        ramTable.setEnabled(true);
         ramPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(),
                 "Physical Memory", TitledBorder.CENTER, TitledBorder.TOP));
 
@@ -1040,9 +1040,9 @@ public class VMPanel extends JLayeredPane {
         diskTable.setMinimumSize(new Dimension(85 + 95, diskPageNum * 16));
         diskTable.setPreferredSize(new Dimension(85 + 95, diskPageNum * 16));
         JScrollPane diskPane = new JScrollPane(diskTable);
-        diskTable.setEnabled(false);
+        diskTable.setEnabled(true);
         diskPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(),
-                "Virtual Memory", TitledBorder.CENTER, TitledBorder.TOP));
+                "Disk", TitledBorder.CENTER, TitledBorder.TOP));
 
         pmAddrLine = new JTable(1, 2);
         pmAddrLine.getTableHeader().setReorderingAllowed(false);
@@ -1079,10 +1079,9 @@ public class VMPanel extends JLayeredPane {
         JScrollPane clockPane = new JScrollPane(clockTable);
         coverPane = new JPanel();
         coverPane.setPreferredSize(clockPane.getPreferredSize());
-//        coverPane.setBackground(Color.lightGray);
-//        coverPane.add(new JLabel("fuck"));
+        coverPane.setBackground(this.getBackground());
 
-        clockTable.setEnabled(false);
+        clockTable.setEnabled(true);
         clockPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(),
                 "Clock Table", TitledBorder.CENTER, TitledBorder.TOP));
 
@@ -1205,7 +1204,19 @@ public class VMPanel extends JLayeredPane {
         size = msgPane.getPreferredSize();
 
         setPreferredSize(new Dimension(1150, tableY + (diskPageNum + 4) * 16 + 20 + colorPane.getHeight()));
-
+        
+        //add tooltip
+        vmAddrLine.setToolTipText("change from line 1210 of VMPanel.java");
+        pmAddrLine.setToolTipText("change from line 1210 of VMPanel.java");
+        tlbTable.setToolTipText("change from line 1210 of VMPanel.java");
+        ramTable.setToolTipText("change from line 1210 of VMPanel.java");
+        pageTable.setToolTipText("change from line 1210 of VMPanel.java");
+        diskTable.setToolTipText("change from line 1210 of VMPanel.java");
+        clockTable.setToolTipText("change from line 1210 of VMPanel.java");
+        //These are for the images
+        osPane.setToolTipText("change from line 1210 of VMPanel.java");
+        hwPane.setToolTipText("change from line 1210 of VMPanel.java");
+        colorPane.setToolTipText("change from line 1210 of VMPanel.java");
     }
 
     private void tableReset(int tlbSize, int ramPageNum, int diskPageNum, int pageSize) {
@@ -1230,7 +1241,7 @@ public class VMPanel extends JLayeredPane {
         }
 
         for (int i = 0; i < ramPageNum; i++) {
-            ramTable.getModel().setValueAt(String.format("%0" + ramNumLength + "X", i) /*+ offset*/, i, 0);
+            ramTable.getModel().setValueAt(String.format("%0" + diskNumLength + "X", i) /*+ offset*/, i, 0);
         }
 
         for (int i = 0; i < diskPageNum; i++) {
@@ -1266,7 +1277,7 @@ public class VMPanel extends JLayeredPane {
     public void setInstructions(LinkedList<Pair<Integer, Integer>> instructions) {
         this.instructions = instructions;
         instruTable = new VMJTable(instructions.size(), 2, 2, instructions.size());
-        instruTable.setEnabled(false);
+        instruTable.setEnabled(true);
         instruTable.getColumnModel().getColumn(0).setPreferredWidth(31);
         instruTable.getColumnModel().getColumn(1).setPreferredWidth(95);
         instruTable.getColumnModel().getColumn(0).setHeaderValue("r/w");
