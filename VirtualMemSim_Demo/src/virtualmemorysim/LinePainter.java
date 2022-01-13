@@ -87,11 +87,11 @@ public class LinePainter extends JPanel {
             g2.drawRect(453, tableY + ramLine * 16, 220, 17);
 //            System.out.println("ramLine" + ramLine);
         }
-        if (leftRect) {
-            g2.drawRoundRect(745, 10, 80, 80, 10, 10);
-        } else {
-            g2.drawRoundRect(845, 10, 80, 80, 10, 10);
-        }
+//        if (leftRect) {
+//            g2.drawRoundRect(745, 10, 80, 80, 10, 10);
+//        } else {
+//            g2.drawRoundRect(845, 10, 80, 80, 10, 10);
+//        }
     }
 
     public void addLine(int[] xs, int[] ys, int num) {
@@ -106,9 +106,9 @@ public class LinePainter extends JPanel {
         nums.clear();
     }
 
-    public void setLeftRect(boolean leftRect) {
-        this.leftRect = leftRect;
-    }
+//    public void setLeftRect(boolean leftRect) {
+//        this.leftRect = leftRect;
+//    }
 
     public void setPTLine(int circleLine) {
         this.ptLine = circleLine;

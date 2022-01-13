@@ -10,6 +10,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -74,7 +75,8 @@ public class VMSim_demo extends JFrame {
     private final JToggleButton stepBtn = new JToggleButton(new ImageIcon(getClass().getResource("images/step.gif")));
 //    private final JCheckBox tlbBox = new JCheckBox("TLB");
     private final JCheckBox clockTableBox = new JCheckBox("clockTable");
-    VMPanel vmSim;
+    private VMPanel vmSim;
+    JPanel generalPane;
     private int delay = 400;
     private JSlider speedSlider = new JSlider(10, 800, 400);
     private File configuration;
@@ -401,12 +403,52 @@ public class VMSim_demo extends JFrame {
 
         if (vmSim != null) {
             vmSim.removeAll();
-            getContentPane().remove(vmPane);
+            generalPane.removeAll();
+            getContentPane().remove(generalPane);
         }
+        
         vmSim = vmTemp;
         vmPane = new JScrollPane(vmSim);
         vmSim.setInstructions(instructions);
-        getContentPane().add(vmPane, "Center");
+        generalPane = new JPanel();
+        generalPane.setLayout(new BoxLayout(generalPane, BoxLayout.PAGE_AXIS));
+        generalPane.add(vmPane);
+        JPanel statPane = new JPanel();
+        generalPane.add(statPane);
+        statPane.setLayout(null);
+        statPane.add(vmSim.getMsgPane());
+        statPane.add(vmSim.getHwPane());
+        statPane.add(vmSim.getOsPane());
+        
+        Insets insets = statPane.getInsets();
+        Dimension size = vmSim.getMsgPane().getPreferredSize();
+        vmSim.getMsgPane().setBackground(getBackground());
+        vmSim.getMsgPane().setBounds(0 + insets.left, 0 + insets.top,
+                size.width + 220, size.height + 70);
+        
+        size = vmSim.getHwPane().getPreferredSize();
+        vmSim.getHwPane().setBounds(vmSim.getMsgPane().getX()+vmSim.getMsgPane().getWidth()+25, 20 + insets.top,
+                size.width , size.height);
+        
+        size = vmSim.getOsPane().getPreferredSize();
+        vmSim.getOsPane().setBounds(vmSim.getHwPane().getX()+vmSim.getHwPane().getWidth()+10, 20 + insets.top,
+                size.width , size.height);
+        
+        JScrollPane missPane = new JScrollPane(vmSim.getMissStatsTable());
+        vmSim.getMissStatsTable().setEnabled(false);
+        missPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(),
+                "Performance", TitledBorder.CENTER, TitledBorder.TOP));
+        statPane.add(missPane);
+        size = vmSim.getMissStatsTable().getMinimumSize();
+        System.out.print(vmSim.getMissStatsTable().getMinimumSize());
+        missPane.setBounds(vmSim.getOsPane().getX()+vmSim.getOsPane().getWidth()+25, 15 + insets.top,
+                size.width, size.height+45);
+        
+        statPane.setPreferredSize(new Dimension(vmPane.getWidth(), 120));
+        statPane.setMinimumSize(new Dimension(10, 120));
+        statPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, 120));
+        getContentPane().add(generalPane, "Center");
+        
         setVisible(true);
         msgBoard.setText("Press Start or Step to start");
         speedSlider.setEnabled(true);
@@ -481,7 +523,7 @@ public class VMSim_demo extends JFrame {
         JFrame f = demo;
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         f.setSize(1330, 1000);
-        f.setMinimumSize(new Dimension(1150, 500));
+        f.setMinimumSize(new Dimension(1200, 500));
         f.setVisible(true);
     }
 
