@@ -145,6 +145,7 @@ public class VMSim_demo extends JFrame {
         addBtn.setEnabled(false);
         clockTableBox.setEnabled(false);
         restartBtn.setEnabled(false);
+        restartBtn.setToolTipText("Restart current memory access");
         getContentPane().add(btnPanel, "South");
         openBtn.setToolTipText("Open a configuration file for a new visualization");
     }
