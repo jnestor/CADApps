@@ -47,7 +47,7 @@ public class VMPanel extends JLayeredPane {
     private enum States {
         PULL, PTECHECK, PTADDRF, PAGEFAULT, PTRCHECK, PTEVICT, RAMWRITEB, PTUPDATE_PF, DISKWB, RAMACCESS, RAMWRITE,
         PTUPDATE_NOTLB, PTREPLACEC, TLBFLUSH, PULL_TLB, TLBCHECK, TLBADDRF, TLB_RAMWRITE, TLB_RAMACCESS,
-        TLBUPDATE, TLBMISS, VPFOUND, TLBRCHECK, TLBREPLACEC, PTWB, TLBEVICT, TLBUPDATE_TLBMISS, TLBSYNC,PF_TLB
+        TLBUPDATE, TLBMISS, VPFOUND, TLBRCHECK, TLBREPLACEC, PTWB, TLBEVICT, TLBUPDATE_TLBMISS,PF_TLB
     };
 //    private final int PULL = 0;
 //    private final int PTECHECK = 1;
@@ -528,31 +528,31 @@ public class VMPanel extends JLayeredPane {
                 setLeftRect(false);
                 ptClockTick = true;
                 if (currRamUse == ramCap) {
-                    state = States.TLBSYNC;
+                    state = States.PTRCHECK;
                     ptClockTick = false;
                 } else {
                     state = States.RAMWRITEB;
                 }
                 break;
             }
-            case TLBSYNC: {
-                msgPane.setText("Synchronize TLB and Page Table");
-                for (int i = 0; i < tlbCap; i++) {
-                    if (tlbTable.getValueAt(i, 1).equals(1)) {
-                        int vpnTemp = Integer.parseInt((String) tlbTable.getValueAt(i, 0), 16);
-                        int dirtyTemp = (Integer) tlbTable.getValueAt(i, 3);
-                        int refTemp = (Integer) tlbTable.getValueAt(i, 2);
-                        pageTable.setModify(true);
-                        pageTable.setValueAt(dirtyTemp, vpnTemp, 3);
-                        if (refTemp == 1) {
-                            pageTable.setValueAt(refTemp, vpnTemp, 2);
-                        }
-                        pageTable.setModify(false);
-                    }
-                }
-                state = States.PTRCHECK;
-                break;
-            }
+//            case TLBSYNC: {
+//                msgPane.setText("Synchronize TLB and Page Table");
+//                for (int i = 0; i < tlbCap; i++) {
+//                    if (tlbTable.getValueAt(i, 1).equals(1)) {
+//                        int vpnTemp = Integer.parseInt((String) tlbTable.getValueAt(i, 0), 16);
+//                        int dirtyTemp = (Integer) tlbTable.getValueAt(i, 3);
+//                        int refTemp = (Integer) tlbTable.getValueAt(i, 2);
+//                        pageTable.setModify(true);
+//                        pageTable.setValueAt(dirtyTemp, vpnTemp, 3);
+//                        if (refTemp == 1) {
+//                            pageTable.setValueAt(refTemp, vpnTemp, 2);
+//                        }
+//                        pageTable.setModify(false);
+//                    }
+//                }
+//                state = States.PTRCHECK;
+//                break;
+//            }
             case PTRCHECK:
                 String corrVPNRaw = (String) ramTable.getValueAt(clockHand_PT, 1);
                 int corrVPN = Integer.parseInt(corrVPNRaw.substring(2, corrVPNRaw.length() - 1), 16);
