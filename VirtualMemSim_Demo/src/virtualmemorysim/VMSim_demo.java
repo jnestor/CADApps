@@ -428,11 +428,11 @@ public class VMSim_demo extends JFrame {
                 size.width + 220, size.height + 70);
         
         size = vmSim.getHwPane().getPreferredSize();
-        vmSim.getHwPane().setBounds(vmSim.getMsgPane().getX()+vmSim.getMsgPane().getWidth()+25, 20 + insets.top,
+        vmSim.getHwPane().setBounds(vmSim.getMsgPane().getX()+vmSim.getMsgPane().getWidth()+25, 7 + insets.top,
                 size.width , size.height);
         
         size = vmSim.getOsPane().getPreferredSize();
-        vmSim.getOsPane().setBounds(vmSim.getHwPane().getX()+vmSim.getHwPane().getWidth()+10, 20 + insets.top,
+        vmSim.getOsPane().setBounds(vmSim.getHwPane().getX()+vmSim.getHwPane().getWidth()+10, 7 + insets.top,
                 size.width , size.height);
         
         JScrollPane missPane = new JScrollPane(vmSim.getMissStatsTable());
@@ -442,12 +442,12 @@ public class VMSim_demo extends JFrame {
         statPane.add(missPane);
         size = vmSim.getMissStatsTable().getMinimumSize();
         System.out.print(vmSim.getMissStatsTable().getMinimumSize());
-        missPane.setBounds(vmSim.getOsPane().getX()+vmSim.getOsPane().getWidth()+25, 15 + insets.top,
+        missPane.setBounds(vmSim.getOsPane().getX()+vmSim.getOsPane().getWidth()+25, 0 + insets.top,
                 size.width, size.height+45);
         
-        statPane.setPreferredSize(new Dimension(vmPane.getWidth(), 120));
-        statPane.setMinimumSize(new Dimension(10, 120));
-        statPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, 120));
+        statPane.setPreferredSize(new Dimension(vmPane.getWidth(), 90));
+        statPane.setMinimumSize(new Dimension(10, 90));
+        statPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, 90));
         getContentPane().add(generalPane, "Center");
         
         setVisible(true);

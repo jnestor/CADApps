@@ -31,34 +31,51 @@ public class LinePainter extends JPanel {
     int clockLine_TLB = -1;
     int tableY;
     int tlbY;
+    int lineThickX = 470;
 
     @Override
     public void paintComponent(Graphics g) {
-
+        Graphics2D g2 = (Graphics2D) g;
         if (!xLineDots.isEmpty()) {
             for (int i = 0; i < xLineDots.size(); i++) {
-                g.drawPolyline(xLineDots.get(i), yLineDots.get(i), nums.get(i));
+                if (xLineDots.get(i)[0] == lineThickX) {
+                    g2.setStroke(new BasicStroke(3));
+                }
+                g2.drawPolyline(xLineDots.get(i), yLineDots.get(i), nums.get(i));
+
                 if (xLineDots.get(i)[xLineDots.get(i).length - 2] < xLineDots.get(i)[xLineDots.get(i).length - 1]) {
                     int arrowX = xLineDots.get(i)[xLineDots.get(i).length - 1] + 1;
+                    if (xLineDots.get(i)[0] == lineThickX) {
+                        arrowX += 2;
+                    }
                     int arrowY = yLineDots.get(i)[yLineDots.get(i).length - 1];
-                    g.fillPolygon(new int[]{arrowX, arrowX - 10, arrowX - 10}, new int[]{arrowY, arrowY - 5, arrowY + 5}, 3);
+                    g2.fillPolygon(new int[]{arrowX, arrowX - 10, arrowX - 10}, new int[]{arrowY, arrowY - 5, arrowY + 5}, 3);
                 } else if (xLineDots.get(i)[xLineDots.get(i).length - 2] > xLineDots.get(i)[xLineDots.get(i).length - 1]) {
                     int arrowX = xLineDots.get(i)[xLineDots.get(i).length - 1] - 1;
+                    if (xLineDots.get(i)[0] == lineThickX) {
+                        arrowX -= 2;
+                    }
                     int arrowY = yLineDots.get(i)[xLineDots.get(i).length - 1];
-                    g.fillPolygon(new int[]{arrowX, arrowX + 10, arrowX + 10}, new int[]{arrowY, arrowY - 5, arrowY + 5}, 3);
+                    g2.fillPolygon(new int[]{arrowX, arrowX + 10, arrowX + 10}, new int[]{arrowY, arrowY - 5, arrowY + 5}, 3);
                 } else if (yLineDots.get(i)[xLineDots.get(i).length - 2] < yLineDots.get(i)[xLineDots.get(i).length - 1]) {
                     int arrowX = xLineDots.get(i)[xLineDots.get(i).length - 1];
                     int arrowY = yLineDots.get(i)[xLineDots.get(i).length - 1] + 1;
-                    g.fillPolygon(new int[]{arrowX, arrowX + 5, arrowX - 5}, new int[]{arrowY, arrowY - 10, arrowY - 10}, 3);
+                    if (xLineDots.get(i)[0] == lineThickX) {
+                        arrowY += 2;
+                    }
+                    g2.fillPolygon(new int[]{arrowX, arrowX + 5, arrowX - 5}, new int[]{arrowY, arrowY - 10, arrowY - 10}, 3);
                 } else if (yLineDots.get(i)[xLineDots.get(i).length - 2] > yLineDots.get(i)[xLineDots.get(i).length - 1]) {
                     int arrowX = xLineDots.get(i)[xLineDots.get(i).length - 1];
                     int arrowY = yLineDots.get(i)[xLineDots.get(i).length - 1] - 1;
-                    g.fillPolygon(new int[]{arrowX, arrowX + 5, arrowX - 5}, new int[]{arrowY, arrowY + 10, arrowY + 10}, 3);
+                    if (xLineDots.get(i)[0] == lineThickX) {
+                        arrowY -= 2;
+                    }
+                    g2.fillPolygon(new int[]{arrowX, arrowX + 5, arrowX - 5}, new int[]{arrowY, arrowY + 10, arrowY + 10}, 3);
                 }
             }
         }
 
-        Graphics2D g2 = (Graphics2D) g;
+        g2.setStroke(new BasicStroke(1));
         g2.setColor(Color.red);
         int arrowX = 1105;
         int arrowY = tableY + 24 + clockLine_PT * 16;
@@ -84,7 +101,7 @@ public class LinePainter extends JPanel {
         }
         g2.setColor(Color.red);
         if (ramLine != -1) {
-            g2.drawRect(453, tableY + ramLine * 16, 220, 17);
+            g2.drawRect(493, tableY + ramLine * 16, 182, 17);
 //            System.out.println("ramLine" + ramLine);
         }
 //        if (leftRect) {
@@ -109,7 +126,6 @@ public class LinePainter extends JPanel {
 //    public void setLeftRect(boolean leftRect) {
 //        this.leftRect = leftRect;
 //    }
-
     public void setPTLine(int circleLine) {
         this.ptLine = circleLine;
     }
