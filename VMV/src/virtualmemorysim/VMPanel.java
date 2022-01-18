@@ -47,7 +47,7 @@ public class VMPanel extends JLayeredPane {
     private enum States {
         PULL, PTECHECK, PTADDRF, PAGEFAULT, PTRCHECK, PTEVICT, RAMWRITEB, PTUPDATE_PF, DISKWB, RAMACCESS, RAMWRITE,
         PTUPDATE_NOTLB, PTREPLACEC, TLBFLUSH, PULL_TLB, TLBCHECK, TLBADDRF, TLB_RAMWRITE, TLB_RAMACCESS,
-        TLBUPDATE, TLBMISS, VPFOUND, TLBRCHECK, TLBREPLACEC, PTWB, TLBEVICT, TLBUPDATE_TLBMISS, PF_TLB
+        TLBUPDATE, TLBMISS, VPFOUND, TLBRCHECK, TLBREPLACEC, PTWB, TLBEVICT, TLBUPDATE_TLBMISS, TLBSYNC
     };
 //    private final int PULL = 0;
 //    private final int PTECHECK = 1;
@@ -380,13 +380,13 @@ public class VMPanel extends JLayeredPane {
                 int[] ys = {55 + 14, tableY + 45 + currVPN * 16, tableY + 45 + currVPN * 16};
                 topLayer.addLine(xs, ys, 3);
                 if (pageTable.getModel().getValueAt(currVPN, 1).equals(0)) {
-                    state = States.PF_TLB; //Page fault
+                    state = States.TLBSYNC; //Page fault
                 } else {
                     state = States.VPFOUND; //Page hit
                 }
                 break;
             }
-            case PF_TLB: {
+            case TLBSYNC: {
                 msgPane.setText("Page Fault -\n  OS will copy TLB to page table");
                 setLeftRect(false);
                 for (int i = 0; i < tlbCap; i++) {
@@ -459,7 +459,7 @@ public class VMPanel extends JLayeredPane {
                 if ((Integer) tlbTable.getValueAt(swapTLB, 3) == 1) {
                     state = States.PTWB;
                 } else {
-                    state = States.TLBUPDATE_TLBMISS;
+                    state = States.TLBEVICT;
                 }
                 break;
             }
@@ -477,7 +477,7 @@ public class VMPanel extends JLayeredPane {
                     pageTable.setValueAt(1, swapVPN, 2);
                     pageTable.setModify(false);
                 }
-                state = States.TLBUPDATE_TLBMISS;
+                state = States.TLBEVICT;
                 break;
             }
             case TLBEVICT: {
@@ -548,24 +548,6 @@ public class VMPanel extends JLayeredPane {
                 }
                 break;
             }
-//            case TLBSYNC: {
-//                msgPane.setText("Synchronize TLB and Page Table");
-//                for (int i = 0; i < tlbCap; i++) {
-//                    if (tlbTable.getValueAt(i, 1).equals(1)) {
-//                        int vpnTemp = Integer.parseInt((String) tlbTable.getValueAt(i, 0), 16);
-//                        int dirtyTemp = (Integer) tlbTable.getValueAt(i, 3);
-//                        int refTemp = (Integer) tlbTable.getValueAt(i, 2);
-//                        pageTable.setModify(true);
-//                        pageTable.setValueAt(dirtyTemp, vpnTemp, 3);
-//                        if (refTemp == 1) {
-//                            pageTable.setValueAt(refTemp, vpnTemp, 2);
-//                        }
-//                        pageTable.setModify(false);
-//                    }
-//                }
-//                state = States.PTRCHECK;
-//                break;
-//            }
             case PTRCHECK:
                 String corrVPNRaw = (String) ramTable.getValueAt(clockHand_PT, 1);
                 int corrVPN = Integer.parseInt(corrVPNRaw.substring(2, corrVPNRaw.length() - 1), 16);
