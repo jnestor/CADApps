@@ -265,6 +265,7 @@ public class VMPanel extends JLayeredPane {
                     missStatsTable.setValueAt(memRefCount, 0, 0);
                     vmAddrLine.getModel().setValueAt(String.format("%0" + diskNumLength + "X", currVPN), 0, 0);
                     vmAddrLine.getModel().setValueAt(Integer.toBinaryString(currVPN), 1, 0);
+                    pmAddrLine.getModel().setValueAt("", 0, 0);
                     pmAddrLine.getModel().setValueAt((String) vmAddrLine.getModel().getValueAt(0, 1), 0, 1);
                 } else {
                     msgPane.setText(
@@ -537,8 +538,8 @@ public class VMPanel extends JLayeredPane {
                 if (currRamUse == ramCap) {
                     state = States.PTRCHECK;
                     ptClockTick = false;
-                    if(skipReplacement){
-                        while(!state.equals(States.PTREPLACEC)){
+                    if (skipReplacement) {
+                        while (!state.equals(States.PTREPLACEC)) {
                             fsm();
                         }
                     }
@@ -715,6 +716,7 @@ public class VMPanel extends JLayeredPane {
                     missStatsTable.setValueAt(memRefCount, 0, 0);
                     vmAddrLine.getModel().setValueAt(String.format("%0" + diskNumLength + "X", currVPN), 0, 0);
                     vmAddrLine.getModel().setValueAt(Integer.toBinaryString(currVPN), 1, 0);
+                    pmAddrLine.getModel().setValueAt("", 0, 0);
                     pmAddrLine.getModel().setValueAt((String) vmAddrLine.getModel().getValueAt(0, 1), 0, 1);
                 } else {
                     msgPane.setText(
@@ -811,8 +813,8 @@ public class VMPanel extends JLayeredPane {
                 if (currRamUse == ramCap) {
                     state = States.PTRCHECK;
                     ptClockTick = false;
-                    if(skipReplacement){
-                        while(!state.equals(States.PTREPLACEC)){
+                    if (skipReplacement) {
+                        while (!state.equals(States.PTREPLACEC)) {
                             fsm();
                         }
                     }
