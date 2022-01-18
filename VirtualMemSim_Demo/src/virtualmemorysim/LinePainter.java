@@ -32,6 +32,8 @@ public class LinePainter extends JPanel {
     int tableY;
     int tlbY;
     int lineThickX = 470;
+    int lineThickX2 = 673;
+    int lineThickX3 = 752;
 
     @Override
     public void paintComponent(Graphics g) {
@@ -40,6 +42,8 @@ public class LinePainter extends JPanel {
             for (int i = 0; i < xLineDots.size(); i++) {
                 if (xLineDots.get(i)[0] == lineThickX) {
                     g2.setStroke(new BasicStroke(3));
+                } else if (xLineDots.get(i)[0] == lineThickX2 || xLineDots.get(i)[0] == lineThickX3) {
+                    g2.setStroke(new BasicStroke(8));
                 }
                 g2.drawPolyline(xLineDots.get(i), yLineDots.get(i), nums.get(i));
 
@@ -47,30 +51,41 @@ public class LinePainter extends JPanel {
                     int arrowX = xLineDots.get(i)[xLineDots.get(i).length - 1] + 1;
                     if (xLineDots.get(i)[0] == lineThickX) {
                         arrowX += 2;
+                    } else if (xLineDots.get(i)[0] == lineThickX2 || xLineDots.get(i)[0] == lineThickX3) {
+                        arrowX += 8;
                     }
                     int arrowY = yLineDots.get(i)[yLineDots.get(i).length - 1];
-                    g2.fillPolygon(new int[]{arrowX, arrowX - 10, arrowX - 10}, new int[]{arrowY, arrowY - 5, arrowY + 5}, 3);
+                    g2.fillPolygon(new int[]{arrowX, arrowX - 10, arrowX - 10}, new int[]{arrowY, arrowY - 10, arrowY + 10}, 3);
                 } else if (xLineDots.get(i)[xLineDots.get(i).length - 2] > xLineDots.get(i)[xLineDots.get(i).length - 1]) {
                     int arrowX = xLineDots.get(i)[xLineDots.get(i).length - 1] - 1;
                     if (xLineDots.get(i)[0] == lineThickX) {
                         arrowX -= 2;
                     }
+                    else if (xLineDots.get(i)[0] == lineThickX2 || xLineDots.get(i)[0] == lineThickX3) {
+                        arrowX -= 8;
+                    }
                     int arrowY = yLineDots.get(i)[xLineDots.get(i).length - 1];
-                    g2.fillPolygon(new int[]{arrowX, arrowX + 10, arrowX + 10}, new int[]{arrowY, arrowY - 5, arrowY + 5}, 3);
+                    g2.fillPolygon(new int[]{arrowX, arrowX + 10, arrowX + 10}, new int[]{arrowY, arrowY - 10, arrowY + 10}, 3);
                 } else if (yLineDots.get(i)[xLineDots.get(i).length - 2] < yLineDots.get(i)[xLineDots.get(i).length - 1]) {
                     int arrowX = xLineDots.get(i)[xLineDots.get(i).length - 1];
                     int arrowY = yLineDots.get(i)[xLineDots.get(i).length - 1] + 1;
                     if (xLineDots.get(i)[0] == lineThickX) {
                         arrowY += 2;
                     }
-                    g2.fillPolygon(new int[]{arrowX, arrowX + 5, arrowX - 5}, new int[]{arrowY, arrowY - 10, arrowY - 10}, 3);
+                    else if (xLineDots.get(i)[0] == lineThickX2 || xLineDots.get(i)[0] == lineThickX3) {
+                        arrowY += 8;
+                    }
+                    g2.fillPolygon(new int[]{arrowX, arrowX + 10, arrowX - 10}, new int[]{arrowY, arrowY - 10, arrowY - 10}, 3);
                 } else if (yLineDots.get(i)[xLineDots.get(i).length - 2] > yLineDots.get(i)[xLineDots.get(i).length - 1]) {
                     int arrowX = xLineDots.get(i)[xLineDots.get(i).length - 1];
                     int arrowY = yLineDots.get(i)[xLineDots.get(i).length - 1] - 1;
                     if (xLineDots.get(i)[0] == lineThickX) {
                         arrowY -= 2;
                     }
-                    g2.fillPolygon(new int[]{arrowX, arrowX + 5, arrowX - 5}, new int[]{arrowY, arrowY + 10, arrowY + 10}, 3);
+                    else if (xLineDots.get(i)[0] == lineThickX2 || xLineDots.get(i)[0] == lineThickX3) {
+                        arrowY -= 8;
+                    }
+                    g2.fillPolygon(new int[]{arrowX, arrowX + 10, arrowX - 10}, new int[]{arrowY, arrowY + 10, arrowY + 10}, 3);
                 }
             }
         }

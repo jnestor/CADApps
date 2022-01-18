@@ -63,7 +63,7 @@ public class VMSim_demo extends JFrame {
     private JTable inputTable = new JTable(1, 2);
     private VMJTable instruTable;
     private final JLabel msgBoard = new JLabel();
-    private final JLabel title = new JLabel("Virtual Memory Simulation", SwingConstants.CENTER);
+    private final JLabel title = new JLabel("VMV - Virtual Memory Visualization", SwingConstants.CENTER);
 //    private final JLabel mTitle = new JLabel("Memory Reference", SwingConstants.CENTER);
     private final ImageIcon pause = new ImageIcon(getClass().getResource("images/pause.gif"));
     private final ImageIcon resume = new ImageIcon(getClass().getResource("images/start.gif"));
@@ -74,7 +74,7 @@ public class VMSim_demo extends JFrame {
 //    private final JToggleButton stopBtn = new JToggleButton(new ImageIcon(getClass().getResource("images/stop.gif")));
     private final JToggleButton stepBtn = new JToggleButton(new ImageIcon(getClass().getResource("images/step.gif")));
 //    private final JCheckBox tlbBox = new JCheckBox("TLB");
-    private final JCheckBox clockTableBox = new JCheckBox("clockTable");
+    private final JCheckBox clockTableBox = new JCheckBox("Show replacement algorithm");
     private VMPanel vmSim;
     JPanel generalPane;
     private int delay = 400;

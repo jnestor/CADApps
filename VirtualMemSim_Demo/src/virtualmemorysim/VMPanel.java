@@ -47,7 +47,7 @@ public class VMPanel extends JLayeredPane {
     private enum States {
         PULL, PTECHECK, PTADDRF, PAGEFAULT, PTRCHECK, PTEVICT, RAMWRITEB, PTUPDATE_PF, DISKWB, RAMACCESS, RAMWRITE,
         PTUPDATE_NOTLB, PTREPLACEC, TLBFLUSH, PULL_TLB, TLBCHECK, TLBADDRF, TLB_RAMWRITE, TLB_RAMACCESS,
-        TLBUPDATE, TLBMISS, VPFOUND, TLBRCHECK, TLBREPLACEC, PTWB, TLBEVICT, TLBUPDATE_TLBMISS,PF_TLB
+        TLBUPDATE, TLBMISS, VPFOUND, TLBRCHECK, TLBREPLACEC, PTWB, TLBEVICT, TLBUPDATE_TLBMISS, PF_TLB
     };
 //    private final int PULL = 0;
 //    private final int PTECHECK = 1;
@@ -155,6 +155,8 @@ public class VMPanel extends JLayeredPane {
     private int memRefCountBackup = 0;
     private int tlbFaultCountBackup = 0;
     private int pageFaultCountBackup = 0;
+
+    private boolean skipReplacement = false;
 
     private Object[][] tlbData;
     private Object[][] ptData;
@@ -384,7 +386,7 @@ public class VMPanel extends JLayeredPane {
                 }
                 break;
             }
-            case PF_TLB:{
+            case PF_TLB: {
                 msgPane.setText("Page Fault -\n  OS will copy TLB to page table");
                 setLeftRect(false);
                 for (int i = 0; i < tlbCap; i++) {
@@ -405,9 +407,9 @@ public class VMPanel extends JLayeredPane {
             }
             case TLBFLUSH: {
                 setLeftRect(true);
-                clockHand_TLB=0;
-                currTLBUse=0;
-                swapTLB=0;
+                clockHand_TLB = 0;
+                currTLBUse = 0;
+                swapTLB = 0;
                 msgPane.setText("Hardware will flush TLB, and give control to OS to handle page fault");
                 for (int i = 0; i < tlbCap; i++) {
                     tlbTable.setValueAt(0, i, 1);
@@ -419,6 +421,11 @@ public class VMPanel extends JLayeredPane {
                 msgPane.setText("Page found in Physical Memory\n  Update TLB");
                 if (currTLBUse == tlbCap) {
                     state = States.TLBRCHECK;
+                    if (skipReplacement) {
+                        while (!state.equals(States.TLBREPLACEC)) {
+                            fsm();
+                        }
+                    }
                 } else {
                     state = States.TLBUPDATE_TLBMISS;
                 }
@@ -530,6 +537,12 @@ public class VMPanel extends JLayeredPane {
                 if (currRamUse == ramCap) {
                     state = States.PTRCHECK;
                     ptClockTick = false;
+                    if(skipReplacement){
+                        while(!state.equals(States.PTREPLACEC)){
+                            fsm();
+                        }
+                    }
+
                 } else {
                     state = States.RAMWRITEB;
                 }
@@ -586,7 +599,7 @@ public class VMPanel extends JLayeredPane {
             case DISKWB: {
                 msgPane.setText("Write Physical Page " + ramTable.getValueAt(swapPPN, 1)
                         + "\n  to Virtual Page " + pageTable.getValueAt(swapVPN, 0));
-                int[] xs = {673, 680, 680, 752};
+                int[] xs = {673, 680, 680, 747};
                 int[] ys = {tableY + 45 + swapPPN * 16, tableY + 45 + swapPPN * 16, tableY + 45 + swapVPN * 16, tableY + 45 + swapVPN * 16};
                 topLayer.addLine(xs, ys, 4);
                 topLayer.setPTLine(swapVPN);
@@ -625,7 +638,7 @@ public class VMPanel extends JLayeredPane {
                         + " from disk to Physical Page "
                         + ((String) ramTable.getValueAt(swapPPN, 0)));
 //                ramTable.setColor(swapPPN, Color.pink);
-                int[] xs = {752, 740, 740, 673};
+                int[] xs = {752, 740, 740, 680};
                 int[] ys = {tableY + 45 + currVPN * 16, tableY + 45 + currVPN * 16, tableY + 45 + swapPPN * 16, tableY + 45 + swapPPN * 16};
                 topLayer.addLine(xs, ys, 4);
                 ramTable.getModel().setValueAt("M[" + pageTable.getModel().getValueAt(currVPN, 0) + "]", swapPPN, 1);
@@ -816,6 +829,11 @@ public class VMPanel extends JLayeredPane {
                 if (currRamUse == ramCap) {
                     state = States.PTRCHECK;
                     ptClockTick = false;
+                    if(skipReplacement){
+                        while(!state.equals(States.PTREPLACEC)){
+                            fsm();
+                        }
+                    }
                 } else {
                     state = States.RAMWRITEB;
                 }
@@ -854,7 +872,7 @@ public class VMPanel extends JLayeredPane {
             case DISKWB: {
                 msgPane.setText("Write data " + ramTable.getValueAt(swapPPN, 1)
                         + "\nto virtual page " + pageTable.getValueAt(swapVPN, 0));
-                int[] xs = {673, 680, 680, 752};
+                int[] xs = {673, 680, 680, 747};
                 int[] ys = {tableY + 45 + swapPPN * 16, tableY + 45 + swapPPN * 16, tableY + 45 + swapVPN * 16, tableY + 45 + swapVPN * 16};
                 topLayer.addLine(xs, ys, 4);
                 topLayer.setPTLine(swapVPN);
@@ -881,7 +899,7 @@ public class VMPanel extends JLayeredPane {
                         + " from Disk to Physical Page "
                         + ((String) ramTable.getValueAt(swapPPN, 0)));
 //                ramTable.setColor(swapPPN, Color.pink);
-                int[] xs = {752, 740, 740, 673};
+                int[] xs = {752, 740, 740, 680};
                 int[] ys = {tableY + 45 + currVPN * 16, tableY + 45 + currVPN * 16, tableY + 45 + swapPPN * 16, tableY + 45 + swapPPN * 16};
                 topLayer.addLine(xs, ys, 4);
                 ramTable.getModel().setValueAt("M[" + pageTable.getModel().getValueAt(currVPN, 0) + "]", swapPPN, 1);
@@ -928,6 +946,7 @@ public class VMPanel extends JLayeredPane {
 
     public void setCTVisible(boolean vis) {
         coverPane.setVisible(vis);
+        skipReplacement = vis;
     }
 
     private void backupState() {
