@@ -580,7 +580,7 @@ public class VMPanel extends JLayeredPane {
                 }
                 break;
             case DISKWB: {
-                msgPane.setText("Write Physical Page " + ramTable.getValueAt(swapPPN, 1)
+                msgPane.setText("Write Physical Page " + ramTable.getValueAt(swapPPN, 0)
                         + "\n  to Virtual Page " + pageTable.getValueAt(swapVPN, 0));
                 int[] xs = {673, 680, 680, 747};
                 int[] ys = {tableY + 45 + swapPPN * 16, tableY + 45 + swapPPN * 16, tableY + 45 + swapVPN * 16, tableY + 45 + swapVPN * 16};
@@ -591,7 +591,7 @@ public class VMPanel extends JLayeredPane {
                 break;
             }
             case PTEVICT:
-                msgPane.setText("Invalidate PTE " + ramTable.getValueAt(swapPPN, 1));
+                msgPane.setText("Invalidate PTE " + ramTable.getValueAt(swapPPN, 0));
 //                ramTable.setColor(swapPPN, Color.white);
 //                diskTable.setColor(swapVPN, Color.white);
                 topLayer.setPTLine(swapVPN);
@@ -608,7 +608,7 @@ public class VMPanel extends JLayeredPane {
                             tlbTable.setValueAt(0, i, 1);
                             swapTLB = i;
                             currTLBUse--;
-                            msgPane.setText("Invalidate PTE  " + ramTable.getValueAt(swapPPN, 1)
+                            msgPane.setText("Invalidate PTE  " + ramTable.getValueAt(swapPPN, 0)
                                     + "\n  and TLB Entry with Virtual Page " + tlbTable.getValueAt(swapTLB, 0));
                         }
                     }
@@ -854,7 +854,7 @@ public class VMPanel extends JLayeredPane {
                 }
                 break;
             case DISKWB: {
-                msgPane.setText("Write data " + ramTable.getValueAt(swapPPN, 1)
+                msgPane.setText("Write Physical Page " + ramTable.getValueAt(swapPPN, 0)
                         + "\nto virtual page " + pageTable.getValueAt(swapVPN, 0));
                 int[] xs = {673, 680, 680, 747};
                 int[] ys = {tableY + 45 + swapPPN * 16, tableY + 45 + swapPPN * 16, tableY + 45 + swapVPN * 16, tableY + 45 + swapVPN * 16};
@@ -865,7 +865,7 @@ public class VMPanel extends JLayeredPane {
                 break;
             }
             case PTEVICT:
-                msgPane.setText("Invalidate data " + ramTable.getValueAt(swapPPN, 1));
+                msgPane.setText("Invalidate PTE " + ramTable.getValueAt(swapPPN, 0));
 //                ramTable.setColor(swapPPN, Color.white);
 //                diskTable.setColor(swapVPN, Color.white);
                 topLayer.setPTLine(swapVPN);
