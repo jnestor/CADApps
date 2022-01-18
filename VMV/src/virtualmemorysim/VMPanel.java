@@ -572,7 +572,7 @@ public class VMPanel extends JLayeredPane {
             case PTREPLACEC:
                 topLayer.setPTLine(swapVPN);
                 topLayer.setRAMLine(swapPPN);
-                msgPane.setText("Replace Victim Page with Virtual Page " + pageTable.getValueAt(currVPN, 0));
+                msgPane.setText("Replace Victim Page "+ pageTable.getValueAt(swapVPN, 0) + " with Virtual Page " + pageTable.getValueAt(currVPN, 0));
                 if ((Integer) pageTable.getValueAt(swapVPN, 3) == 1) {
                     state = States.DISKWB;
                 } else {
