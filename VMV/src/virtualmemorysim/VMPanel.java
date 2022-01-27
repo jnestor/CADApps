@@ -473,9 +473,9 @@ public class VMPanel extends JLayeredPane {
                 topLayer.setPTLine(swapVPN);
                 topLayer.setTLBLine(swapTLB);
 
-                if ((Integer) tlbTable.getValueAt(swapTLB, 2) == 1) {
+                if ((Integer) tlbTable.getValueAt(swapTLB, 3) == 1) {
                     pageTable.setModify(true);
-                    pageTable.setValueAt(1, swapVPN, 2);
+                    pageTable.setValueAt(1, swapVPN, 3);
                     pageTable.setModify(false);
                 }
                 state = States.TLBEVICT;

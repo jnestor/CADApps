@@ -301,6 +301,7 @@ public class VMSim_demo extends JFrame {
             }
 //            System.out.println(a[0]);
             try {
+                System.out.println(a.length);
                 int pmSize = Integer.parseInt(a[0]);
                 int vmSize = Integer.parseInt(a[1]);
                 int pmCap = Integer.parseInt(a[2]);
@@ -441,7 +442,7 @@ public class VMSim_demo extends JFrame {
                 "Performance", TitledBorder.CENTER, TitledBorder.TOP));
         statPane.add(missPane);
         size = vmSim.getMissStatsTable().getMinimumSize();
-        System.out.print(vmSim.getMissStatsTable().getMinimumSize());
+//        System.out.print(vmSim.getMissStatsTable().getMinimumSize());
         missPane.setBounds(vmSim.getOsPane().getX()+vmSim.getOsPane().getWidth()+25, 0 + insets.top,
                 size.width, size.height+45);
         
