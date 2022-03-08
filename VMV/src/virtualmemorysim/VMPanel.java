@@ -160,7 +160,7 @@ public class VMPanel extends JLayeredPane {
         if (tlbEn) {
             state = States.PULL_TLB;
         }
-        
+
 //        test();
     }
 
@@ -1120,8 +1120,7 @@ public class VMPanel extends JLayeredPane {
             repTable.getColumnModel().getColumn(1).setHeaderValue("Page Table");
             repTable.setValueAt(tlbR.toString(), 0, 0);
             repTable.setValueAt(ptR.toString(), 0, 1);
-            repTable.setMinimumSize(new Dimension(100 * 2, 16));
-            repTable.setPreferredSize(new Dimension(100 * 2, 16));
+
         } else {
             missStatsTable = new JTable(1, 2);
             missStatsTable.setMinimumSize(new Dimension(100 * 2, 16));
@@ -1134,10 +1133,12 @@ public class VMPanel extends JLayeredPane {
             repTable = new JTable(1, 1);
             repTable.getColumnModel().getColumn(0).setHeaderValue("Page Table");
             repTable.setValueAt(ptR.toString(), 0, 0);
-            repTable.setMinimumSize(new Dimension(100, 16));
-            repTable.setPreferredSize(new Dimension(100, 16));
+//            repTable.setMinimumSize(new Dimension(100, 16));
+//            repTable.setPreferredSize(new Dimension(100, 16));
         }
-
+        repTable.setMinimumSize(new Dimension(100 * 2, 16));
+        repTable.setPreferredSize(new Dimension(100 * 2, 16));
+        
         pageTable = new VMJTable(diskPageNum, 5, PAGETABLE);
         pageTable.getTableHeader().setReorderingAllowed(false);
         pageTable.getColumnModel().getColumn(0).setPreferredWidth(85);
@@ -1484,8 +1485,6 @@ public class VMPanel extends JLayeredPane {
         return repTable;
     }
 
-    
-    
     private void test() {
         instructions.add(new Pair<Integer, Integer>(0, 15));
         instructions.add(new Pair<Integer, Integer>(1, 15 + 16 * 3));
