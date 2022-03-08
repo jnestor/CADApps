@@ -45,40 +45,11 @@ import javax.swing.table.TableModel;
 public class VMPanel extends JLayeredPane {
 
     private enum States {
-        PULL, PTECHECK, PTADDRF, PAGEFAULT, PTRCHECK, PTEVICT, RAMWRITEB, PTUPDATE_PF, DISKWB, RAMACCESS, RAMWRITE,
+        PULL, PTECHECK, PTADDRF, PAGEFAULT, PTRCHECK_C, PTRCHECK_F, PTEVICT, RAMWRITEB, PTUPDATE_PF, DISKWB, RAMACCESS, RAMWRITE,
         PTUPDATE_NOTLB, PTREPLACEC, TLBFLUSH, PULL_TLB, TLBCHECK, TLBADDRF, TLB_RAMWRITE, TLB_RAMACCESS,
-        TLBUPDATE, TLBMISS, VPFOUND, TLBRCHECK, TLBREPLACEC, PTWB, TLBEVICT, TLBUPDATE_TLBMISS, TLBSYNC
+        TLBUPDATE, TLBMISS, VPFOUND, TLBRCHECK_C, TLBRCHECK_F, TLBREPLACEC, PTWB, TLBEVICT, TLBUPDATE_TLBMISS, TLBSYNC
     };
-//    private final int PULL = 0;
-//    private final int PTECHECK = 1;
-//    private final int PTADDRF = 2;
-//    private final int PAGEFAULT = 3;
-//    private final int PTRCHECK = 4;
-//    private final int PTEVICT = 5;
-//    private final int RAMWRITEB = 6;
-//    private final int PTUPDATE_PF = 7;
-//    private final int DISKWB = 8;
-//    private final int RAMACCESS = 9;
-//    private final int RAMWRITE = 10;
-//    private final int PTUPDATE_NOTLB = 11;
-//    private final int PTREPLACEC = 12;
-//    private final int TLBFLUSH = 22;
-//    private fianl 
 
-//    private final int PULL_TLB = 0;
-//    private final int TLBMISS = 1;
-//    private final int TLB_RAMACCESS = 9;
-//    private final int TLB_RAMWRITE = 10;
-//    private final int TLBCHECK = 11;
-//    private final int TLBADDRF = 13;
-//    private final int TLBUPDATE = 14;
-//    private final int TLBRCHECK = 15;
-//    private final int TLBEVICT = 16;
-//    private final int VPFOUND = 17;
-//    private final int TLBSYNC = 18;
-//    private final int PTWB = 19;
-//    private final int TLBREPLACEC = 20;
-//    private final int TLBUPDATE_TLBMISS = 21;
     private final int PAGETABLE = 0;
     private final int TLB = 1;
 
@@ -89,6 +60,7 @@ public class VMPanel extends JLayeredPane {
     private JTable vmAddrLine;
     private JTable pmAddrLine;
     private JTable missStatsTable;
+    private JTable repTable;
     private VMJTable clockTable;
     private JTextArea msgPane;
     private ImagePanel hwPane;
@@ -108,6 +80,8 @@ public class VMPanel extends JLayeredPane {
     private JLabel output;
     private States state = States.PULL;
     private States currState;
+    private PTRepAl ptR;
+    private TLBRepAl tlbR;
     private LinkedList<Pair<Integer, Integer>> instructions = new LinkedList<Pair<Integer, Integer>>();
     private boolean done = false;
     private int ramCap;
@@ -166,13 +140,15 @@ public class VMPanel extends JLayeredPane {
 
     private int tableY;
 
-    public VMPanel(int tlbSize, int ramPageNum, int diskPageNum, int offsetSize, int ramSegNum, int diskSegNum, boolean tlbEn) {
+    public VMPanel(int tlbSize, int ramPageNum, int diskPageNum, int offsetSize, int ramSegNum, int diskSegNum, boolean tlbEn, PTRepAl ptRep, TLBRepAl tlbRep) {
         super();
         tlbCap = tlbSize;
         pageSize = offsetSize;
         ramCap = ramSegNum;
         diskCap = diskSegNum;
         tlbEnabled = tlbEn;
+        ptR = ptRep;
+        tlbR = tlbRep;
         uiSetUp(tlbSize, ramPageNum, diskPageNum, ramSegNum, diskSegNum);
         tableReset(tlbSize, ramPageNum, diskPageNum, offsetSize);
         tlbData = new Object[tlbCap][5];
@@ -184,6 +160,7 @@ public class VMPanel extends JLayeredPane {
         if (tlbEn) {
             state = States.PULL_TLB;
         }
+        
 //        test();
     }
 
@@ -192,7 +169,7 @@ public class VMPanel extends JLayeredPane {
      */
     public static void main(String[] args) {
         // TODO code application logic here
-        VMPanel demo = new VMPanel(10, 17, 30, 16, 4, 15, false);
+        VMPanel demo = new VMPanel(10, 17, 30, 16, 4, 15, false, PTRepAl.CLOCK, TLBRepAl.CLOCK);
         JScrollPane a = new JScrollPane(demo);
         JFrame frame = new JFrame("AbsoluteLayoutDemo");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -228,6 +205,7 @@ public class VMPanel extends JLayeredPane {
         topLayer.setTLBClockLine(clockHand_TLB);
         topLayer.setRAMClockLine(clockHand_PT);
         pmAddrLine.setBackground(Color.LIGHT_GRAY);
+        System.out.println(currTLBUse);
         switch (state) {
             case PULL_TLB: {
                 pagefault = false;
@@ -278,7 +256,6 @@ public class VMPanel extends JLayeredPane {
                 break;
             }
             case TLBCHECK: {
-
                 instruTable.setColor(instruCount, Color.cyan);
                 setLeftRect(true);
                 if (instru == 0) {
@@ -421,7 +398,11 @@ public class VMPanel extends JLayeredPane {
             case VPFOUND: {
                 msgPane.setText("Page found in Physical Memory\n  Update TLB");
                 if (currTLBUse == tlbCap) {
-                    state = States.TLBRCHECK;
+                    if (tlbR.equals(TLBRepAl.CLOCK)) {
+                        state = States.TLBRCHECK_C;
+                    } else if (tlbR.equals(TLBRepAl.FIFO)) {
+                        state = States.TLBRCHECK_F;
+                    }
                     if (skipReplacement) {
                         while (!state.equals(States.TLBREPLACEC)) {
                             fsm();
@@ -432,7 +413,18 @@ public class VMPanel extends JLayeredPane {
                 }
                 break;
             }
-            case TLBRCHECK: {
+            case TLBRCHECK_F: {
+                int corrVPN = Integer.parseInt((String) tlbTable.getValueAt(clockHand_TLB, 0), 16);
+                int ref = (Integer) tlbTable.getValueAt(clockHand_TLB, 2);
+                topLayer.setTLBLine(clockHand_TLB);
+                swapVPN = corrVPN;
+                swapTLB = clockHand_TLB;
+                state = States.TLBREPLACEC;
+                msgPane.setText("Replace TLB Entry");
+                clockHand_TLB++;
+                break;
+            }
+            case TLBRCHECK_C: {
                 int corrVPN = Integer.parseInt((String) tlbTable.getValueAt(clockHand_TLB, 0), 16);
                 int ref = (Integer) tlbTable.getValueAt(clockHand_TLB, 2);
                 topLayer.setTLBLine(clockHand_TLB);
@@ -445,7 +437,7 @@ public class VMPanel extends JLayeredPane {
                     tlbTable.setModify(true);
                     tlbTable.setValueAt(0, clockHand_TLB, 2);
                     tlbTable.setModify(false);
-                    state = States.TLBRCHECK;
+                    state = States.TLBRCHECK_C;
                     msgPane.setText("Look for TLB Entry to replace");
                     clockHand_TLB++;
                 }
@@ -453,7 +445,7 @@ public class VMPanel extends JLayeredPane {
                 break;
             }
             case TLBREPLACEC: {
-                currTLBUse--;
+//                currTLBUse--;
                 topLayer.setTLBLine(swapTLB);
                 topLayer.setPTLine(swapVPN);
                 msgPane.setText("Replace TLB Element for Virtual Page " + tlbTable.getValueAt(swapTLB, 0));
@@ -497,6 +489,7 @@ public class VMPanel extends JLayeredPane {
                 int[] ys = {tableY + 45 + currVPN * 16, tableY + 45 + currVPN * 16, 153 + swapTLB * 16, 153 + swapTLB * 16};
                 topLayer.addLine(xs, ys, 4);
                 tlbTable.setModify(true);
+                System.out.println("cur: " + currVPN + " swap: " + swapTLB);
                 tlbTable.setValueAt(pageTable.getValueAt(currVPN, 0), swapTLB, 0);
                 tlbTable.setValueAt(pageTable.getValueAt(currVPN, 4), swapTLB, 4);
                 tlbTable.setValueAt(pageTable.getValueAt(currVPN, 3), swapTLB, 3);
@@ -512,8 +505,10 @@ public class VMPanel extends JLayeredPane {
                     pageTable.setValueAt(0, currVPN, 2);
                 }
                 pageTable.setModify(false);
-
-                clockHand_TLB++;
+                if (tlbR.equals(TLBRepAl.CLOCK)) {
+                    clockHand_TLB++;
+                    msgPane.setText("Update TLB Entry " + swapTLB + " and Page Table\n  Advance TLB Clock Hand\n  Retry Memory Access");
+                }
                 if (clockHand_TLB >= tlbCap) {
                     clockHand_TLB = 0;
                 }
@@ -522,7 +517,6 @@ public class VMPanel extends JLayeredPane {
 //                }
                 topLayer.setTLBClockLine(clockHand_TLB);
 
-                msgPane.setText("Update TLB Entry " + swapTLB + " and Page Table\n  Advance TLB Clock Hand\n  Retry Memory Access");
                 state = States.TLBCHECK;
                 break;
             }
@@ -536,7 +530,11 @@ public class VMPanel extends JLayeredPane {
                 setLeftRect(false);
                 ptClockTick = true;
                 if (currRamUse == ramCap) {
-                    state = States.PTRCHECK;
+                    if (ptR.equals(PTRepAl.CLOCK)) {
+                        state = States.PTRCHECK_C;
+                    } else if (ptR.equals(PTRepAl.FIFO)) {
+                        state = States.PTRCHECK_F;
+                    }
                     ptClockTick = false;
                     if (skipReplacement) {
                         while (!state.equals(States.PTREPLACEC)) {
@@ -549,7 +547,20 @@ public class VMPanel extends JLayeredPane {
                 }
                 break;
             }
-            case PTRCHECK:
+            case PTRCHECK_F: {
+                String corrVPNRaw = (String) ramTable.getValueAt(clockHand_PT, 1);
+                int corrVPN = Integer.parseInt(corrVPNRaw.substring(2, corrVPNRaw.length() - 1), 16);
+                int ref = (Integer) pageTable.getValueAt(corrVPN, 2);
+                topLayer.setPTLine(corrVPN);
+                topLayer.setRAMLine(clockHand_PT);
+                swapVPN = corrVPN;
+                swapPPN = clockHand_PT;
+                state = States.PTREPLACEC;
+                msgPane.setText("PTE to replace found");
+                clockHand_PT++;
+                break;
+            }
+            case PTRCHECK_C:
                 String corrVPNRaw = (String) ramTable.getValueAt(clockHand_PT, 1);
                 int corrVPN = Integer.parseInt(corrVPNRaw.substring(2, corrVPNRaw.length() - 1), 16);
                 int ref = (Integer) pageTable.getValueAt(corrVPN, 2);
@@ -564,7 +575,7 @@ public class VMPanel extends JLayeredPane {
                     pageTable.setModify(true);
                     pageTable.setValueAt(0, corrVPN, 2);
                     pageTable.setModify(false);
-                    state = States.PTRCHECK;
+                    state = States.PTRCHECK_C;
                     msgPane.setText("Search for Victim Physical Memory Page");
                 }
                 clockHand_PT++;
@@ -572,7 +583,7 @@ public class VMPanel extends JLayeredPane {
             case PTREPLACEC:
                 topLayer.setPTLine(swapVPN);
                 topLayer.setRAMLine(swapPPN);
-                msgPane.setText("Replace Victim Page "+ pageTable.getValueAt(swapVPN, 0) + " with Virtual Page " + pageTable.getValueAt(currVPN, 0));
+                msgPane.setText("Replace Victim Page " + pageTable.getValueAt(swapVPN, 0) + " with Virtual Page " + pageTable.getValueAt(currVPN, 0));
                 if ((Integer) pageTable.getValueAt(swapVPN, 3) == 1) {
                     state = States.DISKWB;
                 } else {
@@ -649,7 +660,7 @@ public class VMPanel extends JLayeredPane {
                 state = States.TLBMISS;
                 currRamUse++;
                 swapPPN++;
-                if (ptClockTick) {
+                if (ptClockTick && ptR.equals(PTRepAl.CLOCK)) {
                     clockHand_PT++;
                     if (clockHand_PT >= ramCap) {
                         clockHand_PT = 0;
@@ -729,7 +740,6 @@ public class VMPanel extends JLayeredPane {
                 break;
             }
             case PTECHECK: {
-
                 instruTable.setColor(instruCount, Color.cyan);
                 setLeftRect(true);
                 if (instru == 0) {
@@ -811,7 +821,11 @@ public class VMPanel extends JLayeredPane {
                 topLayer.addLine(xs, ys, 3);
                 ptClockTick = true;
                 if (currRamUse == ramCap) {
-                    state = States.PTRCHECK;
+                    if (ptR.equals(PTRepAl.CLOCK)) {
+                        state = States.PTRCHECK_C;
+                    } else if (ptR.equals(PTRepAl.FIFO)) {
+                        state = States.PTRCHECK_F;
+                    }
                     ptClockTick = false;
                     if (skipReplacement) {
                         while (!state.equals(States.PTREPLACEC)) {
@@ -823,7 +837,20 @@ public class VMPanel extends JLayeredPane {
                 }
                 break;
             }
-            case PTRCHECK:
+            case PTRCHECK_F: {
+                String corrVPNRaw = (String) ramTable.getValueAt(clockHand_PT, 1);
+                int corrVPN = Integer.parseInt(corrVPNRaw.substring(2, corrVPNRaw.length() - 1), 16);
+                int ref = (Integer) pageTable.getValueAt(corrVPN, 2);
+                topLayer.setPTLine(corrVPN);
+                topLayer.setRAMLine(clockHand_PT);
+                swapVPN = corrVPN;
+                swapPPN = clockHand_PT;
+                state = States.PTREPLACEC;
+                msgPane.setText("PTE to replace found");
+                clockHand_PT++;
+                break;
+            }
+            case PTRCHECK_C:
                 String corrVPNRaw = (String) ramTable.getValueAt(clockHand_PT, 1);
                 int corrVPN = Integer.parseInt(corrVPNRaw.substring(2, corrVPNRaw.length() - 1), 16);
                 int ref = (Integer) pageTable.getValueAt(corrVPN, 2);
@@ -838,7 +865,7 @@ public class VMPanel extends JLayeredPane {
                     pageTable.setModify(true);
                     pageTable.setValueAt(0, corrVPN, 2);
                     pageTable.setModify(false);
-                    state = States.PTRCHECK;
+                    state = States.PTRCHECK_C;
                     msgPane.setText("look for a new PTE to replace");
                 }
                 clockHand_PT++;
@@ -911,7 +938,7 @@ public class VMPanel extends JLayeredPane {
                 state = States.PTECHECK;
                 currRamUse++;
                 swapPPN++;
-                if (ptClockTick) {
+                if (ptClockTick && ptR.equals(PTRepAl.CLOCK)) {
                     clockHand_PT++;
                     if (clockHand_PT >= ramCap) {
                         clockHand_PT = 0;
@@ -1079,22 +1106,36 @@ public class VMPanel extends JLayeredPane {
 
         if (tlbEnabled) {
             missStatsTable = new JTable(1, 3);
-            missStatsTable.setMinimumSize(new Dimension(140 * 3, 16));
-            missStatsTable.setPreferredSize(new Dimension(140 * 3, 16));
+            missStatsTable.setMinimumSize(new Dimension(100 * 3, 16));
+            missStatsTable.setPreferredSize(new Dimension(100 * 3, 16));
             missStatsTable.getColumnModel().getColumn(0).setHeaderValue("# of Reference");
             missStatsTable.getColumnModel().getColumn(1).setHeaderValue("# of TLB Miss");
             missStatsTable.getColumnModel().getColumn(2).setHeaderValue("# of Page Fault");
             missStatsTable.setValueAt(0, 0, 0);
             missStatsTable.setValueAt(0, 0, 1);
             missStatsTable.setValueAt(0, 0, 2);
+
+            repTable = new JTable(1, 2);
+            repTable.getColumnModel().getColumn(0).setHeaderValue("TLB");
+            repTable.getColumnModel().getColumn(1).setHeaderValue("Page Table");
+            repTable.setValueAt(tlbR.toString(), 0, 0);
+            repTable.setValueAt(ptR.toString(), 0, 1);
+            repTable.setMinimumSize(new Dimension(100 * 2, 16));
+            repTable.setPreferredSize(new Dimension(100 * 2, 16));
         } else {
             missStatsTable = new JTable(1, 2);
-            missStatsTable.setMinimumSize(new Dimension(140 * 2, 16));
-            missStatsTable.setPreferredSize(new Dimension(140 * 2, 16));
+            missStatsTable.setMinimumSize(new Dimension(100 * 2, 16));
+            missStatsTable.setPreferredSize(new Dimension(100 * 2, 16));
             missStatsTable.getColumnModel().getColumn(0).setHeaderValue("# of Reference");
             missStatsTable.getColumnModel().getColumn(1).setHeaderValue("# of Page Fault");
             missStatsTable.setValueAt(0, 0, 0);
             missStatsTable.setValueAt(0, 0, 1);
+
+            repTable = new JTable(1, 1);
+            repTable.getColumnModel().getColumn(0).setHeaderValue("Page Table");
+            repTable.setValueAt(ptR.toString(), 0, 0);
+            repTable.setMinimumSize(new Dimension(100, 16));
+            repTable.setPreferredSize(new Dimension(100, 16));
         }
 
         pageTable = new VMJTable(diskPageNum, 5, PAGETABLE);
@@ -1439,6 +1480,12 @@ public class VMPanel extends JLayeredPane {
         return missStatsTable;
     }
 
+    public JTable getRepTable() {
+        return repTable;
+    }
+
+    
+    
     private void test() {
         instructions.add(new Pair<Integer, Integer>(0, 15));
         instructions.add(new Pair<Integer, Integer>(1, 15 + 16 * 3));

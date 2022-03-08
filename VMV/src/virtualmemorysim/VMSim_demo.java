@@ -279,6 +279,8 @@ public class VMSim_demo extends JFrame {
         LinkedList<Pair<Integer, Integer>> instructions = new LinkedList<Pair<Integer, Integer>>();
         VMPanel vmTemp = null;
         ArrayList<String> vpnList = new ArrayList<String>();
+        TLBRepAl tlbRep = TLBRepAl.CLOCK;
+        PTRepAl ptRep = PTRepAl.CLOCK;
         try {
             fc = new JFileChooser(configuration.getAbsolutePath());
             Scanner fR = new Scanner(configuration);
@@ -292,7 +294,7 @@ public class VMSim_demo extends JFrame {
             }
             lR = new Scanner(fR.nextLine());
             String[] a = lR.next().split(",");
-            if (a.length < 7) {
+            if (a.length < 9) {
                 if (vmSim == null) {
                     configuration = null;
                 }
@@ -309,6 +311,27 @@ public class VMSim_demo extends JFrame {
                 int offset = Integer.parseInt(a[4]);
                 boolean tlbEn = Boolean.parseBoolean(a[5]);
                 int tlbSize = Integer.parseInt(a[6]);
+
+                switch (a[7]) {
+                    case "CLOCK":
+                        tlbRep = TLBRepAl.CLOCK;
+                        break;
+                    case "FIFO":
+                        tlbRep = TLBRepAl.FIFO;
+                        break;
+                    default:
+                        throw new AssertionError();
+                }
+                switch (a[8]) {
+                    case "CLOCK":
+                        ptRep = PTRepAl.CLOCK;
+                        break;
+                    case "FIFO":
+                        ptRep = PTRepAl.FIFO;
+                        break;
+                    default:
+                        throw new AssertionError();
+                }
                 if (pmSize < pmCap || vmSize < vmCap) {
                     if (vmSim == null) {
                         configuration = null;
@@ -347,7 +370,7 @@ public class VMSim_demo extends JFrame {
                     JOptionPane.showMessageDialog(this, "Offset size should be greater than 1 byte",
                             "Inappropriate offset size", JOptionPane.INFORMATION_MESSAGE);
                 }
-                vmTemp = new VMPanel(tlbSize, pmSize, vmSize, offset, pmCap, vmCap, tlbEn);
+                vmTemp = new VMPanel(tlbSize, pmSize, vmSize, offset, pmCap, vmCap, tlbEn, ptRep, tlbRep);
 
             } catch (NumberFormatException e) {
                 Toolkit.getDefaultToolkit().beep();
@@ -408,7 +431,7 @@ public class VMSim_demo extends JFrame {
             generalPane.removeAll();
             getContentPane().remove(generalPane);
         }
-        
+
         vmSim = vmTemp;
         vmPane = new JScrollPane(vmSim);
         vmSim.setInstructions(instructions);
@@ -421,36 +444,47 @@ public class VMSim_demo extends JFrame {
         statPane.add(vmSim.getMsgPane());
         statPane.add(vmSim.getHwPane());
         statPane.add(vmSim.getOsPane());
-        
+
         Insets insets = statPane.getInsets();
         Dimension size = vmSim.getMsgPane().getPreferredSize();
         vmSim.getMsgPane().setBackground(getBackground());
         vmSim.getMsgPane().setBounds(0 + insets.left, 0 + insets.top,
                 size.width + 220, size.height + 70);
-        
+
         size = vmSim.getHwPane().getPreferredSize();
-        vmSim.getHwPane().setBounds(vmSim.getMsgPane().getX()+vmSim.getMsgPane().getWidth()+25, 7 + insets.top,
-                size.width , size.height);
-        
+        vmSim.getHwPane().setBounds(vmSim.getMsgPane().getX() + vmSim.getMsgPane().getWidth() + 25, 7 + insets.top,
+                size.width, size.height);
+
         size = vmSim.getOsPane().getPreferredSize();
-        vmSim.getOsPane().setBounds(vmSim.getHwPane().getX()+vmSim.getHwPane().getWidth()+10, 7 + insets.top,
-                size.width , size.height);
-        
+        vmSim.getOsPane().setBounds(vmSim.getHwPane().getX() + vmSim.getHwPane().getWidth() + 10, 7 + insets.top,
+                size.width, size.height);
+
         JScrollPane missPane = new JScrollPane(vmSim.getMissStatsTable());
+
         vmSim.getMissStatsTable().setEnabled(false);
+
         missPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(),
                 "Performance", TitledBorder.CENTER, TitledBorder.TOP));
         statPane.add(missPane);
         size = vmSim.getMissStatsTable().getMinimumSize();
 //        System.out.print(vmSim.getMissStatsTable().getMinimumSize());
-        missPane.setBounds(vmSim.getOsPane().getX()+vmSim.getOsPane().getWidth()+25, 0 + insets.top,
-                size.width, size.height+45);
-        
+        missPane.setBounds(vmSim.getOsPane().getX() + vmSim.getOsPane().getWidth() + 25, 0 + insets.top,
+                size.width, size.height + 45);
+
+        JScrollPane repPane = new JScrollPane(vmSim.getRepTable());
+        repPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(),
+                "Replacement Algorithm", TitledBorder.CENTER, TitledBorder.TOP));
+        statPane.add(repPane);
+        size = vmSim.getRepTable().getMinimumSize();
+//        System.out.print(vmSim.getMissStatsTable().getMinimumSize());
+        repPane.setBounds(missPane.getX() + missPane.getWidth() + 25, 0 + insets.top,
+                size.width, size.height + 45);
+
         statPane.setPreferredSize(new Dimension(vmPane.getWidth(), 90));
         statPane.setMinimumSize(new Dimension(10, 90));
         statPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, 90));
         getContentPane().add(generalPane, "Center");
-        
+
         setVisible(true);
         msgBoard.setText("Press Start or Step to start");
         speedSlider.setEnabled(true);
