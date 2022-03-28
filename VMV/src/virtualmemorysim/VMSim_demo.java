@@ -329,6 +329,12 @@ public class VMSim_demo extends JFrame {
                     case "FIFO":
                         ptRep = PTRepAl.FIFO;
                         break;
+                    case "LFU":
+                        ptRep = PTRepAl.LFU;
+                        break;
+                    case "LRU":
+                        ptRep = PTRepAl.LRU;
+                        break;
                     default:
                         throw new AssertionError();
                 }

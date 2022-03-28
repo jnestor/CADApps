@@ -10,8 +10,6 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
 import javax.swing.JPanel;
 
 /**
@@ -27,7 +25,7 @@ public class LinePainter extends JPanel {
     int ptLine = -1;
     int ramLine = -1;
     int tlbLine = -1;
-    int clockLine_PT = 0;
+    int clockLine_PT = -1;
     int clockLine_TLB = -1;
     int tableY;
     int tlbY;
@@ -60,8 +58,7 @@ public class LinePainter extends JPanel {
                     int arrowX = xLineDots.get(i)[xLineDots.get(i).length - 1] - 1;
                     if (xLineDots.get(i)[0] == lineThickX) {
                         arrowX -= 2;
-                    }
-                    else if (xLineDots.get(i)[0] == lineThickX2 || xLineDots.get(i)[0] == lineThickX3) {
+                    } else if (xLineDots.get(i)[0] == lineThickX2 || xLineDots.get(i)[0] == lineThickX3) {
                         arrowX -= 8;
                     }
                     int arrowY = yLineDots.get(i)[xLineDots.get(i).length - 1];
@@ -71,8 +68,7 @@ public class LinePainter extends JPanel {
                     int arrowY = yLineDots.get(i)[xLineDots.get(i).length - 1] + 1;
                     if (xLineDots.get(i)[0] == lineThickX) {
                         arrowY += 2;
-                    }
-                    else if (xLineDots.get(i)[0] == lineThickX2 || xLineDots.get(i)[0] == lineThickX3) {
+                    } else if (xLineDots.get(i)[0] == lineThickX2 || xLineDots.get(i)[0] == lineThickX3) {
                         arrowY += 8;
                     }
                     g2.fillPolygon(new int[]{arrowX, arrowX + 10, arrowX - 10}, new int[]{arrowY, arrowY - 10, arrowY - 10}, 3);
@@ -81,8 +77,7 @@ public class LinePainter extends JPanel {
                     int arrowY = yLineDots.get(i)[xLineDots.get(i).length - 1] - 1;
                     if (xLineDots.get(i)[0] == lineThickX) {
                         arrowY -= 2;
-                    }
-                    else if (xLineDots.get(i)[0] == lineThickX2 || xLineDots.get(i)[0] == lineThickX3) {
+                    } else if (xLineDots.get(i)[0] == lineThickX2 || xLineDots.get(i)[0] == lineThickX3) {
                         arrowY -= 8;
                     }
                     g2.fillPolygon(new int[]{arrowX, arrowX + 10, arrowX - 10}, new int[]{arrowY, arrowY + 10, arrowY + 10}, 3);
@@ -92,11 +87,15 @@ public class LinePainter extends JPanel {
 
         g2.setStroke(new BasicStroke(1));
         g2.setColor(Color.red);
-        int arrowX = 1105;
-        int arrowY = tableY + 24 + clockLine_PT * 16;
-        g.fillPolygon(new int[]{arrowX, arrowX + 10, arrowX + 10}, new int[]{arrowY, arrowY - 5, arrowY + 5}, 3);
-        g2.setStroke(new BasicStroke(3));
-        g2.drawLine(arrowX + 5, arrowY, arrowX + 20, arrowY);
+        int arrowX;
+        int arrowY;
+        if (clockLine_PT != -1) {
+            arrowX = 1105;
+            arrowY = tableY + 24 + clockLine_PT * 16;
+            g.fillPolygon(new int[]{arrowX, arrowX + 10, arrowX + 10}, new int[]{arrowY, arrowY - 5, arrowY + 5}, 3);
+            g2.setStroke(new BasicStroke(3));
+            g2.drawLine(arrowX + 5, arrowY, arrowX + 20, arrowY);
+        }
         if (clockLine_TLB != -1) {
             arrowX = 368;
             arrowY = tlbY + 45 + clockLine_TLB * 16;

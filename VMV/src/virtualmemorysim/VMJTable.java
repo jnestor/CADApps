@@ -8,6 +8,8 @@ package virtualmemorysim;
 import java.awt.Color;
 import java.awt.Component;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 
@@ -23,9 +25,10 @@ public class VMJTable extends JTable {
     public int mode;
     private int size;
     private boolean modify = true;
-    private static boolean TLBEnabled = true;
+//    private static boolean TLBEnabled = true;
     private int accessibleSpace;
     private ArrayList<Color> colorTable = new ArrayList<Color>();
+    private boolean referenceEnabled = false;
 
     public VMJTable(int r, int c, int m) {
         super(r, c);
@@ -50,28 +53,31 @@ public class VMJTable extends JTable {
         Component comp = super.prepareRenderer(renderer, row, col);
         if (!modify) {
             if (mode == PAGETABLE) {
-                if (getModel().getValueAt(row, 1).equals(0)) {
+                if (!referenceEnabled && col == 2) {
+                    comp.setBackground(Color.DARK_GRAY);
+                } else if (getModel().getValueAt(row, 1).equals(0)) {
                     comp.setBackground(Color.red);
                 } else if (getModel().getValueAt(row, 3).equals(1)) {
                     comp.setBackground(Color.orange);
-                } else if (getModel().getValueAt(row, 2).equals(0)) {
+                } else if (referenceEnabled && getModel().getValueAt(row, 2).equals(0)) {
+                    comp.setBackground(Color.yellow);
+                } else {
+                    comp.setBackground(new Color(0, 204, 0));
+                }
+            } else if (mode == TLB) {
+                if (!referenceEnabled && col == 2) {
+                    comp.setBackground(Color.DARK_GRAY);
+                } else if (getModel().getValueAt(row, 1).equals(0)) {
+                    comp.setBackground(Color.red);
+                } else if (getModel().getValueAt(row, 3).equals(1)) {
+                    comp.setBackground(Color.orange);
+                } else if (referenceEnabled && getModel().getValueAt(row, 2).equals(0)) {
                     comp.setBackground(Color.yellow);
                 } else {
                     comp.setBackground(new Color(0, 204, 0));
                 }
             }
-            else if (mode == TLB) {
-                if (getModel().getValueAt(row, 1).equals(0)) {
-                    comp.setBackground(Color.red);
-                } else if (getModel().getValueAt(row, 3).equals(1)) {
-                    comp.setBackground(Color.orange);
-                } else if (getModel().getValueAt(row, 2).equals(0)) {
-                    comp.setBackground(Color.yellow);
-                } else {
-                    comp.setBackground(new Color(0, 204, 0));
-                }
-            }
-            
+
         }
         if (mode == MEMTABLE) {
             if (colorTable.get(row) != null) {
@@ -102,18 +108,21 @@ public class VMJTable extends JTable {
         colorTable.add(colorTable.size(), Color.white);
     }
 
-    public static boolean isTLBEnabled() {
-        return TLBEnabled;
-    }
-
-    public static void setTLBEnabled(boolean TLBEnabled) {
-        VMJTable.TLBEnabled = TLBEnabled;
-    }
-    
+//    public static boolean isTLBEnabled() {
+//        return TLBEnabled;
+//    }
+//    public static void setTLBEnabled(boolean TLBEnabled) {
+//        VMJTable.TLBEnabled = TLBEnabled;
+//    }
     @Override
     public boolean isCellEditable(int row, int column) {
-       //all cells false
-       return false;
+        //all cells false
+        return false;
     }
-    
+
+    public void setReferenceEnabled(boolean referenceEnabled) {
+        this.referenceEnabled = referenceEnabled;
+    }
+
+
 }
