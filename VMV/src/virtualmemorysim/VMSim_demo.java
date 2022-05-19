@@ -279,7 +279,7 @@ public class VMSim_demo extends JFrame {
         LinkedList<Pair<Integer, Integer>> instructions = new LinkedList<Pair<Integer, Integer>>();
         VMPanel vmTemp = null;
         ArrayList<String> vpnList = new ArrayList<String>();
-        TLBRepAl tlbRep = TLBRepAl.CLOCK;
+        TLBRepAl tlbRep = TLBRepAl.FIFO;
         PTRepAl ptRep = PTRepAl.CLOCK;
         try {
             fc = new JFileChooser(configuration.getAbsolutePath());
@@ -303,7 +303,7 @@ public class VMSim_demo extends JFrame {
             }
 //            System.out.println(a[0]);
             try {
-                System.out.println(a.length);
+//                System.out.println(a.length);
                 int pmSize = Integer.parseInt(a[0]);
                 int vmSize = Integer.parseInt(a[1]);
                 int pmCap = Integer.parseInt(a[2]);
@@ -313,11 +313,17 @@ public class VMSim_demo extends JFrame {
                 int tlbSize = Integer.parseInt(a[6]);
 
                 switch (a[7]) {
-                    case "CLOCK":
-                        tlbRep = TLBRepAl.CLOCK;
-                        break;
+//                    case "CLOCK":
+//                        tlbRep = TLBRepAl.CLOCK;
+//                        break;
                     case "FIFO":
                         tlbRep = TLBRepAl.FIFO;
+                        break;
+                    case "RANDOM":
+                        tlbRep = TLBRepAl.RANDOM;
+                        break;
+                    case "LRU":
+                        tlbRep = TLBRepAl.LRU;
                         break;
                     default:
                         throw new AssertionError();

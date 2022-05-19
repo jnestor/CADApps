@@ -30,6 +30,14 @@ public class VMJTable extends JTable {
     private ArrayList<Color> colorTable = new ArrayList<Color>();
     private boolean referenceEnabled = false;
 
+    private static int TLB_PM = 3;
+    private static int TLB_D = 2;
+    private static int TLB_R = -1;
+    private static int TLB_V = 1;
+    private static int TLB_VM = 0;
+    
+
+
     public VMJTable(int r, int c, int m) {
         super(r, c);
         mode = m;
@@ -65,15 +73,18 @@ public class VMJTable extends JTable {
                     comp.setBackground(new Color(0, 204, 0));
                 }
             } else if (mode == TLB) {
-                if (!referenceEnabled && col == 2) {
-                    comp.setBackground(Color.DARK_GRAY);
-                } else if (getModel().getValueAt(row, 1).equals(0)) {
+//                if (!referenceEnabled && col == TLB_R) {
+//                    comp.setBackground(Color.DARK_GRAY);
+//                } else 
+                    if (getModel().getValueAt(row, TLB_V).equals(0)) {
                     comp.setBackground(Color.red);
-                } else if (getModel().getValueAt(row, 3).equals(1)) {
+                } else if (getModel().getValueAt(row, TLB_D).equals(1)) {
                     comp.setBackground(Color.orange);
-                } else if (referenceEnabled && getModel().getValueAt(row, 2).equals(0)) {
-                    comp.setBackground(Color.yellow);
-                } else {
+                } 
+//                else if (referenceEnabled && getModel().getValueAt(row, TLB_R).equals(0)) {
+//                    comp.setBackground(Color.yellow);
+//                } 
+                else {
                     comp.setBackground(new Color(0, 204, 0));
                 }
             }
@@ -123,6 +134,5 @@ public class VMJTable extends JTable {
     public void setReferenceEnabled(boolean referenceEnabled) {
         this.referenceEnabled = referenceEnabled;
     }
-
 
 }
