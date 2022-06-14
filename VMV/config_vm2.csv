@@ -1,5 +1,5 @@
 TLB Replacement (CLOCK or FIFO),Page Table Replacement (CLOCK or FIFO),# of page in ram seg,# of page in disk seg,page size in bytes,tlb,tlb Size,TLB Replacement (CLOCK or FIFO),Page Table Replacement (CLOCK or FIFO)
-FIFO,CLOCK,8,16,4096,FALSE,5,FIFO,CLOCK
+8,16,8,16,4096,FALSE,5,FIFO,CLOCK
 instru,addr (in hex),SkipTil,,,,,,
 r,100E,,,,,,,
 r,6004,,,,,,,
