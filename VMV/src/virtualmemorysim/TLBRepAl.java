@@ -9,5 +9,5 @@ package virtualmemorysim;
  * @author 15002
  */
 public enum TLBRepAl {
-    CLOCK, FIFO
+    /*CLOCK,*/ FIFO, RANDOM, LRU
 };

@@ -9,5 +9,5 @@ package virtualmemorysim;
  * @author 15002
  */
 public enum PTRepAl {
-    CLOCK, FIFO
+    CLOCK, FIFO, LFU, LRU
 };

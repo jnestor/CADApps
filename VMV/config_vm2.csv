@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 ram size  pages,virtual address size in pages,# of page in ram seg,# of page in disk seg,page size in bytes,tlb,tlb Size,TLB Replacement (CLOCK or FIFO),Page Table Replacement (CLOCK or FIFO)
 8,16,8,16,4096,TRUE,5,FIFO,FIFO
+=======
+TLB Replacement (CLOCK or FIFO),Page Table Replacement (CLOCK or FIFO),# of page in ram seg,# of page in disk seg,page size in bytes,tlb,tlb Size,TLB Replacement (CLOCK or FIFO),Page Table Replacement (CLOCK or FIFO)
+8,16,8,16,4096,FALSE,5,FIFO,CLOCK
+>>>>>>> 472f6e791b0597e267484eabf3ad259d3d2bf03c
 instru,addr (in hex),SkipTil,,,,,,
 r,100E,,,,,,,
 r,6004,,,,,,,
