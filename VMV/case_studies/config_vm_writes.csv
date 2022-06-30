@@ -1,0 +1,12 @@
+ram size  pages,virtual address size in pages,# of page in ram seg,# of page in disk seg,page size in bytes,tlb,tlb Size,TLB Replacement (CLOCK or FIFO),Page Table Replacement (CLOCK or FIFO),Simple sequence of reads to illustrate page translation
+4,16,4,16,4096,FALSE,4,CLOCK,CLOCK,
+instru,addr (in hex),SkipTil,,,,,,,
+r,100E,,,,,,,,
+r,6004,,,,,,,,
+r,3000,,,,,,,,
+r,E138,,,,,,,,
+w,6008,here,,,,,,,
+w,AA20,,,,,,,,
+w,E800,,,,,,,,
+r,3030,,,,,,,,
+r,1064,,,,,,,,
