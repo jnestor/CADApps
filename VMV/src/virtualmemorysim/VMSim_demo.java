@@ -326,7 +326,12 @@ public class VMSim_demo extends JFrame {
                         tlbRep = TLBRepAl.LRU;
                         break;
                     default:
-                        throw new AssertionError();
+                        JOptionPane.showMessageDialog(this, a[7] + " is not a valid TLB replacement policy.",
+                                "Wrong TLB Replacement Policy", JOptionPane.QUESTION_MESSAGE);
+                        if (vmSim == null) {
+                            configuration = null;
+                        }
+                        return;
                 }
                 switch (a[8]) {
                     case "CLOCK":
@@ -342,7 +347,12 @@ public class VMSim_demo extends JFrame {
                         ptRep = PTRepAl.LRU;
                         break;
                     default:
-                        throw new AssertionError();
+                        JOptionPane.showMessageDialog(this, a[8] + " is not a valid Page Table replacement policy.",
+                                "Wrong Page Table Replacement Policy", JOptionPane.QUESTION_MESSAGE);
+                        if (vmSim == null) {
+                            configuration = null;
+                        }
+                        return;
                 }
                 if (pmSize < pmCap || vmSize < vmCap) {
                     if (vmSim == null) {

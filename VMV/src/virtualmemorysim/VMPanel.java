@@ -162,7 +162,7 @@ public class VMPanel extends JLayeredPane {
         ptR = ptRep;
         tlbR = tlbRep;
         uiSetUp(tlbSize, ramPageNum, diskPageNum, ramSegNum, diskSegNum);
-        tableReset(tlbSize, ramPageNum, diskPageNum, offsetSize);
+        tableSetValues(tlbSize, ramPageNum, diskPageNum, offsetSize);
         tlbData = new Object[tlbCap][5];
         ptData = new Object[diskCap][5];
         ramData = new Object[ramCap][2];
@@ -313,7 +313,7 @@ public class VMPanel extends JLayeredPane {
                     int[] ys1 = {153 + 16 * i, 153 + 16 * i};
                     topLayer.addLine(xs1, ys1, 2);
                 }
-                int[] xs2 = {tlbRightX, tlbRightX+20, tlbRightX+20, 470, 470};
+                int[] xs2 = {tlbRightX, tlbRightX + 20, tlbRightX + 20, 470, 470};
                 int[] ys2 = {153 + currTLB * 16, 153 + currTLB * 16, 60, 60, 80};
                 topLayer.addLine(xs2, ys2, 5);
 
@@ -411,10 +411,10 @@ public class VMPanel extends JLayeredPane {
                 for (int i = 0; i < tlbCap; i++) {
                     tlbTable.setValueAt(0, i, TLB_V);
                 }
-                if(tlbR.equals(TLBRepAl.LRU)){
+                if (tlbR.equals(TLBRepAl.LRU)) {
                     for (int i = 0; i < tlbCap; i++) {
-                    tlbTable.setValueAt(i, i, TLB_LRU);
-                }
+                        tlbTable.setValueAt(i, i, TLB_LRU);
+                    }
                 }
                 state = States.PAGEFAULT;
                 break;
@@ -471,7 +471,7 @@ public class VMPanel extends JLayeredPane {
                 int lruRank = -1;
                 int tlbLruIndex = -1;
                 for (int i = 0; i < tlbCap; i++) {
-                    lruRank = (int)tlbTable.getValueAt(i, TLB_LRU);
+                    lruRank = (int) tlbTable.getValueAt(i, TLB_LRU);
                     if (lruRank == 0) {
                         corrVPN = Integer.parseInt((String) tlbTable.getValueAt(i, TLB_VM), 16);
                         tlbLruIndex = i;
@@ -567,8 +567,8 @@ public class VMPanel extends JLayeredPane {
                             tlbTable.setValueAt(tlbCap - 1, i, TLB_LRU);
                         } else {
                             tlbTable.setValueAt((int) tlbTable.getValueAt(i, TLB_LRU) - 1, i, TLB_LRU);
-                            if((int) tlbTable.getValueAt(i, TLB_LRU)==0){
-                                clockHand_TLB=i;
+                            if ((int) tlbTable.getValueAt(i, TLB_LRU) == 0) {
+                                clockHand_TLB = i;
                                 topLayer.setTLBClockLine(clockHand_TLB);
                             }
                         }
@@ -690,6 +690,7 @@ public class VMPanel extends JLayeredPane {
             }
             case PTUPDATE_PF:
                 ptUpdate_PF();
+                state = States.TLBMISS;
                 break;
             default:
 //                System.out.println("Something is wrong");
@@ -913,6 +914,7 @@ public class VMPanel extends JLayeredPane {
             }
             case PTUPDATE_PF: {
                 ptUpdate_PF();
+                state = States.PTECHECK;
                 break;
             }
             default:
@@ -1074,7 +1076,6 @@ public class VMPanel extends JLayeredPane {
         tlbTable.setPreferredSize(new Dimension(tlbRecWid + tlbVMWid + tlbDWid + tlbVWid + tlbPMWid, tlbSize * 16));
 
         tlbRightX = 108 + tlbRecWid + tlbVMWid + tlbDWid + tlbVWid + tlbPMWid;
-        
 
         JScrollPane tlbPane = new JScrollPane(tlbTable);
 //        if (!tlbEnabled) {
@@ -1261,12 +1262,11 @@ public class VMPanel extends JLayeredPane {
 
         osPane.setPreferredSize(
                 new Dimension(80, 80));
-//        if (ptR.equals(PTRepAl.CLOCK)
-//                || tlbR.equals(TLBRepAl.CLOCK)) {
-//            colorPane = new ImagePanel("images/colorGuide.png", 25, 25);
-//        } else {
+        if (ptR.equals(PTRepAl.CLOCK)) {
+            colorPane = new ImagePanel("images/colorGuide.png", 25, 25);
+        } else {
         colorPane = new ImagePanel("images/colorGuide_NoRef.png", 25, 25);
-//        }
+        }
 
         colorPane.setPreferredSize(
                 new Dimension(275, 150));
@@ -1274,7 +1274,7 @@ public class VMPanel extends JLayeredPane {
                 "Page Table Legend", TitledBorder.CENTER, TitledBorder.TOP));
 
         topLayer = new LinePainter();
-        
+
         topLayer.setTlbRightX(113 + tlbRecWid + tlbVMWid + tlbDWid + tlbVWid + tlbPMWid);
 
         topLayer.setPreferredSize(
@@ -1447,7 +1447,7 @@ public class VMPanel extends JLayeredPane {
         // page table legend (colorPane) is self-explanatory
     }
 
-    private void tableReset(int tlbSize, int ramPageNum, int diskPageNum, int pageSize) {
+    private void tableSetValues(int tlbSize, int ramPageNum, int diskPageNum, int pageSize) {
         offset = String.format("%X", pageSize - 1);
         diskNumLength = Integer.toHexString(diskPageNum).length();
         ramNumLength = Integer.toHexString(ramPageNum).length();
@@ -1603,8 +1603,6 @@ public class VMPanel extends JLayeredPane {
             pageTable.getModel().setValueAt(0, currVPN, 3);
         }
         pageTable.setModify(false);
-        state = States.TLBMISS;
-
         switch (ptR) {
             case CLOCK:
                 clockTable.setValueAt(pageTable.getValueAt(currVPN, 0), swapPPN, 0);
