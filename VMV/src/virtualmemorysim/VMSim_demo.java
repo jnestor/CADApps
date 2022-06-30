@@ -410,6 +410,7 @@ public class VMSim_demo extends JFrame {
                     try {
                         lR = new Scanner(fR.nextLine());
                         a = lR.next().split(",");
+                        if (a[0].charAt(0)=='#') continue;  // ignore comment lines
                         ArrayList<String> netLocs = new ArrayList<String>(Arrays.asList(a));
                         int instru = -1;
                         if (a[0].equals("r")) {
