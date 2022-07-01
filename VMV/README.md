@@ -9,7 +9,7 @@ Then click the "open" button and load a CSV configuration file.
 See one of the CSV files in this directory to learn how to
 set up a simulation.
 
-![basic_layout_tlb.png]
+![Screen Capture with TLB](basic_layout_tlb.png)
 
 ## Configuration file Format
 The configuration file is a CSV file that can be edited using a spreadsheet or text editor.  The first line is a header with a text description of each configuration value, followed by a second line containng the actual config value.  The configuration fields are as follows:
