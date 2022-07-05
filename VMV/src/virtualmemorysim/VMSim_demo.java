@@ -294,7 +294,7 @@ public class VMSim_demo extends JFrame {
             }
             lR = new Scanner(fR.nextLine());
             String[] a = lR.next().split(",");
-            if (a.length < 9) {
+            if (a.length < 7) {
                 if (vmSim == null) {
                     configuration = null;
                 }
@@ -304,15 +304,14 @@ public class VMSim_demo extends JFrame {
 //            System.out.println(a[0]);
             try {
 //                System.out.println(a.length);
-                int pmSize = Integer.parseInt(a[0]);
-                int vmSize = Integer.parseInt(a[1]);
-                int pmCap = Integer.parseInt(a[2]);
-                int vmCap = Integer.parseInt(a[3]);
-                int offset = Integer.parseInt(a[4]);
-                boolean tlbEn = Boolean.parseBoolean(a[5]);
-                int tlbSize = Integer.parseInt(a[6]);
 
-                switch (a[7]) {
+                int pmCap = Integer.parseInt(a[0]);
+                int vmCap = Integer.parseInt(a[1]);
+                int offset = Integer.parseInt(a[2]);
+                boolean tlbEn = Boolean.parseBoolean(a[3]);
+                int tlbSize = Integer.parseInt(a[4]);
+
+                switch (a[5]) {
 //                    case "CLOCK":
 //                        tlbRep = TLBRepAl.CLOCK;
 //                        break;
@@ -326,14 +325,14 @@ public class VMSim_demo extends JFrame {
                         tlbRep = TLBRepAl.LRU;
                         break;
                     default:
-                        JOptionPane.showMessageDialog(this, a[7] + " is not a valid TLB replacement policy.",
+                        JOptionPane.showMessageDialog(this, a[5] + " is not a valid TLB replacement policy.",
                                 "Wrong TLB Replacement Policy", JOptionPane.QUESTION_MESSAGE);
                         if (vmSim == null) {
                             configuration = null;
                         }
                         return;
                 }
-                switch (a[8]) {
+                switch (a[6]) {
                     case "CLOCK":
                         ptRep = PTRepAl.CLOCK;
                         break;
@@ -347,29 +346,22 @@ public class VMSim_demo extends JFrame {
                         ptRep = PTRepAl.LRU;
                         break;
                     default:
-                        JOptionPane.showMessageDialog(this, a[8] + " is not a valid Page Table replacement policy.",
+                        JOptionPane.showMessageDialog(this, a[6] + " is not a valid Page Table replacement policy.",
                                 "Wrong Page Table Replacement Policy", JOptionPane.QUESTION_MESSAGE);
                         if (vmSim == null) {
                             configuration = null;
                         }
                         return;
                 }
-                if (pmSize < pmCap || vmSize < vmCap) {
-                    if (vmSim == null) {
-                        configuration = null;
-                    }
-                    JOptionPane.showMessageDialog(this, "Segment size is larger than memory size", "Invalid Configuration", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-                if (pmSize > vmSize || pmCap > vmCap) {
-                    JOptionPane.showMessageDialog(this, "Why would you need virtual memory in this kind of situation?",
+                if (pmCap > vmCap) {
+                    JOptionPane.showMessageDialog(this, "Why would you need virtual memory if ram is bigger?",
                             "Small Virtual Memory Size", JOptionPane.QUESTION_MESSAGE);
                     if (vmSim == null) {
                         configuration = null;
                     }
                     return;
                 }
-                if (tlbSize > pmCap || tlbSize > pmSize) {
+                if (tlbSize > pmCap) {
                     JOptionPane.showMessageDialog(this, "Why would you need a TLB larger than your RAM?",
                             "Small Physical Memory Size", JOptionPane.QUESTION_MESSAGE);
                     if (vmSim == null) {
@@ -392,7 +384,7 @@ public class VMSim_demo extends JFrame {
                     JOptionPane.showMessageDialog(this, "Offset size should be greater than 1 byte",
                             "Inappropriate offset size", JOptionPane.INFORMATION_MESSAGE);
                 }
-                vmTemp = new VMPanel(tlbSize, pmSize, vmSize, offset, pmCap, vmCap, tlbEn, ptRep, tlbRep);
+                vmTemp = new VMPanel(tlbSize, offset, pmCap, vmCap, tlbEn, ptRep, tlbRep);
 
             } catch (NumberFormatException e) {
                 Toolkit.getDefaultToolkit().beep();

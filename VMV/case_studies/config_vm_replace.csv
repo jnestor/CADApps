@@ -1,5 +1,5 @@
-ram size  pages,virtual address size in pages,# of page in ram seg,# of page in disk seg,page size in bytes,tlb,tlb Size,TLB Replacement (CLOCK or FIFO),Page Table Replacement (CLOCK or FIFO),Demonstration of page replacement using CLOCK algorithm
-8,16,8,16,4096,FALSE,4,CLOCK,CLOCK,
+# of page in ram seg,# of page in disk seg,page size in bytes,tlb,tlb Size,TLB Replacement (CLOCK or FIFO),Page Table Replacement (CLOCK or FIFO),,,Demonstration of page replacement using CLOCK algorithm
+8,16,4096,FALSE,4,CLOCK,CLOCK,,,
 instru,addr (in hex),SkipTil,,,,,,,
 r,100E,,,,,,,,
 r,6004,,,,,,,,

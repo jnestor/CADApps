@@ -1,5 +1,5 @@
-ram size  pages,virtual address size in pages,# of page in ram seg,# of page in disk seg,page size in bytes,tlb,tlb Size,comment: fill physical memory and then demonstrate basic translation
-8,16,8,16,4096,FALSE,5,
+# of page in ram seg,# of page in disk seg,page size in bytes,tlb,tlb Size,,,comment: fill physical memory and then demonstrate basic translation
+8,16,4096,FALSE,5,,,
 instru,addr (in hex),SkipTil,,,,,
 w,C00E,,,,,,
 r,1004,,,,,,

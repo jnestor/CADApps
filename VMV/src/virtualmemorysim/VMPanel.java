@@ -152,7 +152,7 @@ public class VMPanel extends JLayeredPane {
     private int tlbColSize = 4;
     private int tlbRightX = 0;
 
-    public VMPanel(int tlbSize, int ramPageNum, int diskPageNum, int offsetSize, int ramSegNum, int diskSegNum, boolean tlbEn, PTRepAl ptRep, TLBRepAl tlbRep) {
+    public VMPanel(int tlbSize, int offsetSize, int ramSegNum, int diskSegNum, boolean tlbEn, PTRepAl ptRep, TLBRepAl tlbRep) {
         super();
         tlbCap = tlbSize;
         pageSize = offsetSize;
@@ -161,8 +161,8 @@ public class VMPanel extends JLayeredPane {
         tlbEnabled = tlbEn;
         ptR = ptRep;
         tlbR = tlbRep;
-        uiSetUp(tlbSize, ramPageNum, diskPageNum, ramSegNum, diskSegNum);
-        tableSetValues(tlbSize, ramPageNum, diskPageNum, offsetSize);
+        uiSetUp(tlbSize, ramSegNum, diskSegNum, ramSegNum, diskSegNum);
+        tableSetValues(tlbSize, ramSegNum, diskSegNum, offsetSize);
         tlbData = new Object[tlbCap][5];
         ptData = new Object[diskCap][5];
         ramData = new Object[ramCap][2];
@@ -181,7 +181,7 @@ public class VMPanel extends JLayeredPane {
      */
     public static void main(String[] args) {
         // TODO code application logic here
-        VMPanel demo = new VMPanel(10, 17, 30, 16, 4, 15, false, PTRepAl.CLOCK, TLBRepAl.LRU);
+        VMPanel demo = new VMPanel(10, 16, 4, 15, false, PTRepAl.CLOCK, TLBRepAl.LRU);
         JScrollPane a = new JScrollPane(demo);
         JFrame frame = new JFrame("AbsoluteLayoutDemo");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
