@@ -17,7 +17,7 @@ The configuration file is a CSV file that can be edited using a spreadsheet or t
 2. Size of virtual address space in pages (poewr of 2).
 3. Number of usable pages in physical RAM.
 4. Number of usable pages in virtual memory space.
-5. Page size in bytes
+5. Page size in bytes (power of 2)
 6. Include TLB (FALSE or TRUE)
 7. TLB size (number of entries)
 8. TLB replacement algorithm (FIFO or RANDOM or LRU)
