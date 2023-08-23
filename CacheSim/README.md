@@ -3,7 +3,7 @@
 
 This app visualizes cache interaction on various caches of different sizes, structures, and policies. VCache simulates directed mapped caches, partially and fully associative caches of different sizes in line count and word per line count with different write policies and replacement policies. A processor cache is a volatile memory structure that is smaller and faster than the main memory (RAM) through which the processor does its memory operations.
 
-![Image capture of visual cache simulator](vcache.png)
+![Image capture of visual cache simulator](CacheSim.png)
 
 # To Use the App
 
